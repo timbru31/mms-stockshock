@@ -7,7 +7,9 @@ import { WishlistReponse } from "./models/api/wishlist-response";
 import { Store } from "./models/stores/store";
 
 export class StockChecker {
+    // This is set by MM/S and a fixed constant
     MAX_ITEMS_PER_QUERY = 24;
+
     private loggedIn = false;
     private readonly store: Store;
     private page: Page | undefined;
@@ -20,14 +22,14 @@ export class StockChecker {
         this.store = store;
     }
 
-    async logIn(email: string, password: string): Promise<void> {
+    async logIn(email: string, password: string, headless = true): Promise<void> {
         if (this.loggedIn) {
             throw new Error("Already logged in");
         }
 
-        const browser = await launch({ headless: false });
+        const browser = await launch({ headless });
         this.page = await browser.newPage();
-        // This is the fastest site to render without any JS bloat
+        // This is the fastest site to render without any JS or CSS bloat
         await this.page.goto(`${this.store.baseUrl}/404`, {
             waitUntil: "networkidle0",
         });
@@ -58,12 +60,21 @@ export class StockChecker {
                     }),
                     method: "POST",
                     mode: "cors",
-                }).then((res) => res.json().then((data) => ({ status: res.status, body: data }))),
+                }).then((res) =>
+                    res
+                        .json()
+                        .then((data) => ({ status: res.status, body: data }))
+                        .catch((_) => ({ status: res.status, body: null }))
+                ),
             this.store,
             email,
             password
         );
-        if (res.status !== 200 || res.body?.errors) {
+        if (res.status !== 200 || !res.body || res.body?.errors) {
+            if (headless) {
+                console.error("Login did not succeed, please restart with '--no-headless' option");
+                process.exit(1);
+            }
             await prompt({
                 name: "noop",
                 message: "Login did not succeed, please check browser for captcha and log in manually. Then hit enter...",
@@ -77,22 +88,25 @@ export class StockChecker {
             throw new Error("Not logged in!");
         }
 
-        const response = await this.performWhishlistQuery();
-        if (response.status !== 200 || response.body?.errors) {
-            console.error("Whistlist query did not succeed, status code:", response.status, response.body?.errors);
+        const res = await this.performWhishlistQuery();
+        if (res.status !== 200 || !res.body || res.body?.errors) {
+            console.error("Whistlist query did not succeed, status code:", res.status, res.body?.errors);
         } else {
-            const totalItems = response.body?.data?.wishlistItems?.total;
-            this.checkItems(response.body?.data?.wishlistItems?.items);
+            const totalItems = res.body?.data?.wishlistItems?.total;
+            if (!totalItems) {
+                throw new Error("Nothing on wishlist!");
+            }
+            this.checkItems(res.body?.data?.wishlistItems?.items);
 
             if (totalItems > this.MAX_ITEMS_PER_QUERY) {
                 const remainingQueryCalls = Math.ceil((totalItems - this.MAX_ITEMS_PER_QUERY) / this.MAX_ITEMS_PER_QUERY);
                 for (let additionalQueryCalls = 1; additionalQueryCalls <= remainingQueryCalls; additionalQueryCalls += 1) {
                     const newOffset = additionalQueryCalls * this.MAX_ITEMS_PER_QUERY;
-                    const response = await this.performWhishlistQuery(newOffset);
-                    if (response.status !== 200) {
-                        console.error("Whistlist query did not succeed, status code:", response.status);
+                    const res = await this.performWhishlistQuery(newOffset);
+                    if (res.status !== 200) {
+                        console.error("Whistlist query did not succeed, status code:", res.status);
                     } else {
-                        this.checkItems(response.body?.data?.wishlistItems?.items);
+                        this.checkItems(res.body?.data?.wishlistItems?.items);
                     }
                 }
             }
@@ -103,7 +117,7 @@ export class StockChecker {
         offset = 0
     ): Promise<{
         status: number;
-        body: WishlistReponse;
+        body: WishlistReponse | null;
     }> {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         return await this.page!.evaluate(
@@ -141,13 +155,18 @@ export class StockChecker {
                         },
                     }),
                     mode: "cors",
-                }).then((res) => res.json().then((data) => ({ status: res.status, body: data }))),
+                }).then((res) =>
+                    res
+                        .json()
+                        .then((data) => ({ status: res.status, body: data }))
+                        .catch((_) => ({ status: res.status, body: null }))
+                ),
             this.store,
             offset
         );
     }
 
-    private checkItems(items: Item[]): void {
+    private checkItems(items: Item[] | undefined): void {
         if (items) {
             for (const item of items) {
                 if (item?.product?.onlineStatus || item?.availability.delivery.availabilityType !== "NONE") {

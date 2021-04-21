@@ -12,6 +12,7 @@ import { StockChecker } from "./stock-checker";
 const SLEEP_TIME = 2000;
 
 (async function () {
+    const args = process.argv.slice(2);
     const config: ConfigModel = await loadConfig();
     let storeConfig: StoreConfiguration;
     const storePrompt = await prompt({
@@ -38,7 +39,7 @@ const SLEEP_TIME = 2000;
             throw new Error("Invalid store chosen!");
     }
     const stockChecker = new StockChecker(store, storeConfig.webhook_url);
-    await stockChecker.logIn(storeConfig.email, storeConfig.password);
+    await stockChecker.logIn(storeConfig.email, storeConfig.password, !args.includes("--no-headless"));
     console.log("Login succeeded, let's hunt!");
 
     // eslint-disable-next-line no-constant-condition

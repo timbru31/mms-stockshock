@@ -44,6 +44,16 @@ npm start
 and follow the terminal instructions.  
 Happy hunting! 🏹⚡️
 
+## Turn off headless mode
+
+Per default the Chromium behind the scenes is run in headless mode. If the login fails due to CloudFlare or MM/S bot protection, please launch it as
+
+```sh
+npm start -- --no-headless
+```
+
+Do **not** close the browser window. You can minimize it though.
+
 ---
 
 Built by (c) Tim Brust and contributors. Released under the GPL v3 license.
