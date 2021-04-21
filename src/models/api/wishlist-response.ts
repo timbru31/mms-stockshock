@@ -7,4 +7,5 @@ export interface WishlistReponse {
             items: Item[];
         };
     };
+    errors: unknown;
 }

@@ -31,7 +31,7 @@ export class StockChecker {
         await this.page.goto(`${this.store.baseUrl}/404`, {
             waitUntil: "networkidle0",
         });
-        const status = await this.page.evaluate(
+        const res = await this.page.evaluate(
             async (store: Store, email: string, password: string) =>
                 await fetch(`${store.baseUrl}/api/v1/graphql`, {
                     credentials: "include",
@@ -58,12 +58,12 @@ export class StockChecker {
                     }),
                     method: "POST",
                     mode: "cors",
-                }).then((res) => res.status),
+                }).then((res) => res.json().then((data) => ({ status: res.status, body: data }))),
             this.store,
             email,
             password
         );
-        if (status !== 200) {
+        if (res.status !== 200 || res.body?.errors) {
             await prompt({
                 name: "noop",
                 message: "Login did not succeed, please check browser for captcha and log in manually. Then hit enter...",
@@ -78,8 +78,8 @@ export class StockChecker {
         }
 
         const response = await this.performWhishlistQuery();
-        if (response.status !== 200) {
-            console.error("Whistlist query did not succeed, status code:", response.status);
+        if (response.status !== 200 || response.body?.errors) {
+            console.error("Whistlist query did not succeed, status code:", response.status, response.body?.errors);
         } else {
             const totalItems = response.body?.data?.wishlistItems?.total;
             this.checkItems(response.body?.data?.wishlistItems?.items);
@@ -148,9 +148,11 @@ export class StockChecker {
     }
 
     private checkItems(items: Item[]): void {
-        for (const item of items) {
-            if (item?.product?.onlineStatus || item?.availability.delivery.availabilityType !== "NONE") {
-                this.notify(item);
+        if (items) {
+            for (const item of items) {
+                if (item?.product?.onlineStatus || item?.availability.delivery.availabilityType !== "NONE") {
+                    this.notify(item);
+                }
             }
         }
     }
