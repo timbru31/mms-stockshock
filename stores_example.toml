@@ -1,0 +1,14 @@
+[saturn]
+email = ""
+password = ""
+webhook_url = ""
+
+[mmde]
+email = ""
+password = ""
+webhook_url = ""
+
+[mmat]
+email = ""
+password = ""
+webhook_url = ""

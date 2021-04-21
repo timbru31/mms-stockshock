@@ -1,0 +1,39 @@
+{
+    "name": "stockshock",
+    "version": "1.0.0",
+    "private": true,
+    "description": "A simple bot for MediaMarkt and Saturn to check if items on the wishlist are available",
+    "main": "index.js",
+    "scripts": {
+        "start": "ts-node src/index.ts",
+        "test": "eslint . --ext .ts",
+        "prepare": "husky install"
+    },
+    "repository": "timbru31/mms-stockshock",
+    "author": "Tim Brust <github@timbrust.de>",
+    "license": " GPL-3.0-or-later",
+    "bugs": "https://github.com/timbru31/mms-stockshock/issues",
+    "homepage": "https://github.com/timbru31/mms-stockshock#readme",
+    "engines": {
+        "node": ">=14"
+    },
+    "dependencies": {
+        "@slack/webhook": "^6.0.0",
+        "inquirer": "^8.0.0",
+        "puppeteer": "^8.0.0",
+        "toml": "^3.0.0"
+    },
+    "devDependencies": {
+        "@types/inquirer": "^7.3.1",
+        "@types/puppeteer": "^5.4.3",
+        "@typescript-eslint/eslint-plugin": "^4.22.0",
+        "@typescript-eslint/parser": "^4.22.0",
+        "eslint": "^7.24.0",
+        "husky": "^6.0.0",
+        "lint-staged": "^10.5.4",
+        "prettier": "^2.2.1",
+        "ts-node": "^9.1.1",
+        "typescript": "^4.2.4"
+    },
+    "funding": "https://github.com/sponsors/timbru31"
+}
