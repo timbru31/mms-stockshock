@@ -33,7 +33,7 @@ Here is an example how the message looks like:
 
 ![Discord Notification](docs/stockshock-discord-notification.png)
 
-# Run the bot
+## Run the bot
 
 Run
 
@@ -44,7 +44,7 @@ npm start
 and follow the terminal instructions.  
 Happy hunting! 🏹⚡️
 
-## Turn off headless mode
+### Turn off headless mode
 
 Per default the Chromium behind the scenes is run in headless mode. If the login fails due to CloudFlare or MM/S bot protection, please launch it as
 
