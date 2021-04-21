@@ -9,7 +9,8 @@ import { Store } from "./models/stores/store";
 export class StockChecker {
     // This is set by MM/S and a fixed constant
     MAX_ITEMS_PER_QUERY = 24;
-    SLEEP_TIME = 2000;
+    MIN_SLEEP_TIME = 500;
+    MAX_SLEEP_TIME = 2000;
 
     private loggedIn = false;
     private readonly store: Store;
@@ -102,7 +103,9 @@ export class StockChecker {
             if (totalItems > this.MAX_ITEMS_PER_QUERY) {
                 const remainingQueryCalls = Math.ceil((totalItems - this.MAX_ITEMS_PER_QUERY) / this.MAX_ITEMS_PER_QUERY);
                 for (let additionalQueryCalls = 1; additionalQueryCalls <= remainingQueryCalls; additionalQueryCalls += 1) {
-                    await new Promise((resolve) => setTimeout(resolve, this.SLEEP_TIME));
+                    await new Promise((resolve) =>
+                        setTimeout(resolve, Math.random() * (this.MAX_SLEEP_TIME - this.MIN_SLEEP_TIME) + this.MIN_SLEEP_TIME)
+                    );
                     const newOffset = additionalQueryCalls * this.MAX_ITEMS_PER_QUERY;
                     const res = await this.performWhishlistQuery(newOffset);
                     if (res.status !== 200) {

@@ -9,7 +9,8 @@ import { Saturn } from "./models/stores/saturn";
 import { Store } from "./models/stores/store";
 import { StockChecker } from "./stock-checker";
 
-const SLEEP_TIME = 2000;
+const MIN_SLEEP_TIME = 500;
+const MAX_SLEEP_TIME = 2000;
 
 (async function () {
     const args = process.argv.slice(2);
@@ -45,7 +46,7 @@ const SLEEP_TIME = 2000;
     // eslint-disable-next-line no-constant-condition
     while (true) {
         await stockChecker.checkStock();
-        await new Promise((resolve) => setTimeout(resolve, SLEEP_TIME));
+        await new Promise((resolve) => setTimeout(resolve, Math.random() * (MAX_SLEEP_TIME - MIN_SLEEP_TIME) + MIN_SLEEP_TIME));
     }
 })();
 
