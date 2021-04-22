@@ -66,7 +66,8 @@ export class StockChecker {
                     res
                         .json()
                         .then((data) => ({ status: res.status, body: data }))
-                        .catch((_) => ({ status: res.status, body: null }))
+                        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                        .catch((_) => ({ status: res.status, body: null, retryAfter: res.headers.get("Retry-After") }))
                 ),
             this.store,
             email,
@@ -92,7 +93,7 @@ export class StockChecker {
 
         const res = await this.performWhishlistQuery();
         if (res.status !== 200 || !res.body || res.body?.errors) {
-            console.error("Whistlist query did not succeed, status code:", res.status, res.body?.errors);
+            await this.handleWishlistError(res);
         } else {
             const totalItems = res.body?.data?.wishlistItems?.total;
             if (!totalItems) {
@@ -103,13 +104,11 @@ export class StockChecker {
             if (totalItems > this.MAX_ITEMS_PER_QUERY) {
                 const remainingQueryCalls = Math.ceil((totalItems - this.MAX_ITEMS_PER_QUERY) / this.MAX_ITEMS_PER_QUERY);
                 for (let additionalQueryCalls = 1; additionalQueryCalls <= remainingQueryCalls; additionalQueryCalls += 1) {
-                    await new Promise((resolve) =>
-                        setTimeout(resolve, Math.random() * (this.MAX_SLEEP_TIME - this.MIN_SLEEP_TIME) + this.MIN_SLEEP_TIME)
-                    );
+                    await this.sleep();
                     const newOffset = additionalQueryCalls * this.MAX_ITEMS_PER_QUERY;
                     const res = await this.performWhishlistQuery(newOffset);
-                    if (res.status !== 200) {
-                        console.error("Whistlist query did not succeed, status code:", res.status);
+                    if (res.status !== 200 || !res.body || res.body?.errors) {
+                        await this.handleWishlistError(res);
                     } else {
                         this.checkItems(res.body?.data?.wishlistItems?.items);
                     }
@@ -118,11 +117,29 @@ export class StockChecker {
         }
     }
 
+    private async handleWishlistError(res: { status: number; body: WishlistReponse | null; retryAfterHeader: string | null }) {
+        console.error("Whistlist query did not succeed, status code:", res.status, res.body?.errors);
+        if (res.status === 429 && res?.retryAfterHeader) {
+            const cooldown = Number(res.retryAfterHeader);
+            console.error(`Too many requests, we need to cooldown and sleep ${cooldown} seconds`);
+            await this.sleep(cooldown * 1000);
+        }
+    }
+
+    private async sleep(sleepTime?: number) {
+        let randomSleepTime: number;
+        if (!sleepTime) {
+            randomSleepTime = Math.random() * (this.MAX_SLEEP_TIME - this.MIN_SLEEP_TIME) + this.MIN_SLEEP_TIME;
+        }
+        await new Promise((resolve) => setTimeout(resolve, sleepTime || randomSleepTime));
+    }
+
     private async performWhishlistQuery(
         offset = 0
     ): Promise<{
         status: number;
         body: WishlistReponse | null;
+        retryAfterHeader: string | null;
     }> {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         return await this.page!.evaluate(
@@ -163,8 +180,9 @@ export class StockChecker {
                 }).then((res) =>
                     res
                         .json()
-                        .then((data) => ({ status: res.status, body: data }))
-                        .catch((_) => ({ status: res.status, body: null }))
+                        .then((data) => ({ status: res.status, body: data, retryAfterHeader: null }))
+                        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                        .catch((_) => ({ status: res.status, body: null, retryAfterHeader: res.headers.get("Retry-After") }))
                 ),
             this.store,
             offset
@@ -174,7 +192,7 @@ export class StockChecker {
     private checkItems(items: Item[] | undefined): void {
         if (items) {
             for (const item of items) {
-                if (item?.product?.onlineStatus || item?.availability.delivery.availabilityType !== "NONE") {
+                if (item?.availability.delivery.availabilityType !== "NONE") {
                     this.notify(item);
                 }
             }
