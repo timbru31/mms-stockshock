@@ -20,7 +20,7 @@
     "dependencies": {
         "@slack/webhook": "^6.0.0",
         "inquirer": "^8.0.0",
-        "puppeteer": "^8.0.0",
+        "puppeteer": "^9.0.0",
         "toml": "^3.0.0"
     },
     "devDependencies": {
