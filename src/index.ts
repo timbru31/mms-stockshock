@@ -10,7 +10,7 @@ import { Store } from "./models/stores/store";
 import { StockChecker } from "./stock-checker";
 
 const MIN_SLEEP_TIME = 500;
-const MAX_SLEEP_TIME = 2000;
+const MAX_SLEEP_TIME = 3000;
 
 (async function () {
     const args = process.argv.slice(2);

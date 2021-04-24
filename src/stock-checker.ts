@@ -10,7 +10,7 @@ export class StockChecker {
     // This is set by MM/S and a fixed constant
     MAX_ITEMS_PER_QUERY = 24;
     MIN_SLEEP_TIME = 500;
-    MAX_SLEEP_TIME = 2000;
+    MAX_SLEEP_TIME = 3000;
 
     private loggedIn = false;
     private readonly store: Store;
@@ -192,7 +192,7 @@ export class StockChecker {
     private checkItems(items: Item[] | undefined): void {
         if (items) {
             for (const item of items) {
-                if (item?.availability.delivery.availabilityType !== "NONE") {
+                if (item?.availability.delivery.availabilityType !== "NONE" && item?.availability.delivery?.quantity > 0) {
                     this.notify(item);
                 }
             }
