@@ -14,7 +14,8 @@
         "noFallthroughCasesInSwitch": true,
         "moduleResolution": "node",
         "emitDecoratorMetadata": true,
-        "experimentalDecorators": true
+        "experimentalDecorators": true,
+        "esModuleInterop": true
     },
     "include": ["src/"],
     "compileOnSave": false

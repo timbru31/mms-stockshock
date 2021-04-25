@@ -1,6 +1,9 @@
 import { IncomingWebhook } from "@slack/webhook";
 import { prompt } from "inquirer";
-import { launch, Page } from "puppeteer";
+import { Page, PuppeteerNodeLaunchOptions } from "puppeteer";
+import puppeteer from "puppeteer-extra";
+import StealthPlugin from "puppeteer-extra-plugin-stealth";
+import UserAgent from "user-agents";
 
 import { Item } from "./models/api/item";
 import { WishlistReponse } from "./models/api/wishlist-response";
@@ -29,8 +32,13 @@ export class StockChecker {
             throw new Error("Already logged in");
         }
 
-        const browser = await launch({ headless });
+        puppeteer.use(StealthPlugin());
+        const browser = await puppeteer.launch(({ headless, defaultViewport: null } as unknown) as PuppeteerNodeLaunchOptions);
+
         this.page = await browser.newPage();
+        this.page.setUserAgent(new UserAgent().toString());
+        await this.patchHairlineDetection();
+
         // This is the fastest site to render without any JS or CSS bloat
         await this.page.goto(`${this.store.baseUrl}/404`, {
             waitUntil: "networkidle0",
@@ -115,6 +123,25 @@ export class StockChecker {
                 }
             }
         }
+    }
+
+    // See https://intoli.com/blog/making-chrome-headless-undetectable/
+    private async patchHairlineDetection() {
+        await this.page?.evaluateOnNewDocument(() => {
+            // store the existing descriptor
+            const elementDescriptor = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "offsetHeight");
+
+            // redefine the property with a patched descriptor
+            Object.defineProperty(HTMLDivElement.prototype, "offsetHeight", {
+                ...elementDescriptor,
+                get: function () {
+                    if (this.id === "modernizr") {
+                        return 1;
+                    }
+                    return elementDescriptor?.get?.apply(this);
+                },
+            });
+        });
     }
 
     private async handleWishlistError(res: { status: number; body: WishlistReponse | null; retryAfterHeader: string | null }) {

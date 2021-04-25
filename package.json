@@ -21,11 +21,15 @@
         "@slack/webhook": "^6.0.0",
         "inquirer": "^8.0.0",
         "puppeteer": "^9.0.0",
-        "toml": "^3.0.0"
+        "puppeteer-extra": "^3.1.18",
+        "puppeteer-extra-plugin-stealth": "^2.7.7",
+        "toml": "^3.0.0",
+        "user-agents": "^1.0.633"
     },
     "devDependencies": {
         "@types/inquirer": "^7.3.1",
         "@types/puppeteer": "^5.4.3",
+        "@types/user-agents": "^1.0.1",
         "@typescript-eslint/eslint-plugin": "^4.22.0",
         "@typescript-eslint/parser": "^4.22.0",
         "eslint": "^7.24.0",
