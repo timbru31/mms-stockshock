@@ -231,11 +231,16 @@ export class StockChecker {
     }
 
     private notify(item: Item) {
-        const message = `Item available ${item.product.title} for ${item.price.price} ${item.price.currency}! Go check it out: ${this.store.baseUrl}${item.product.url}`;
+        let message;
+        if (item.product.onlineStatus) {
+            message = `Item **available**: ${item.product.title} for ${item.price.price} ${item.price.currency}! Go check it out: ${this.store.baseUrl}${item.product.url}`;
+        } else {
+            message = `Item **MIGHT DROP soon, check your cart:** ${item.product.title} for ${item.price.price} ${item.price.currency}! Go check it out: ${this.store.baseUrl}${item.product.url}`;
+        }
         if (this.webhook) {
             this.webhook.send({
                 text: message,
-                username: "Stock Shock ⚡️",
+                username: `Stock Shock ${item.product.onlineStatus ? "🧚" : "⚡️"}`,
                 attachments: [
                     {
                         title_link: `${this.store.baseUrl}${item.product.url}`,
