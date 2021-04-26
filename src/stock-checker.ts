@@ -4,6 +4,7 @@ import { Page, PuppeteerNodeLaunchOptions } from "puppeteer";
 import puppeteer from "puppeteer-extra";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import UserAgent from "user-agents";
+import { Logger } from "winston";
 
 import { Item } from "./models/api/item";
 import { WishlistReponse } from "./models/api/wishlist-response";
@@ -19,12 +20,14 @@ export class StockChecker {
     private readonly store: Store;
     private page: Page | undefined;
     private readonly webhook: IncomingWebhook | undefined;
+    private readonly logger: Logger;
 
-    constructor(store: Store, webhookUrl?: string) {
+    constructor(store: Store, logger: Logger, webhookUrl?: string) {
         if (webhookUrl) {
             this.webhook = new IncomingWebhook(webhookUrl);
         }
         this.store = store;
+        this.logger = logger;
     }
 
     async logIn(email: string, password: string, headless = true): Promise<void> {
@@ -83,7 +86,7 @@ export class StockChecker {
         );
         if (res.status !== 200 || !res.body || res.body?.errors) {
             if (headless) {
-                console.error("Login did not succeed, please restart with '--no-headless' option");
+                this.logger.error("Login did not succeed, please restart with '--no-headless' option");
                 process.exit(1);
             }
             await prompt({
@@ -145,10 +148,11 @@ export class StockChecker {
     }
 
     private async handleWishlistError(res: { status: number; body: WishlistReponse | null; retryAfterHeader: string | null }) {
-        console.error("Whistlist query did not succeed, status code:", res.status, res.body?.errors);
+        this.logger.error(`Whistlist query did not succeed, status code: ${res.status}`);
+        this.logger.error(res.body?.errors);
         if (res.status === 429 && res?.retryAfterHeader) {
             const cooldown = Number(res.retryAfterHeader);
-            console.error(`Too many requests, we need to cooldown and sleep ${cooldown} seconds`);
+            this.logger.error(`Too many requests, we need to cooldown and sleep ${cooldown} seconds`);
             await this.sleep(cooldown * 1000);
         }
     }
@@ -240,7 +244,7 @@ export class StockChecker {
                 ],
             });
         }
-        console.log(message);
+        this.logger.info(message);
         this.beep();
         setTimeout(() => this.beep(), 250);
         setTimeout(() => this.beep(), 500);

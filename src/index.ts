@@ -1,6 +1,8 @@
+import colors from "colors/safe";
 import { readFile } from "fs/promises";
 import { prompt } from "inquirer";
 import { parse } from "toml";
+import { createLogger, format, Logger, transports } from "winston";
 
 import { ConfigModel, StoreConfiguration } from "./models/stores/config-model";
 import { MediaMarktAustria } from "./models/stores/media-markt-austria";
@@ -12,9 +14,52 @@ import { StockChecker } from "./stock-checker";
 const MIN_SLEEP_TIME = 500;
 const MAX_SLEEP_TIME = 3000;
 
+const getEmojiForLevel = (level: string) => {
+    switch (colors.stripColors(level)) {
+        case "info":
+            return "🧚";
+        case "error":
+        default:
+            return "⚡️";
+    }
+};
+
+const customLogFormat = format.printf((info) => {
+    return `${info.timestamp} [${getEmojiForLevel(info.level)}] ${info.level}: ${info.message} `;
+});
+
 (async function () {
+    const logger = createLogger({
+        transports: [
+            new transports.File({
+                filename: "stockshock.log",
+                format: format.combine(
+                    format.timestamp({
+                        format: "YYYY-MM-DD HH:mm:ss",
+                    }),
+                    format.errors({ stack: true }),
+                    format.splat(),
+                    customLogFormat
+                ),
+            }),
+            new transports.Console({
+                format: format.combine(
+                    format.colorize(),
+                    format.timestamp({
+                        format: "YYYY-MM-DD HH:mm:ss",
+                    }),
+                    format.errors({ stack: true }),
+                    format.splat(),
+                    customLogFormat
+                ),
+            }),
+        ],
+    });
     const args = process.argv.slice(2);
-    const config: ConfigModel = await loadConfig();
+    const config = await loadConfig(logger);
+    if (!config) {
+        return;
+    }
     let storeConfig: StoreConfiguration;
     const storePrompt = await prompt({
         type: "list",
@@ -39,9 +84,9 @@ const MAX_SLEEP_TIME = 3000;
         default:
             throw new Error("Invalid store chosen!");
     }
-    const stockChecker = new StockChecker(store, storeConfig.webhook_url);
+    const stockChecker = new StockChecker(store, logger, storeConfig.webhook_url);
     await stockChecker.logIn(storeConfig.email, storeConfig.password, !args.includes("--no-headless"));
-    console.log("Login succeeded, let's hunt!");
+    logger.info("Login succeeded, let's hunt!");
 
     // eslint-disable-next-line no-constant-condition
     while (true) {
@@ -50,14 +95,14 @@ const MAX_SLEEP_TIME = 3000;
     }
 })();
 
-async function loadConfig() {
+async function loadConfig(logger: Logger) {
     const configFile = await readFile("stores.toml", "utf-8");
-    let config: ConfigModel;
+    let config: ConfigModel | null = null;
     try {
         config = parse(configFile);
     } catch (e) {
-        console.error("Unable to parse config file!", e);
-        process.exit(1);
+        logger.error("Uh oh! Unable to parse the config file!");
+        logger.error(e);
     }
     return config;
 }

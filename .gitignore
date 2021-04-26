@@ -4,3 +4,4 @@ dist/
 stores.toml
 yarn.lock
 npm-debug.log
+stockshock.log
