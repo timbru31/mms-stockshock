@@ -24,7 +24,7 @@
         "puppeteer-extra": "^3.1.18",
         "puppeteer-extra-plugin-stealth": "^2.7.8",
         "toml": "^3.0.0",
-        "user-agents": "^1.0.634",
+        "user-agents": "^1.0.635",
         "winston": "^3.3.3"
     },
     "devDependencies": {
