@@ -8,6 +8,7 @@ import { Logger } from "winston";
 
 import { Item } from "./models/api/item";
 import { WishlistReponse } from "./models/api/wishlist-response";
+import { NotificationCooldown } from "./models/cooldown";
 import { Store } from "./models/stores/store";
 
 export class StockChecker {
@@ -19,6 +20,7 @@ export class StockChecker {
     private page: Page | undefined;
     private readonly webhook: IncomingWebhook | undefined;
     private readonly logger: Logger;
+    private readonly cooldowns = new Map<string, NotificationCooldown>();
 
     constructor(store: Store, logger: Logger, webhookUrl?: string) {
         if (webhookUrl) {
@@ -126,6 +128,15 @@ export class StockChecker {
         }
     }
 
+    cleanupCooldowns(): void {
+        const now = new Date();
+        for (const [id, cooldown] of this.cooldowns) {
+            if (now > cooldown.endTime) {
+                this.cooldowns.delete(id);
+            }
+        }
+    }
+
     // See https://intoli.com/blog/making-chrome-headless-undetectable/
     private async patchHairlineDetection() {
         await this.page?.evaluateOnNewDocument(() => {
@@ -223,8 +234,24 @@ export class StockChecker {
     private checkItems(items: Item[] | undefined): void {
         if (items) {
             for (const item of items) {
-                if (item?.availability.delivery.availabilityType !== "NONE" && item?.availability.delivery?.quantity > 0) {
-                    this.notify(item);
+                if (!item) {
+                    continue;
+                }
+                if (item?.availability?.delivery?.availabilityType !== "NONE" && item?.availability?.delivery?.quantity > 0) {
+                    const itemId = item?.product?.id;
+                    if (!itemId) {
+                        continue;
+                    }
+                    const partialAlert = item?.product?.onlineStatus || true;
+
+                    // Delete the cooldown in case the stock changes to really available
+                    if (this.cooldowns.get(itemId)?.partialAlert && !partialAlert) {
+                        this.cooldowns.delete(itemId);
+                    }
+
+                    if (!this.cooldowns.has(itemId)) {
+                        this.notify(item);
+                    }
                 }
             }
         }
@@ -232,15 +259,16 @@ export class StockChecker {
 
     private notify(item: Item) {
         let message;
-        if (item.product.onlineStatus) {
-            message = `Item **available**: ${item.product.title} for ${item.price.price} ${item.price.currency}! Go check it out: ${this.store.baseUrl}${item.product.url}`;
+        const fullAlert = item?.product?.onlineStatus;
+        if (fullAlert) {
+            message = `Item **available**: ${item?.product?.title} for ${item?.price?.price} ${item?.price?.currency}! Go check it out: ${this.store.baseUrl}${item?.product?.url}`;
         } else {
-            message = `Item **MIGHT DROP soon, check your cart if you have it parked:** ${item.product.title} for ${item.price.price} ${item.price.currency}! Go check it out: ${this.store.baseUrl}${item.product.url}`;
+            message = `Item **MIGHT DROP soon, check your cart if you have it parked:** ${item?.product?.title} for ${item?.price?.price} ${item?.price?.currency}! Go check it out: ${this.store.baseUrl}${item?.product?.url}`;
         }
         if (this.webhook) {
             this.webhook.send({
                 text: message,
-                username: `Stock Shock ${item.product.onlineStatus ? "🧚" : "⚡️"}`,
+                username: `Stock Shock ${fullAlert ? "🧚" : "⚡️"}`,
                 attachments: [
                     {
                         title_link: `${this.store.baseUrl}${item.product.url}`,
@@ -253,6 +281,18 @@ export class StockChecker {
         this.beep();
         setTimeout(() => this.beep(), 250);
         setTimeout(() => this.beep(), 500);
+        this.addToCooldownMap(fullAlert, item);
+    }
+
+    private addToCooldownMap(fullAlert: boolean, item: Item) {
+        const now = new Date();
+        const endTime = new Date(now);
+        endTime.setMinutes(now.getMinutes() + (fullAlert ? 1 : 3));
+        this.cooldowns.set(item?.product?.id, {
+            id: item?.product?.id,
+            partialAlert: !fullAlert,
+            endTime,
+        });
     }
 
     private beep() {

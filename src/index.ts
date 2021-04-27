@@ -90,6 +90,7 @@ const customLogFormat = format.printf((info) => {
     while (true) {
         await stockChecker.checkStock();
         await new Promise((resolve) => setTimeout(resolve, store.getSleepTime()));
+        stockChecker.cleanupCooldowns();
     }
 })();
 
