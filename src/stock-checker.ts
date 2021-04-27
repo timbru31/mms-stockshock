@@ -237,7 +237,7 @@ export class StockChecker {
                 if (!item) {
                     continue;
                 }
-                if (item?.availability?.delivery?.availabilityType !== "NONE" && item?.availability?.delivery?.quantity > 0) {
+                if (item?.availability?.delivery?.availabilityType == "IN_WAREHOUSE" && item?.availability?.delivery?.quantity > 0) {
                     const itemId = item?.product?.id;
                     if (!itemId) {
                         continue;

@@ -12,7 +12,7 @@ export interface Item {
     };
     availability: {
         delivery: {
-            availabilityType: "IN_WAREHOUSE" | "NONE";
+            availabilityType: "IN_WAREHOUSE" | "LONG_TAIL" | "NONE";
             quantity: number;
             earliest: Date | null;
             latest: Date | null;
