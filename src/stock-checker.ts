@@ -149,7 +149,9 @@ export class StockChecker {
 
     private async handleWishlistError(res: { status: number; body: WishlistReponse | null; retryAfterHeader: string | null }) {
         this.logger.error(`Whistlist query did not succeed, status code: ${res.status}`);
-        this.logger.error(res.body?.errors);
+        if (res.body?.errors) {
+            this.logger.error("Error: %O", res.body.errors);
+        }
         if (res.status === 429 && res?.retryAfterHeader) {
             const cooldown = Number(res.retryAfterHeader);
             this.logger.error(`Too many requests, we need to cooldown and sleep ${cooldown} seconds`);
