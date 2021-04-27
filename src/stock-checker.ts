@@ -53,7 +53,7 @@ export class StockChecker {
                     headers: {
                         "content-type": "application/json",
                         "apollographql-client-name": "pwa-client",
-                        "apollographql-client-version": "7.6.0",
+                        "apollographql-client-version": "7.8.0",
                         "x-operation": "LoginProfileUser",
                         "x-cacheable": "false",
                         "X-MMS-Language": "de",
@@ -191,7 +191,7 @@ export class StockChecker {
                     headers: {
                         "content-type": "application/json",
                         "apollographql-client-name": "pwa-client",
-                        "apollographql-client-version": "7.6.0",
+                        "apollographql-client-version": "7.8.0",
                         "x-operation": "GetUser",
                         "x-cacheable": "false",
                         "X-MMS-Language": "de",
