@@ -3,5 +3,7 @@ export interface Store {
     countryCode: string;
     salesLine: string;
 
-    [key: string]: string;
+    getSleepTime(): number;
+
+    [key: string]: string | number | (() => number);
 }

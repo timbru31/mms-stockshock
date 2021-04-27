@@ -1,9 +1,11 @@
+import { CommonStore } from "./abstract-store";
 import { Store } from "./store";
 
-export class Saturn implements Store {
-    baseUrl = "https://www.saturn.de";
-    countryCode = "DE";
-    salesLine = "Saturn";
+export class Saturn extends CommonStore implements Store {
+    MIN_SLEEP_TIME = 750;
+    MAX_SLEEP_TIME = 5500;
 
-    [key: string]: string;
+    readonly baseUrl = "https://www.saturn.de";
+    readonly countryCode = "DE";
+    readonly salesLine = "Saturn";
 }

@@ -1,9 +1,8 @@
+import { CommonStore } from "./abstract-store";
 import { Store } from "./store";
 
-export class MediaMarktAustria implements Store {
-    baseUrl = "https://www.mediamarkt.at";
-    countryCode = "AT";
-    salesLine = "Media";
-
-    [key: string]: string;
+export class MediaMarktAustria extends CommonStore implements Store {
+    readonly baseUrl = "https://www.mediamarkt.at";
+    readonly countryCode = "AT";
+    readonly salesLine = "Media";
 }

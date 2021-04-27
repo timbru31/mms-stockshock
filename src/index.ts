@@ -11,9 +11,6 @@ import { Saturn } from "./models/stores/saturn";
 import { Store } from "./models/stores/store";
 import { StockChecker } from "./stock-checker";
 
-const MIN_SLEEP_TIME = 500;
-const MAX_SLEEP_TIME = 3000;
-
 const getEmojiForLevel = (level: string) => {
     switch (colors.stripColors(level)) {
         case "info":
@@ -55,6 +52,7 @@ const customLogFormat = format.printf((info) => {
             }),
         ],
     });
+
     const args = process.argv.slice(2);
     const config = await loadConfig(logger);
     if (!config) {
@@ -91,7 +89,7 @@ const customLogFormat = format.printf((info) => {
     // eslint-disable-next-line no-constant-condition
     while (true) {
         await stockChecker.checkStock();
-        await new Promise((resolve) => setTimeout(resolve, Math.random() * (MAX_SLEEP_TIME - MIN_SLEEP_TIME) + MIN_SLEEP_TIME));
+        await new Promise((resolve) => setTimeout(resolve, store.getSleepTime()));
     }
 })();
 

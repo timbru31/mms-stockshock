@@ -1,6 +1,6 @@
 import { IncomingWebhook } from "@slack/webhook";
 import { prompt } from "inquirer";
-import { Page, PuppeteerNodeLaunchOptions } from "puppeteer";
+import { Page, PuppeteerNodeLaunchOptions, SerializableOrJSHandle } from "puppeteer";
 import puppeteer from "puppeteer-extra";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import UserAgent from "user-agents";
@@ -13,8 +13,6 @@ import { Store } from "./models/stores/store";
 export class StockChecker {
     // This is set by MM/S and a fixed constant
     MAX_ITEMS_PER_QUERY = 24;
-    MIN_SLEEP_TIME = 500;
-    MAX_SLEEP_TIME = 3000;
 
     private loggedIn = false;
     private readonly store: Store;
@@ -80,7 +78,7 @@ export class StockChecker {
                         // eslint-disable-next-line @typescript-eslint/no-unused-vars
                         .catch((_) => ({ status: res.status, body: null, retryAfter: res.headers.get("Retry-After") }))
                 ),
-            this.store,
+            this.store as SerializableOrJSHandle,
             email,
             password
         );
@@ -162,7 +160,7 @@ export class StockChecker {
     private async sleep(sleepTime?: number) {
         let randomSleepTime: number;
         if (!sleepTime) {
-            randomSleepTime = Math.random() * (this.MAX_SLEEP_TIME - this.MIN_SLEEP_TIME) + this.MIN_SLEEP_TIME;
+            randomSleepTime = this.store.getSleepTime();
         }
         await new Promise((resolve) => setTimeout(resolve, sleepTime || randomSleepTime));
     }
@@ -217,7 +215,7 @@ export class StockChecker {
                         // eslint-disable-next-line @typescript-eslint/no-unused-vars
                         .catch((_) => ({ status: res.status, body: null, retryAfterHeader: res.headers.get("Retry-After") }))
                 ),
-            this.store,
+            this.store as SerializableOrJSHandle,
             offset
         );
     }
