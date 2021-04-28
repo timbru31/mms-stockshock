@@ -288,7 +288,7 @@ export class StockChecker {
     private addToCooldownMap(fullAlert: boolean, item: Item) {
         const now = new Date();
         const endTime = new Date(now);
-        endTime.setMinutes(now.getMinutes() + (fullAlert ? 1 : 3));
+        endTime.setMinutes(now.getMinutes() + (fullAlert ? 1 : 5));
         this.cooldowns.set(item?.product?.id, {
             id: item?.product?.id,
             partialAlert: !fullAlert,
