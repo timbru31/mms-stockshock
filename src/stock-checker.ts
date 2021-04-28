@@ -238,7 +238,11 @@ export class StockChecker {
                 if (!item) {
                     continue;
                 }
-                if (item?.availability?.delivery?.availabilityType == "IN_WAREHOUSE" && item?.availability?.delivery?.quantity > 0) {
+                if (
+                    item?.availability?.delivery?.quantity > 0 &&
+                    (item?.availability?.delivery?.availabilityType == "IN_WAREHOUSE" ||
+                        (item?.availability?.delivery?.availabilityType == "LONG_TAIL" && item?.product?.onlineStatus))
+                ) {
                     const itemId = item?.product?.id;
                     if (!itemId) {
                         continue;
