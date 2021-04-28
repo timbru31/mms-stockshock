@@ -279,9 +279,11 @@ export class StockChecker {
             });
         }
         this.logger.info(message);
-        this.beep();
-        setTimeout(() => this.beep(), 250);
-        setTimeout(() => this.beep(), 500);
+        if (fullAlert) {
+            this.beep();
+            setTimeout(() => this.beep(), 250);
+            setTimeout(() => this.beep(), 500);
+        }
         this.addToCooldownMap(fullAlert, item);
     }
 
