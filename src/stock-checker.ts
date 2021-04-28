@@ -164,6 +164,7 @@ export class StockChecker {
         if (res.status === 429 && res?.retryAfterHeader) {
             const cooldown = Number(res.retryAfterHeader);
             this.logger.error(`Too many requests, we need to cooldown and sleep ${cooldown} seconds`);
+            this.notifyRateLimit(cooldown);
             await this.sleep(cooldown * 1000);
         }
     }
@@ -297,5 +298,15 @@ export class StockChecker {
 
     private beep() {
         process.stdout.write("\x07");
+    }
+
+    private notifyRateLimit(seconds: number) {
+        if (this.webhook && seconds > 120) {
+            const message = `Too many requests, we need to pause ${seconds} seconds... 😴`;
+            this.webhook.send({
+                text: message,
+                username: `Stock Shock 💤`,
+            });
+        }
     }
 }
