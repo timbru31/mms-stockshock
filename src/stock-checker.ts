@@ -262,9 +262,9 @@ export class StockChecker {
         let message;
         const fullAlert = item?.product?.onlineStatus;
         if (fullAlert) {
-            message = `Item **available**: ${item?.product?.title} for ${item?.price?.price} ${item?.price?.currency}! Go check it out: ${this.store.baseUrl}${item?.product?.url}`;
+            message = `✅ Item **available**: ${item?.product?.title} for ${item?.price?.price} ${item?.price?.currency}! Go check it out: ${this.store.baseUrl}${item?.product?.url}`;
         } else {
-            message = `Item **MIGHT DROP soon, check your cart if you have it parked:** ${item?.product?.title} for ${item?.price?.price} ${item?.price?.currency}! Go check it out: ${this.store.baseUrl}${item?.product?.url}`;
+            message = `⚠ Item for **cart parker**: ${item?.product?.title} for ${item?.price?.price} ${item?.price?.currency}! Go check it out: ${this.store.baseUrl}${item?.product?.url}`;
         }
         if (this.webhook) {
             this.webhook.send({
