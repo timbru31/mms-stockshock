@@ -7,5 +7,6 @@ export interface ConfigModel {
 export interface StoreConfiguration {
     email: string;
     password: string;
-    webhook_url: string;
+    webhook_url?: string;
+    webhook_role_ping?: string;
 }

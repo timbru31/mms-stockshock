@@ -2,13 +2,16 @@
 email = ""
 password = ""
 webhook_url = ""
+webhook_role_ping = ""
 
 [mmde]
 email = ""
 password = ""
 webhook_url = ""
+webhook_role_ping = ""
 
 [mmat]
 email = ""
 password = ""
 webhook_url = ""
+webhook_role_ping = ""

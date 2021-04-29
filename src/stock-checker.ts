@@ -9,6 +9,7 @@ import { Logger } from "winston";
 import { Item } from "./models/api/item";
 import { WishlistReponse } from "./models/api/wishlist-response";
 import { NotificationCooldown } from "./models/cooldown";
+import { StoreConfiguration } from "./models/stores/config-model";
 import { Store } from "./models/stores/store";
 
 export class StockChecker {
@@ -19,12 +20,16 @@ export class StockChecker {
     private readonly store: Store;
     private page: Page | undefined;
     private readonly webhook: IncomingWebhook | undefined;
+    private readonly webhookRolePing: string | undefined;
     private readonly logger: Logger;
     private readonly cooldowns = new Map<string, NotificationCooldown>();
 
-    constructor(store: Store, logger: Logger, webhookUrl?: string) {
-        if (webhookUrl) {
-            this.webhook = new IncomingWebhook(webhookUrl);
+    constructor(store: Store, logger: Logger, storeConfig: StoreConfiguration) {
+        if (storeConfig?.webhook_url) {
+            this.webhook = new IncomingWebhook(storeConfig.webhook_url);
+        }
+        if (storeConfig?.webhook_role_ping) {
+            this.webhookRolePing = storeConfig.webhook_role_ping;
         }
         this.store = store;
         this.logger = logger;
@@ -266,9 +271,13 @@ export class StockChecker {
         let message;
         const fullAlert = item?.product?.onlineStatus;
         if (fullAlert) {
-            message = `✅ Item **available**: ${item?.product?.title} for ${item?.price?.price} ${item?.price?.currency}! Go check it out: ${this.store.baseUrl}${item?.product?.url}`;
+            message = this.decorateMessageWithRoles(
+                `✅ Item **available**: ${item?.product?.title} for ${item?.price?.price} ${item?.price?.currency}! Go check it out: ${this.store.baseUrl}${item?.product?.url}`
+            );
         } else {
-            message = `⚠ Item for **cart parker**: ${item?.product?.title} for ${item?.price?.price} ${item?.price?.currency}! Go check it out: ${this.store.baseUrl}${item?.product?.url}`;
+            message = this.decorateMessageWithRoles(
+                `⚠ Item for **cart parker**: ${item?.product?.title} for ${item?.price?.price} ${item?.price?.currency}! Go check it out: ${this.store.baseUrl}${item?.product?.url}`
+            );
         }
         if (this.webhook) {
             this.webhook.send({
@@ -308,11 +317,19 @@ export class StockChecker {
 
     private notifyRateLimit(seconds: number) {
         if (this.webhook && seconds > 120) {
-            const message = `Too many requests, we need to pause ${seconds} seconds... 😴`;
+            const message = `[${this.store.salesLine}] Too many requests, we need to pause ${seconds} seconds... 😴`;
             this.webhook.send({
                 text: message,
                 username: `Stock Shock 💤`,
             });
         }
+    }
+
+    private decorateMessageWithRoles(message: string) {
+        if (!this.webhookRolePing) {
+            return message;
+        }
+
+        return `${message} <@&${this.webhookRolePing}>`;
     }
 }

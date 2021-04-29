@@ -82,7 +82,7 @@ const customLogFormat = format.printf((info) => {
         default:
             throw new Error("Invalid store chosen!");
     }
-    const stockChecker = new StockChecker(store, logger, storeConfig.webhook_url);
+    const stockChecker = new StockChecker(store, logger, storeConfig);
     await stockChecker.logIn(storeConfig.email, storeConfig.password, !args.includes("--no-headless"));
     logger.info("Login succeeded, let's hunt!");
 
