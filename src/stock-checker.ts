@@ -243,16 +243,13 @@ export class StockChecker {
                 if (!item) {
                     continue;
                 }
-                if (
-                    item?.availability?.delivery?.quantity > 0 &&
-                    (item?.availability?.delivery?.availabilityType == "IN_WAREHOUSE" ||
-                        (item?.availability?.delivery?.availabilityType == "LONG_TAIL" && item?.product?.onlineStatus))
-                ) {
+
+                if (this.isProductAvailable(item)) {
                     const itemId = item?.product?.id;
                     if (!itemId) {
                         continue;
                     }
-                    const partialAlert = item?.product?.onlineStatus || true;
+                    const partialAlert = !this.isProductBuyable(item) || true;
 
                     // Delete the cooldown in case the stock changes to really available
                     if (this.cooldowns.get(itemId)?.partialAlert && !partialAlert) {
@@ -267,16 +264,47 @@ export class StockChecker {
         }
     }
 
+    /*
+     * Check if an item can be added to cart (onlineStatus) - this overrules everything
+     * Otherwise check if the item is listed as IN_WAREHOUSE or LONG_TAIL with at least a quantity > 0
+     * Special note: LONG_TAIL needs to be purchsable (onlineStatus)!
+     */
+    private isProductAvailable(item: Item) {
+        return (
+            item?.product?.onlineStatus ||
+            (item?.availability?.delivery?.quantity > 0 &&
+                (item?.availability?.delivery?.availabilityType == "IN_WAREHOUSE" ||
+                    (item?.availability?.delivery?.availabilityType == "LONG_TAIL" && item?.product?.onlineStatus)))
+        );
+    }
+
+    private isProductBuyable(item: Item) {
+        return (
+            item?.product?.onlineStatus &&
+            item?.availability?.delivery?.quantity > 0 &&
+            (item?.availability?.delivery?.availabilityType == "IN_WAREHOUSE" ||
+                item?.availability?.delivery?.availabilityType == "LONG_TAIL")
+        );
+    }
+
+    private canProductBeAddedToCart(item: Item) {
+        return item?.product?.onlineStatus;
+    }
+
     private notify(item: Item) {
         let message;
-        const fullAlert = item?.product?.onlineStatus;
+        const fullAlert = this.isProductBuyable(item);
         if (fullAlert) {
             message = this.decorateMessageWithRoles(
-                `✅ Item **available**: ${item?.product?.title} for ${item?.price?.price} ${item?.price?.currency}! Go check it out: ${this.store.baseUrl}${item?.product?.url}`
+                `🟢 Item **available**: ${item?.product?.title} for ${item?.price?.price} ${item?.price?.currency}! Go check it out: ${this.store.baseUrl}${item?.product?.url}`
+            );
+        } else if (this.canProductBeAddedToCart(item)) {
+            message = this.decorateMessageWithRoles(
+                `🛒 Item **can be aded to cart**: ${item?.product?.title} for ${item?.price?.price} ${item?.price?.currency}! Go check it out: ${this.store.baseUrl}${item?.product?.url}?magician=${item?.product?.id}`
             );
         } else {
             message = this.decorateMessageWithRoles(
-                `⚠ Item for **cart parker**: ${item?.product?.title} for ${item?.price?.price} ${item?.price?.currency}! Go check it out: ${this.store.baseUrl}${item?.product?.url}`
+                `🟡 Item for **cart parker**: ${item?.product?.title} for ${item?.price?.price} ${item?.price?.currency}! Go check it out: ${this.store.baseUrl}${item?.product?.url}`
             );
         }
         if (this.webhook) {
