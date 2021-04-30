@@ -317,7 +317,7 @@ export class StockChecker {
 
     private notifyRateLimit(seconds: number) {
         if (this.webhook && seconds > 120) {
-            const message = `[${this.store.salesLine}] Too many requests, we need to pause ${seconds} seconds... 😴`;
+            const message = `[${this.store.salesLine}] Too many requests, we need to pause ${(seconds / 60).toFixed(2)} minutes... 😴`;
             this.webhook.send({
                 text: message,
                 username: `Stock Shock 💤`,
