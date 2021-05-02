@@ -1,0 +1,93 @@
+name: buildx
+
+on:
+    pull_request:
+    push:
+
+jobs:
+    buildx:
+        runs-on: ubuntu-20.04
+        strategy:
+            fail-fast: false
+            matrix:
+                docker-file:
+                    - path: .
+                      tags: "latest"
+                      platforms: linux/amd64,linux/arm64
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v2
+
+            - name: Prepare
+              id: prepare
+              run: |
+                  DOCKER_IMAGE=timbru31/mms-stockshock
+
+                  TEMP="${{ matrix.docker-file.tags }}"
+                  TAGZ=($TEMP)
+                  VERSION=${TAGZ[0]}
+
+                  for i in "${!TAGZ[@]}"; do
+                    if [ "$i" -eq "0" ];
+                    then
+                      TAGS="${DOCKER_IMAGE}:${TAGZ[$i]}"
+                    else
+                      TAGS="${TAGS},${DOCKER_IMAGE}:${TAGZ[$i]}"
+                    fi
+                  done
+
+                  echo ::set-output name=docker_image::${DOCKER_IMAGE}
+                  echo ::set-output name=version::${VERSION}
+                  echo ::set-output name=tags::${TAGS}
+
+            - name: Set up QEMU
+              uses: docker/setup-qemu-action@v1
+
+            - name: Set up Docker Buildx
+              id: buildx
+              uses: docker/setup-buildx-action@v1
+              with:
+                  install: true
+
+            - name: Available platforms
+              run: echo ${{ steps.buildx.outputs.platforms }}
+
+            - name: Docker Buildx (build)
+              uses: docker/build-push-action@v2
+              if: success() && !contains(github.ref, 'master')
+              with:
+                  push: false
+                  context: ./${{ matrix.docker-file.path }}
+                  file: ./${{ matrix.docker-file.path }}/Dockerfile
+                  build-args: REFRESHED_AT=$(date +%Y-%m-%d)
+                  platforms: ${{ matrix.docker-file.platforms }}
+                  tags: ${{ steps.prepare.outputs.tags }}
+
+            - name: Docker Login
+              if: success() && github.event_name != 'pull_request' && contains(github.ref, 'master')
+              uses: docker/login-action@v1
+              with:
+                  username: ${{ secrets.DOCKER_USERNAME }}
+                  password: ${{ secrets.DOCKER_PASSWORD }}
+
+            - name: Docker Buildx (push)
+              uses: docker/build-push-action@v2
+              if: success() && github.event_name != 'pull_request' && contains(github.ref, 'master')
+              with:
+                  push: true
+                  context: ./${{ matrix.docker-file.path }}
+                  file: ./${{ matrix.docker-file.path }}/Dockerfile
+                  build-args: REFRESHED_AT=$(date +%Y-%m-%d)
+                  platforms: ${{ matrix.docker-file.platforms }}
+                  tags: ${{ steps.prepare.outputs.tags }}
+
+            - name: Inspect Image
+              if: always() && github.event_name != 'pull_request' && contains(github.ref, 'master')
+              run: |
+                  docker buildx imagetools inspect ${{ steps.prepare.outputs.docker_image }}:${{ steps.prepare.outputs.version }}
+
+            - name: Clear
+              if: always() && github.event_name != 'pull_request'
+              run: |
+                  rm -f ${HOME}/.docker/config.json

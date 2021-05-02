@@ -35,16 +35,25 @@ export class StockChecker {
         this.logger = logger;
     }
 
-    async logIn(storeConfig: StoreConfiguration, headless = true): Promise<void> {
+    async logIn(storeConfig: StoreConfiguration, headless = true, sandbox = true): Promise<void> {
         if (this.loggedIn) {
             throw new Error("Already logged in");
         }
 
         puppeteer.use(StealthPlugin());
+        const args = [];
+        if (!sandbox) {
+            args.push("--no-sandbox");
+        }
+
+        if (storeConfig.proxy_url) {
+            args.push(`--proxy-server=${storeConfig.proxy_url}`);
+        }
+
         const browser = await puppeteer.launch(({
             headless,
             defaultViewport: null,
-            args: storeConfig.proxy_url ? [`--proxy-server=${storeConfig.proxy_url}`] : [],
+            args,
         } as unknown) as PuppeteerNodeLaunchOptions);
 
         this.page = await browser.newPage();
