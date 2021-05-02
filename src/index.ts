@@ -3,6 +3,8 @@ import { readFile } from "fs/promises";
 import { prompt } from "inquirer";
 import { parse } from "toml";
 import { createLogger, format, Logger, transports } from "winston";
+import yargs from "yargs";
+import { hideBin } from "yargs/helpers";
 
 import { ConfigModel, StoreConfiguration } from "./models/stores/config-model";
 import { MediaMarktAustria } from "./models/stores/media-markt-austria";
@@ -53,29 +55,43 @@ const customLogFormat = format.printf((info) => {
         ],
     });
 
-    const args = process.argv.slice(2);
     const config = await loadConfig(logger);
     if (!config) {
         return;
     }
+
+    const args = yargs(hideBin(process.argv)).options({
+        headless: { type: "boolean", default: true },
+        store: { type: "string", default: "" },
+    }).argv;
     let storeConfig: StoreConfiguration;
-    const storePrompt = await prompt({
-        type: "list",
-        name: "store",
-        message: "Please choose the desired store...",
-        choices: ["Saturn", "MediaMarkt Germany", "MediaMarkt Austria"],
-    });
+    let storeArgument: string;
+    if (!args.store) {
+        const storePrompt = await prompt({
+            type: "list",
+            name: "store",
+            message: "Please choose the desired store...",
+            choices: ["saturn", "mediamarkt germany", "mediamarkt austria"],
+        });
+        storeArgument = storePrompt.store;
+    } else {
+        storeArgument = args.store;
+    }
     let store: Store;
-    switch (storePrompt.store) {
-        case "Saturn":
+    switch (storeArgument.toLowerCase()) {
+        case "saturn":
             store = new Saturn();
             storeConfig = config.saturn;
             break;
-        case "MediaMarkt Germany":
+        case "mmde":
+        case "mediamarktgermany":
+        case "mediamarkt germany":
             store = new MediaMarktGermany();
             storeConfig = config.mmde;
             break;
-        case "MediaMarkt Austria":
+        case "mmat":
+        case "mediamarktaustria":
+        case "mediamarkt austria":
             store = new MediaMarktAustria();
             storeConfig = config.mmat;
             break;
@@ -83,7 +99,7 @@ const customLogFormat = format.printf((info) => {
             throw new Error("Invalid store chosen!");
     }
     const stockChecker = new StockChecker(store, logger, storeConfig);
-    await stockChecker.logIn(storeConfig.email, storeConfig.password, !args.includes("--no-headless"));
+    await stockChecker.logIn(storeConfig.email, storeConfig.password, args.headless);
     logger.info("Login succeeded, let's hunt!");
 
     // eslint-disable-next-line no-constant-condition

@@ -49,7 +49,7 @@ Happy hunting! 🏹⚡️
 Per default the Chromium behind the scenes is run in headless mode. If the login fails due to CloudFlare or MM/S bot protection, please launch it as
 
 ```sh
-npm start -- --no-headless
+npm start -- --headless false
 ```
 
 Do **not** close the browser window. You can minimize it though.

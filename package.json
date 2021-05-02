@@ -25,11 +25,13 @@
         "puppeteer-extra-plugin-stealth": "^2.7.8",
         "toml": "^3.0.0",
         "user-agents": "^1.0.638",
-        "winston": "^3.3.3"
+        "winston": "^3.3.3",
+        "yargs": "^16.2.0"
     },
     "devDependencies": {
         "@types/inquirer": "^7.3.1",
         "@types/user-agents": "^1.0.1",
+        "@types/yargs": "^16.0.1",
         "@typescript-eslint/eslint-plugin": "^4.22.0",
         "@typescript-eslint/parser": "^4.22.0",
         "eslint": "^7.25.0",
