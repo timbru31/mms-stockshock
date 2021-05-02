@@ -303,24 +303,36 @@ export class StockChecker {
     /*
      * Check if an item can be added to cart (onlineStatus) - this overrules everything
      * Otherwise check if the item is listed as IN_WAREHOUSE or LONG_TAIL with at least a quantity > 0
+     * There seems to be IN_STORE too, where the quantity does not matter. Probably a local store will ship the item
      * Special note: LONG_TAIL needs to be purchsable (onlineStatus)!
      */
     private isProductAvailable(item: Item) {
-        return (
-            item?.product?.onlineStatus ||
-            (item?.availability?.delivery?.quantity > 0 &&
-                (item?.availability?.delivery?.availabilityType == "IN_WAREHOUSE" ||
-                    (item?.availability?.delivery?.availabilityType == "LONG_TAIL" && item?.product?.onlineStatus)))
-        );
+        if (item?.product?.onlineStatus) {
+            return true;
+        }
+
+        switch (item?.availability?.delivery?.availabilityType) {
+            case "IN_STORE":
+                return true;
+            case "IN_WAREHOUSE":
+                return item?.availability?.delivery?.quantity > 0;
+            case "LONG_TAIL":
+                return item?.product.onlineStatus && item?.availability?.delivery?.quantity > 0;
+        }
+        return false;
     }
 
     private isProductBuyable(item: Item) {
-        return (
-            item?.product?.onlineStatus &&
-            item?.availability?.delivery?.quantity > 0 &&
-            (item?.availability?.delivery?.availabilityType == "IN_WAREHOUSE" ||
-                item?.availability?.delivery?.availabilityType == "LONG_TAIL")
-        );
+        if (item?.product?.onlineStatus) {
+            switch (item?.availability?.delivery?.availabilityType) {
+                case "IN_STORE":
+                    return true;
+                case "IN_WAREHOUSE":
+                case "LONG_TAIL":
+                    return item?.availability?.delivery?.quantity > 0;
+            }
+        }
+        return false;
     }
 
     private canProductBeAddedToCart(item: Item) {
