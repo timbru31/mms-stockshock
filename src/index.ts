@@ -99,7 +99,7 @@ const customLogFormat = format.printf((info) => {
             throw new Error("Invalid store chosen!");
     }
     const stockChecker = new StockChecker(store, logger, storeConfig);
-    await stockChecker.logIn(storeConfig.email, storeConfig.password, args.headless);
+    await stockChecker.logIn(storeConfig, args.headless);
     logger.info("Login succeeded, let's hunt!");
 
     // eslint-disable-next-line no-constant-condition

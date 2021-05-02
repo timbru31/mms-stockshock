@@ -35,17 +35,25 @@ export class StockChecker {
         this.logger = logger;
     }
 
-    async logIn(email: string, password: string, headless = true): Promise<void> {
+    async logIn(storeConfig: StoreConfiguration, headless = true): Promise<void> {
         if (this.loggedIn) {
             throw new Error("Already logged in");
         }
 
         puppeteer.use(StealthPlugin());
-        const browser = await puppeteer.launch(({ headless, defaultViewport: null } as unknown) as PuppeteerNodeLaunchOptions);
+        const browser = await puppeteer.launch(({
+            headless,
+            defaultViewport: null,
+            args: storeConfig.proxy_url ? [`--proxy-server=${storeConfig.proxy_url}`] : [],
+        } as unknown) as PuppeteerNodeLaunchOptions);
 
         this.page = await browser.newPage();
         this.page.setUserAgent(new UserAgent().toString());
         await this.patchHairlineDetection();
+
+        if (storeConfig.proxy_url && storeConfig.proxy_username && storeConfig.proxy_password) {
+            await this.page.authenticate({ username: storeConfig.proxy_username, password: storeConfig.proxy_password });
+        }
 
         // This is the fastest site to render without any JS or CSS bloat
         await this.page.goto(`${this.store.baseUrl}/404`, {
@@ -86,8 +94,8 @@ export class StockChecker {
                         .catch((_) => ({ status: res.status, body: null, retryAfter: res.headers.get("Retry-After") }))
                 ),
             this.store as SerializableOrJSHandle,
-            email,
-            password
+            storeConfig.email,
+            storeConfig.password
         );
         if (res.status !== 200 || !res.body || res.body?.errors) {
             if (headless) {
