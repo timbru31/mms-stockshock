@@ -141,7 +141,7 @@ export class StockChecker {
             throw new Error("Not logged in!");
         }
 
-        const res = await this.performWhishlistQuery();
+        const res = await this.performWishlistQuery();
         if (res.status !== 200 || !res.body || res.body?.errors) {
             await this.handleWishlistError(res);
         } else {
@@ -156,7 +156,7 @@ export class StockChecker {
                 for (let additionalQueryCalls = 1; additionalQueryCalls <= remainingQueryCalls; additionalQueryCalls += 1) {
                     await this.sleep();
                     const newOffset = additionalQueryCalls * this.MAX_ITEMS_PER_QUERY;
-                    const res = await this.performWhishlistQuery(newOffset);
+                    const res = await this.performWishlistQuery(newOffset);
                     if (res.status !== 200 || !res.body || res.body?.errors) {
                         await this.handleWishlistError(res);
                     } else {
@@ -196,7 +196,7 @@ export class StockChecker {
     }
 
     private async handleWishlistError(res: { status: number; body: WishlistReponse | null; retryAfterHeader: string | null }) {
-        this.logger.error(`Whistlist query did not succeed, status code: ${res.status}`);
+        this.logger.error(`Wishlist query did not succeed, status code: ${res.status}`);
         if (res.body?.errors) {
             this.logger.error("Error: %O", res.body.errors);
         }
@@ -224,7 +224,7 @@ export class StockChecker {
         return new Promise<T>((resolve) => setTimeout(() => resolve(returnValue || ({} as T)), sleepTime || randomSleepTime));
     }
 
-    private async performWhishlistQuery(
+    private async performWishlistQuery(
         offset = 0
     ): Promise<{
         status: number;
