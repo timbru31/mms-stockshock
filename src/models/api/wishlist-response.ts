@@ -1,11 +1,11 @@
 import { Item } from "./item";
 
 export interface WishlistReponse {
-    data: {
+    data?: {
         wishlistItems: {
             total: number;
             items: Item[];
         };
     };
-    errors: unknown;
+    errors?: unknown;
 }
