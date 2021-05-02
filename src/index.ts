@@ -119,6 +119,7 @@ const customLogFormat = format.printf((info) => {
 
     // eslint-disable-next-line no-constant-condition
     while (true) {
+        logger.info("🤖 Beep, I'm alive and well checking your stock");
         await stockChecker.checkStock();
         await new Promise((resolve) => setTimeout(resolve, store.getSleepTime()));
         stockChecker.cleanupCooldowns();
