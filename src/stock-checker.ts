@@ -211,7 +211,7 @@ export class StockChecker {
             await this.sleep(cooldown * 1000);
         }
 
-        if (res.status === 403) {
+        if (res.status === 403 || res.status === 0) {
             this.reLoginRequired = true;
         }
     }
@@ -405,13 +405,8 @@ export class StockChecker {
     }
 
     private notifyRateLimit(seconds: number) {
-        if (this.webhook && seconds > 300) {
-            let message: string;
-            if (this.usesProxy) {
-                message = `[${this.store.salesLine}] Too many requests, we need to pause 5 minutes... and then I'll try re-login 😴`;
-            } else {
-                message = `[${this.store.salesLine}] Too many requests, we need to pause ${(seconds / 60).toFixed(2)} minutes... 😴`;
-            }
+        if (this.webhook && seconds > 300 && !this.usesProxy) {
+            const message = `[${this.store.salesLine}] Too many requests, we need to pause ${(seconds / 60).toFixed(2)} minutes... 😴`;
             this.webhook.send({
                 text: message,
                 username: `Stock Shock 💤`,
