@@ -113,7 +113,8 @@ const customLogFormat = format.printf((info) => {
             throw new Error("Invalid store chosen!");
     }
     const stockChecker = new StockChecker(store, logger, storeConfig);
-    await stockChecker.logIn(storeConfig, args.headless, args.sandbox);
+    await stockChecker.launchPuppeteer(storeConfig, args.headless, args.sandbox);
+    await stockChecker.logIn(storeConfig, args.headless);
     logger.info("Login succeeded, let's hunt!");
 
     // eslint-disable-next-line no-constant-condition
@@ -121,6 +122,10 @@ const customLogFormat = format.printf((info) => {
         await stockChecker.checkStock();
         await new Promise((resolve) => setTimeout(resolve, store.getSleepTime()));
         stockChecker.cleanupCooldowns();
+        if (stockChecker.reLoginRequired) {
+            await stockChecker.logIn(storeConfig, args.headless);
+            logger.info("Re-Login succeeded, let's hunt!");
+        }
     }
 })();
 

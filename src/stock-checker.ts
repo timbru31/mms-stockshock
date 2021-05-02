@@ -1,6 +1,6 @@
 import { IncomingWebhook } from "@slack/webhook";
 import { prompt } from "inquirer";
-import { Page, PuppeteerNodeLaunchOptions, SerializableOrJSHandle } from "puppeteer";
+import { Browser, BrowserContext, Page, PuppeteerNodeLaunchOptions, SerializableOrJSHandle } from "puppeteer";
 import puppeteer from "puppeteer-extra";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import UserAgent from "user-agents";
@@ -14,10 +14,13 @@ import { Store } from "./models/stores/store";
 
 export class StockChecker {
     // This is set by MM/S and a fixed constant
-    MAX_ITEMS_PER_QUERY = 24;
+    readonly MAX_ITEMS_PER_QUERY = 24;
+    reLoginRequired = false;
 
     private loggedIn = false;
     private readonly store: Store;
+    private browser: Browser | undefined;
+    private context: BrowserContext | undefined;
     private page: Page | undefined;
     private readonly webhook: IncomingWebhook | undefined;
     private readonly webhookRolePing: string | undefined;
@@ -35,12 +38,7 @@ export class StockChecker {
         this.logger = logger;
     }
 
-    async logIn(storeConfig: StoreConfiguration, headless = true, sandbox = true): Promise<void> {
-        if (this.loggedIn) {
-            throw new Error("Already logged in");
-        }
-
-        puppeteer.use(StealthPlugin());
+    async launchPuppeteer(storeConfig: StoreConfiguration, headless = true, sandbox = true): Promise<void> {
         const args = [];
         if (!sandbox) {
             args.push("--no-sandbox");
@@ -50,13 +48,26 @@ export class StockChecker {
             args.push(`--proxy-server=${storeConfig.proxy_url}`);
         }
 
-        const browser = await puppeteer.launch(({
+        this.browser = await puppeteer.launch(({
             headless,
             defaultViewport: null,
             args,
         } as unknown) as PuppeteerNodeLaunchOptions);
+    }
 
-        this.page = await browser.newPage();
+    async logIn(storeConfig: StoreConfiguration, headless = true): Promise<void> {
+        if (!this.browser) {
+            throw new Error("Puppeteer context not inialized!");
+        }
+
+        if (this.context) {
+            this.context.close();
+        }
+
+        this.context = await this.browser.createIncognitoBrowserContext();
+        puppeteer.use(StealthPlugin());
+
+        this.page = await this.browser.newPage();
         this.page.setUserAgent(new UserAgent().toString());
         await this.patchHairlineDetection();
 
@@ -96,11 +107,13 @@ export class StockChecker {
                     method: "POST",
                     mode: "cors",
                 }).then((res) =>
-                    res
-                        .json()
-                        .then((data) => ({ status: res.status, body: data }))
-                        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                        .catch((_) => ({ status: res.status, body: null, retryAfter: res.headers.get("Retry-After") }))
+                    res.status === 200
+                        ? res
+                              .json()
+                              .then((data) => ({ status: res.status, body: data }))
+                              // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                              .catch((_) => ({ status: res.status, body: null, retryAfter: res.headers.get("Retry-After") }))
+                        : res.text().then((data) => ({ status: res.status, body: data }))
                 ),
             this.store as SerializableOrJSHandle,
             storeConfig.email,
@@ -108,7 +121,7 @@ export class StockChecker {
         );
         if (res.status !== 200 || !res.body || res.body?.errors) {
             if (headless) {
-                this.logger.error("Login did not succeed, please restart with '--no-headless' option");
+                this.logger.error(`Login did not succeed, please restart with '--no-headless' option, Status ${res.status}`);
                 process.exit(1);
             }
             await prompt({
@@ -117,6 +130,7 @@ export class StockChecker {
             });
         }
         this.loggedIn = true;
+        this.reLoginRequired = false;
     }
 
     async checkStock(): Promise<void> {
@@ -188,6 +202,10 @@ export class StockChecker {
             this.logger.error(`Too many requests, we need to cooldown and sleep ${cooldown} seconds`);
             this.notifyRateLimit(cooldown);
             await this.sleep(cooldown * 1000);
+        }
+
+        if (res.status === 403) {
+            this.reLoginRequired = true;
         }
     }
 

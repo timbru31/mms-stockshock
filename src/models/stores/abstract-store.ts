@@ -1,8 +1,8 @@
 import { Store } from "./store";
 
 export abstract class CommonStore implements Store {
-    MIN_SLEEP_TIME = 500;
-    MAX_SLEEP_TIME = 3000;
+    MIN_SLEEP_TIME = 1000;
+    MAX_SLEEP_TIME = 1000;
 
     abstract baseUrl: string;
     abstract countryCode: string;
