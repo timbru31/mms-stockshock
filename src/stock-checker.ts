@@ -76,6 +76,7 @@ export class StockChecker {
         }
 
         // This is the fastest site to render without any JS or CSS bloat
+        await this.page.setJavaScriptEnabled(false);
         await this.page.goto(`${this.store.baseUrl}/404`, {
             waitUntil: "networkidle0",
         });
