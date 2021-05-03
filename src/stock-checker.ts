@@ -71,12 +71,12 @@ export class StockChecker {
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             this.page!.evaluate(
                 async (store: Store, email: string, password: string) =>
-                    await fetch(`${store.baseUrl}/api/v1/graphql`, {
+                    await fetch(`${store.baseUrl}/api/v1/graphql?anti-cache=${new Date().getTime()}`, {
                         credentials: "include",
                         headers: {
                             "content-type": "application/json",
                             "apollographql-client-name": "pwa-client",
-                            "apollographql-client-version": "7.8.0",
+                            "apollographql-client-version": "7.9.0",
                             "x-operation": "LoginProfileUser",
                             "x-cacheable": "false",
                             "X-MMS-Language": "de",
@@ -159,7 +159,6 @@ export class StockChecker {
                 waitUntil: "networkidle0",
                 timeout: 5000,
             });
-            return true;
         } catch (e) {
             this.logger.error("Unable to visit start page...");
             if (exitOnFail) {
@@ -167,6 +166,11 @@ export class StockChecker {
             }
             return false;
         }
+
+        if (this.store.loginSleepTime) {
+            await this.sleep(this.store.loginSleepTime);
+        }
+        return true;
     }
 
     async checkStock(): Promise<void> {
@@ -215,7 +219,7 @@ export class StockChecker {
                     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                     this.page!.evaluate(
                         async (store: Store, productId: string) =>
-                            fetch(`${store.baseUrl}/api/v1/graphql`, {
+                            await fetch(`${store.baseUrl}/api/v1/graphql?anti-cache=${new Date().getTime()}`, {
                                 credentials: "include",
                                 headers: {
                                     "content-type": "application/json",
@@ -361,12 +365,12 @@ export class StockChecker {
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             this.page!.evaluate(
                 async (store: Store, offset: number) =>
-                    await fetch(`${store.baseUrl}/api/v1/graphql`, {
+                    await fetch(`${store.baseUrl}/api/v1/graphql?anti-cache=${new Date().getTime()}`, {
                         credentials: "include",
                         headers: {
                             "content-type": "application/json",
                             "apollographql-client-name": "pwa-client",
-                            "apollographql-client-version": "7.8.0",
+                            "apollographql-client-version": "7.9.0",
                             "x-operation": "GetUser",
                             "x-cacheable": "false",
                             "X-MMS-Language": "de",
