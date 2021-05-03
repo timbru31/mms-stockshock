@@ -121,6 +121,10 @@ const customLogFormat = format.printf((info) => {
     while (true) {
         logger.info("🤖 Beep, I'm alive and well checking your stock");
         await stockChecker.checkStock();
+        if (stockChecker.cartItems.size) {
+            await stockChecker.createCartCookies(storeConfig);
+            stockChecker.cartItems.clear();
+        }
         await new Promise((resolve) => setTimeout(resolve, store.getSleepTime()));
         stockChecker.cleanupCooldowns();
         if (stockChecker.reLoginRequired) {

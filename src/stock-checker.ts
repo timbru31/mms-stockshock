@@ -1,4 +1,5 @@
 import { IncomingWebhook } from "@slack/webhook";
+import add from "date-fns/add";
 import { prompt } from "inquirer";
 import { Browser, BrowserContext, Page, PuppeteerNodeLaunchOptions, SerializableOrJSHandle } from "puppeteer";
 import puppeteer from "puppeteer-extra";
@@ -15,6 +16,7 @@ import { Store } from "./models/stores/store";
 export class StockChecker {
     // This is set by MM/S and a fixed constant
     readonly MAX_ITEMS_PER_QUERY = 24;
+    readonly cartItems = new Map<string, Item>();
     reLoginRequired = false;
 
     private loggedIn = false;
@@ -27,6 +29,7 @@ export class StockChecker {
     private readonly webhookRolePing: string | undefined;
     private readonly logger: Logger;
     private readonly cooldowns = new Map<string, NotificationCooldown>();
+    private readonly cartCooldowns = new Map<string, NotificationCooldown>();
 
     constructor(store: Store, logger: Logger, storeConfig: StoreConfiguration) {
         if (storeConfig?.webhook_url) {
@@ -62,27 +65,9 @@ export class StockChecker {
             throw new Error("Puppeteer context not inialized!");
         }
 
-        if (this.context) {
-            this.context.close();
-        }
-
-        this.context = await this.browser.createIncognitoBrowserContext();
-        puppeteer.use(StealthPlugin());
-
-        this.page = await this.browser.newPage();
-        this.page.setUserAgent(new UserAgent().toString());
-        await this.patchHairlineDetection();
-
-        if (storeConfig.proxy_url && storeConfig.proxy_username && storeConfig.proxy_password) {
-            await this.page.authenticate({ username: storeConfig.proxy_username, password: storeConfig.proxy_password });
-        }
-
-        // This is the fastest site to render without any JS or CSS bloat
-        await this.page.setJavaScriptEnabled(false);
-        await this.page.goto(`${this.store.baseUrl}/404`, {
-            waitUntil: "networkidle0",
-        });
-        const res = await this.page.evaluate(
+        await this.createIncognitoContext(storeConfig);
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        const res = await this.page!.evaluate(
             async (store: Store, email: string, password: string) =>
                 await fetch(`${store.baseUrl}/api/v1/graphql`, {
                     credentials: "include",
@@ -136,6 +121,34 @@ export class StockChecker {
         this.reLoginRequired = false;
     }
 
+    private async createIncognitoContext(storeConfig: StoreConfiguration) {
+        if (this.context) {
+            this.context.close();
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        this.context = await this.browser!.createIncognitoBrowserContext();
+        puppeteer.use(StealthPlugin());
+
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        this.page = await this.browser!.newPage();
+        this.page.setUserAgent(new UserAgent().toString());
+        await this.patchHairlineDetection();
+
+        if (storeConfig.proxy_url && storeConfig.proxy_username && storeConfig.proxy_password) {
+            await this.page.authenticate({ username: storeConfig.proxy_username, password: storeConfig.proxy_password });
+        }
+
+        // This is the fastest site to render without any JS or CSS bloat
+        await this.page.setJavaScriptEnabled(false);
+        await this.page.goto(`${this.store.baseUrl}/404`, {
+            waitUntil: "networkidle0",
+        });
+
+        const client = await this.page.target().createCDPSession();
+        await client.send("Network.clearBrowserCookies");
+    }
+
     async checkStock(): Promise<void> {
         if (!this.loggedIn) {
             throw new Error("Not logged in!");
@@ -167,11 +180,85 @@ export class StockChecker {
         }
     }
 
+    async createCartCookies(storeConfig: StoreConfiguration): Promise<void> {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        for (const [id, item] of this.cartItems.entries()) {
+            const cookies: string[] = [];
+            for (let i = 0; i < 20; i++) {
+                await this.createIncognitoContext(storeConfig);
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                await this.page!.evaluate(
+                    async (store: Store, productId: string) =>
+                        fetch(`${store.baseUrl}/api/v1/graphql`, {
+                            credentials: "include",
+                            headers: {
+                                "content-type": "application/json",
+                                "apollographql-client-name": "pwa-client",
+                                "apollographql-client-version": "7.9.0",
+                                "x-operation": "AddProduct",
+                                "x-cacheable": "false",
+                                "X-MMS-Language": "de",
+                                "X-MMS-Country": store.countryCode,
+                                "X-MMS-Salesline": store.salesLine,
+                                Pragma: "no-cache",
+                                "Cache-Control": "no-cache",
+                            },
+                            referrer: `${store.baseUrl}/`,
+                            body: JSON.stringify({
+                                operationName: "AddProduct",
+                                variables: {
+                                    items: [
+                                        {
+                                            productId,
+                                            outletId: null,
+                                            quantity: 1,
+                                            serviceId: null,
+                                            warrantyId: null,
+                                        },
+                                    ],
+                                },
+                                extensions: {
+                                    pwa: {
+                                        salesLine: store.salesLine,
+                                        country: store.countryCode,
+                                        language: "de",
+                                    },
+                                    persistedQuery: {
+                                        version: 1,
+                                        sha256Hash: "404e7401c3363865cc3d92d5c5454ef7d382128c014c75f5fc39ed7ce549e2b9",
+                                    },
+                                },
+                            }),
+                            method: "POST",
+                            mode: "cors",
+                        }),
+                    this.store as SerializableOrJSHandle,
+                    id
+                );
+                const cartCookie = (await this.page?.cookies())?.filter((cookie) => cookie.name === "r")[0];
+                if (cartCookie) {
+                    cookies.push(cartCookie.value);
+                    this.logger.info(`Made cookie ${cartCookie.value} for product ${id}`);
+                }
+            }
+            if (cookies) {
+                this.notifyCookies(item, cookies);
+            }
+        }
+        this.reLoginRequired = true;
+    }
+
     cleanupCooldowns(): void {
         const now = new Date();
         for (const [id, cooldown] of this.cooldowns) {
             if (now > cooldown.endTime) {
                 this.cooldowns.delete(id);
+            }
+        }
+
+        for (const [id, cooldown] of this.cartCooldowns) {
+            if (now > cooldown.endTime) {
+                this.cartCooldowns.delete(id);
             }
         }
     }
@@ -298,7 +385,7 @@ export class StockChecker {
                     if (!itemId) {
                         continue;
                     }
-                    const partialAlert = !this.isProductBuyable(item) || true;
+                    const partialAlert = !this.isProductBuyable(item);
 
                     // Delete the cooldown in case the stock changes to really available
                     if (this.cooldowns.get(itemId)?.partialAlert && !partialAlert) {
@@ -306,7 +393,11 @@ export class StockChecker {
                     }
 
                     if (!this.cooldowns.has(itemId)) {
-                        this.notify(item);
+                        this.notifyStock(item);
+                    }
+
+                    if (!partialAlert && !this.cartCooldowns.has(itemId)) {
+                        this.cartItems.set(itemId, item);
                     }
                 }
             }
@@ -352,7 +443,7 @@ export class StockChecker {
         return item?.product?.onlineStatus;
     }
 
-    private notify(item: Item) {
+    private notifyStock(item: Item) {
         let message;
         const fullAlert = this.isProductBuyable(item);
         if (fullAlert) {
@@ -389,13 +480,44 @@ export class StockChecker {
         this.addToCooldownMap(fullAlert, item);
     }
 
+    private notifyCookies(item: Item, cookies: string[]) {
+        const message = this.decorateMessageWithRoles(
+            `🍪: ${cookies.length} cart cookies were made for ${item?.product?.title}:\n\`${cookies.join("\n")}\``
+        );
+        if (this.webhook) {
+            this.webhook.send({
+                text: message,
+                username: "Stock Shock 🍪",
+                attachments: [
+                    {
+                        title_link: `${this.store.baseUrl}${item.product.url}`,
+                        image_url: `https://assets.mmsrg.com/isr/166325/c1/-/${item.product.titleImageId}/mobile_200_200.png`,
+                    },
+                ],
+            });
+        }
+
+        this.addToCartCooldownMap(item);
+    }
+
     private addToCooldownMap(fullAlert: boolean, item: Item) {
-        const now = new Date();
-        const endTime = new Date(now);
-        endTime.setMinutes(now.getMinutes() + (fullAlert ? 1 : 5));
+        const endTime = add(new Date(), {
+            minutes: fullAlert ? 1 : 5,
+        });
         this.cooldowns.set(item?.product?.id, {
             id: item?.product?.id,
             partialAlert: !fullAlert,
+            endTime,
+        });
+    }
+
+    private addToCartCooldownMap(item: Item) {
+        const endTime = add(new Date(), {
+            hours: 4,
+        });
+        this.cartCooldowns.set(item?.product?.id, {
+            id: item?.product?.id,
+            partialAlert: true,
             endTime,
         });
     }
