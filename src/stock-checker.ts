@@ -400,10 +400,10 @@ export class StockChecker {
                     if (!itemId) {
                         continue;
                     }
-                    const partialAlert = !this.isProductBuyable(item);
+                    const isProductBuyable = this.isProductBuyable(item);
 
                     // Delete the cooldown in case the stock changes to really available
-                    if (this.cooldowns.get(itemId)?.partialAlert && !partialAlert) {
+                    if (!this.cooldowns.get(itemId)?.isProductBuyable && isProductBuyable) {
                         this.cooldowns.delete(itemId);
                     }
 
@@ -411,7 +411,7 @@ export class StockChecker {
                         this.notifyStock(item);
                     }
 
-                    if (!partialAlert && !this.cartCooldowns.has(itemId)) {
+                    if (this.canProductBeAddedToCart(item) && !this.cartCooldowns.has(itemId)) {
                         this.cartItems.set(itemId, item);
                     }
                 }
@@ -515,13 +515,13 @@ export class StockChecker {
         this.addToCartCooldownMap(item);
     }
 
-    private addToCooldownMap(fullAlert: boolean, item: Item) {
+    private addToCooldownMap(isProductBuyable: boolean, item: Item) {
         const endTime = add(new Date(), {
-            minutes: fullAlert ? 1 : 5,
+            minutes: isProductBuyable ? 1 : 5,
         });
         this.cooldowns.set(item?.product?.id, {
             id: item?.product?.id,
-            partialAlert: !fullAlert,
+            isProductBuyable,
             endTime,
         });
     }
@@ -532,7 +532,7 @@ export class StockChecker {
         });
         this.cartCooldowns.set(item?.product?.id, {
             id: item?.product?.id,
-            partialAlert: true,
+            isProductBuyable: null,
             endTime,
         });
     }

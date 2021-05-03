@@ -1,5 +1,5 @@
 export interface NotificationCooldown {
     id: string;
-    partialAlert: boolean;
+    isProductBuyable: boolean | null;
     endTime: Date;
 }
