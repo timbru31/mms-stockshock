@@ -6,5 +6,7 @@ export interface Store {
 
     getSleepTime(): number;
 
-    [key: string]: string | number | undefined | (() => number);
+    getName(): string;
+
+    [key: string]: string | number | undefined | (() => number) | (() => string);
 }

@@ -6,4 +6,8 @@ export class MediaMarktAustria extends CommonStore implements Store {
     readonly countryCode = "AT";
     readonly salesLine = "Media";
     readonly loginSleepTime = 2500;
+
+    getName(): string {
+        return "MediaMarkt";
+    }
 }

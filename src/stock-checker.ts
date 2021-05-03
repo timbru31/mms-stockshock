@@ -215,64 +215,71 @@ export class StockChecker {
                     await this.sleep();
                     continue;
                 }
-                const res: { status: number; success: boolean } = await Promise.race([
-                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                    this.page!.evaluate(
-                        async (store: Store, productId: string) =>
-                            await fetch(`${store.baseUrl}/api/v1/graphql?anti-cache=${new Date().getTime()}`, {
-                                credentials: "include",
-                                headers: {
-                                    "content-type": "application/json",
-                                    "apollographql-client-name": "pwa-client",
-                                    "apollographql-client-version": "7.9.0",
-                                    "x-operation": "AddProduct",
-                                    "x-cacheable": "false",
-                                    "X-MMS-Language": "de",
-                                    "X-MMS-Country": store.countryCode,
-                                    "X-MMS-Salesline": store.salesLine,
-                                    Pragma: "no-cache",
-                                    "Cache-Control": "no-cache",
-                                },
-                                referrer: `${store.baseUrl}/`,
-                                body: JSON.stringify({
-                                    operationName: "AddProduct",
-                                    variables: {
-                                        items: [
-                                            {
-                                                productId,
-                                                outletId: null,
-                                                quantity: 1,
-                                                serviceId: null,
-                                                warrantyId: null,
+                let res: { status: number; success: boolean };
+                try {
+                    res = await Promise.race([
+                        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                        this.page!.evaluate(
+                            async (store: Store, productId: string) =>
+                                await fetch(`${store.baseUrl}/api/v1/graphql?anti-cache=${new Date().getTime()}`, {
+                                    credentials: "include",
+                                    headers: {
+                                        "content-type": "application/json",
+                                        "apollographql-client-name": "pwa-client",
+                                        "apollographql-client-version": "7.9.0",
+                                        "x-operation": "AddProduct",
+                                        "x-cacheable": "false",
+                                        "X-MMS-Language": "de",
+                                        "X-MMS-Country": store.countryCode,
+                                        "X-MMS-Salesline": store.salesLine,
+                                        Pragma: "no-cache",
+                                        "Cache-Control": "no-cache",
+                                    },
+                                    referrer: `${store.baseUrl}/`,
+                                    body: JSON.stringify({
+                                        operationName: "AddProduct",
+                                        variables: {
+                                            items: [
+                                                {
+                                                    productId,
+                                                    outletId: null,
+                                                    quantity: 1,
+                                                    serviceId: null,
+                                                    warrantyId: null,
+                                                },
+                                            ],
+                                        },
+                                        extensions: {
+                                            pwa: {
+                                                salesLine: store.salesLine,
+                                                country: store.countryCode,
+                                                language: "de",
                                             },
-                                        ],
-                                    },
-                                    extensions: {
-                                        pwa: {
-                                            salesLine: store.salesLine,
-                                            country: store.countryCode,
-                                            language: "de",
+                                            persistedQuery: {
+                                                version: 1,
+                                                sha256Hash: "404e7401c3363865cc3d92d5c5454ef7d382128c014c75f5fc39ed7ce549e2b9",
+                                            },
                                         },
-                                        persistedQuery: {
-                                            version: 1,
-                                            sha256Hash: "404e7401c3363865cc3d92d5c5454ef7d382128c014c75f5fc39ed7ce549e2b9",
-                                        },
-                                    },
-                                }),
-                                method: "POST",
-                                mode: "cors",
-                            })
-                                .then((res) => ({ success: res.status === 200, status: res.status }))
-                                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                                .catch((_) => ({ success: false, status: -1 })),
-                        this.store as SerializableOrJSHandle,
-                        id
-                    ),
-                    this.sleep(2000, {
-                        success: false,
-                        status: 0,
-                    }),
-                ]);
+                                    }),
+                                    method: "POST",
+                                    mode: "cors",
+                                })
+                                    .then((res) => ({ success: res.status === 200, status: res.status }))
+                                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                                    .catch((_) => ({ success: false, status: -2 })),
+                            this.store as SerializableOrJSHandle,
+                            id
+                        ),
+                        this.sleep(2000, {
+                            success: false,
+                            status: -1,
+                        }),
+                    ]);
+                } catch (e) {
+                    res = { success: false, status: 0 };
+                    this.logger.error(e);
+                }
+
                 if (res.success) {
                     const cartCookie = (await this.page?.cookies())?.filter((cookie) => cookie.name === "r")[0];
                     if (cartCookie) {
@@ -525,7 +532,9 @@ export class StockChecker {
 
     private notifyCookies(item: Item, cookies: string[]) {
         const message = this.decorateMessageWithRoles(
-            `🍪: ${cookies.length} cart cookies were made for ${item?.product?.title}:\n\`${cookies.join("\n")}\``
+            `🍪 ${cookies.length} cart cookies were made for ${item?.product?.title} for ${this.store.getName()}:\n\`${cookies.join(
+                "\n"
+            )}\``
         );
         if (this.webhook) {
             this.webhook.send({
@@ -571,7 +580,7 @@ export class StockChecker {
 
     private notifyRateLimit(seconds: number) {
         if (this.webhook && seconds > 300 && !this.usesProxy) {
-            const message = `[${this.store.salesLine}] Too many requests, we need to pause ${(seconds / 60).toFixed(2)} minutes... 😴`;
+            const message = `[${this.store.getName()}] Too many requests, we need to pause ${(seconds / 60).toFixed(2)} minutes... 😴`;
             this.webhook.send({
                 text: message,
                 username: `Stock Shock 💤`,
