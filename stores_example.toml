@@ -6,6 +6,7 @@ webhook_role_ping = ""
 proxy_url = ""
 proxy_username = ""
 proxy_password = ""
+start_url = ""
 
 [mmde]
 email = ""
@@ -15,6 +16,7 @@ webhook_role_ping = ""
 proxy_url = ""
 proxy_username = ""
 proxy_password = ""
+start_url = ""
 
 [mmat]
 email = ""
@@ -24,3 +26,4 @@ webhook_role_ping = ""
 proxy_url = ""
 proxy_username = ""
 proxy_password = ""
+start_url = ""
