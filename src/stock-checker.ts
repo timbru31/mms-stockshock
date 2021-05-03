@@ -139,14 +139,14 @@ export class StockChecker {
             await this.page.authenticate({ username: storeConfig.proxy_username, password: storeConfig.proxy_password });
         }
 
+        const client = await this.page.target().createCDPSession();
+        await client.send("Network.clearBrowserCookies");
+
         // This is the fastest site to render without any JS or CSS bloat
         await this.page.setJavaScriptEnabled(false);
         await this.page.goto(`${this.store.baseUrl}/404`, {
             waitUntil: "networkidle0",
         });
-
-        const client = await this.page.target().createCDPSession();
-        await client.send("Network.clearBrowserCookies");
     }
 
     async checkStock(): Promise<void> {
