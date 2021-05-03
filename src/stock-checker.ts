@@ -69,7 +69,7 @@ export class StockChecker {
 
         const res = await Promise.race([
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            await this.page!.evaluate(
+            this.page!.evaluate(
                 async (store: Store, email: string, password: string) =>
                     await fetch(`${store.baseUrl}/api/v1/graphql`, {
                         credentials: "include",
@@ -201,59 +201,69 @@ export class StockChecker {
             const cookies: string[] = [];
             for (let i = 0; i < 20; i++) {
                 await this.createIncognitoContext(storeConfig);
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                await this.page!.evaluate(
-                    async (store: Store, productId: string) =>
-                        fetch(`${store.baseUrl}/api/v1/graphql`, {
-                            credentials: "include",
-                            headers: {
-                                "content-type": "application/json",
-                                "apollographql-client-name": "pwa-client",
-                                "apollographql-client-version": "7.9.0",
-                                "x-operation": "AddProduct",
-                                "x-cacheable": "false",
-                                "X-MMS-Language": "de",
-                                "X-MMS-Country": store.countryCode,
-                                "X-MMS-Salesline": store.salesLine,
-                                Pragma: "no-cache",
-                                "Cache-Control": "no-cache",
-                            },
-                            referrer: `${store.baseUrl}/`,
-                            body: JSON.stringify({
-                                operationName: "AddProduct",
-                                variables: {
-                                    items: [
-                                        {
-                                            productId,
-                                            outletId: null,
-                                            quantity: 1,
-                                            serviceId: null,
-                                            warrantyId: null,
+                const res = await Promise.race([
+                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                    this.page!.evaluate(
+                        async (store: Store, productId: string) =>
+                            fetch(`${store.baseUrl}/api/v1/graphql`, {
+                                credentials: "include",
+                                headers: {
+                                    "content-type": "application/json",
+                                    "apollographql-client-name": "pwa-client",
+                                    "apollographql-client-version": "7.9.0",
+                                    "x-operation": "AddProduct",
+                                    "x-cacheable": "false",
+                                    "X-MMS-Language": "de",
+                                    "X-MMS-Country": store.countryCode,
+                                    "X-MMS-Salesline": store.salesLine,
+                                    Pragma: "no-cache",
+                                    "Cache-Control": "no-cache",
+                                },
+                                referrer: `${store.baseUrl}/`,
+                                body: JSON.stringify({
+                                    operationName: "AddProduct",
+                                    variables: {
+                                        items: [
+                                            {
+                                                productId,
+                                                outletId: null,
+                                                quantity: 1,
+                                                serviceId: null,
+                                                warrantyId: null,
+                                            },
+                                        ],
+                                    },
+                                    extensions: {
+                                        pwa: {
+                                            salesLine: store.salesLine,
+                                            country: store.countryCode,
+                                            language: "de",
                                         },
-                                    ],
-                                },
-                                extensions: {
-                                    pwa: {
-                                        salesLine: store.salesLine,
-                                        country: store.countryCode,
-                                        language: "de",
+                                        persistedQuery: {
+                                            version: 1,
+                                            sha256Hash: "404e7401c3363865cc3d92d5c5454ef7d382128c014c75f5fc39ed7ce549e2b9",
+                                        },
                                     },
-                                    persistedQuery: {
-                                        version: 1,
-                                        sha256Hash: "404e7401c3363865cc3d92d5c5454ef7d382128c014c75f5fc39ed7ce549e2b9",
-                                    },
-                                },
+                                }),
+                                method: "POST",
+                                mode: "cors",
                             }),
-                            method: "POST",
-                            mode: "cors",
-                        }),
-                    this.store as SerializableOrJSHandle,
-                    id
-                );
-                const cartCookie = (await this.page?.cookies())?.filter((cookie) => cookie.name === "r")[0];
-                if (cartCookie) {
-                    cookies.push(cartCookie.value);
-                    this.logger.info(`Made cookie ${cartCookie.value} for product ${id}`);
+                        this.store as SerializableOrJSHandle,
+                        id
+                    )
+                        .then((res) => ({ success: res.status === 200 }))
+                        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                        .catch((_) => ({ success: false })),
+                    this.sleep(2000, {
+                        success: false,
+                    }),
+                ]);
+                if (res.success) {
+                    const cartCookie = (await this.page?.cookies())?.filter((cookie) => cookie.name === "r")[0];
+                    if (cartCookie) {
+                        cookies.push(cartCookie.value);
+                        this.logger.info(`Made cookie ${cartCookie.value} for product ${id}`);
+                    }
                 }
             }
             if (cookies) {
