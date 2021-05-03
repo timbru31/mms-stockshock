@@ -157,9 +157,10 @@ export class StockChecker {
         try {
             await this.page.goto(storeConfig.start_url || `${this.store.baseUrl}/404`, {
                 waitUntil: "networkidle0",
+                timeout: 5000,
             });
         } catch (e) {
-            this.logger.error("Unable to visit start page, exiting...");
+            this.logger.error("Unable to visit start page...");
             if (exitOnFail) {
                 process.exit(1);
             }
@@ -205,7 +206,7 @@ export class StockChecker {
                 await this.createIncognitoContext(storeConfig, false);
                 const res = await Promise.race([
                     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                    await this.page!.evaluate(
+                    this.page!.evaluate(
                         async (store: Store, productId: string) =>
                             fetch(`${store.baseUrl}/api/v1/graphql`, {
                                 credentials: "include",
