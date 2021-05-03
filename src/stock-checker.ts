@@ -65,7 +65,11 @@ export class StockChecker {
             throw new Error("Puppeteer context not inialized!");
         }
 
-        await this.createIncognitoContext(storeConfig);
+        const contextCreated = await Promise.race([this.createIncognitoContext(storeConfig, false), this.sleep(6000, false)]);
+        if (!contextCreated) {
+            this.logger.error(`Login did not succeed, please restart with '--no-headless' option. Context could not be created`);
+            process.exit(1);
+        }
 
         const res = await Promise.race([
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
