@@ -452,7 +452,7 @@ export class StockChecker {
             );
         } else if (this.canProductBeAddedToCart(item)) {
             message = this.decorateMessageWithRoles(
-                `🛒 Item **can be aded to cart**: ${item?.product?.title} for ${item?.price?.price} ${item?.price?.currency}! Go check it out: ${this.store.baseUrl}${item?.product?.url}?magician=${item?.product?.id}`
+                `🛒 Item **can be added to cart**: ${item?.product?.title} for ${item?.price?.price} ${item?.price?.currency}! Go check it out: ${this.store.baseUrl}${item?.product?.url}?magician=${item?.product?.id}`
             );
         } else {
             message = this.decorateMessageWithRoles(
