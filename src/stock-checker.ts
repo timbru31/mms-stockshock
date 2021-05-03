@@ -131,7 +131,7 @@ export class StockChecker {
         this.reLoginRequired = false;
     }
 
-    private async createIncognitoContext(storeConfig: StoreConfiguration) {
+    private async createIncognitoContext(storeConfig: StoreConfiguration, exitOnFail = true) {
         if (this.context) {
             this.context.close();
         }
@@ -160,7 +160,9 @@ export class StockChecker {
             });
         } catch (e) {
             this.logger.error("Unable to visit start page, exiting...");
-            process.exit(1);
+            if (exitOnFail) {
+                process.exit(1);
+            }
         }
     }
 
@@ -200,10 +202,10 @@ export class StockChecker {
         for (const [id, item] of this.cartItems.entries()) {
             const cookies: string[] = [];
             for (let i = 0; i < 20; i++) {
-                await this.createIncognitoContext(storeConfig);
+                await this.createIncognitoContext(storeConfig, false);
                 const res = await Promise.race([
                     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                    this.page!.evaluate(
+                    await this.page!.evaluate(
                         async (store: Store, productId: string) =>
                             fetch(`${store.baseUrl}/api/v1/graphql`, {
                                 credentials: "include",
@@ -247,13 +249,13 @@ export class StockChecker {
                                 }),
                                 method: "POST",
                                 mode: "cors",
-                            }),
+                            })
+                                .then((res) => ({ success: res.status === 200 }))
+                                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                                .catch((_) => ({ success: false })),
                         this.store as SerializableOrJSHandle,
                         id
-                    )
-                        .then((res) => ({ success: res.status === 200 }))
-                        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                        .catch((_) => ({ success: false })),
+                    ),
                     this.sleep(2000, {
                         success: false,
                     }),
@@ -265,6 +267,7 @@ export class StockChecker {
                         this.logger.info(`Made cookie ${cartCookie.value} for product ${id}`);
                     }
                 }
+                await this.sleep();
             }
             if (cookies) {
                 this.notifyCookies(item, cookies);
