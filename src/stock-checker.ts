@@ -159,11 +159,13 @@ export class StockChecker {
                 waitUntil: "networkidle0",
                 timeout: 5000,
             });
+            return true;
         } catch (e) {
             this.logger.error("Unable to visit start page...");
             if (exitOnFail) {
                 process.exit(1);
             }
+            return false;
         }
     }
 
@@ -202,8 +204,11 @@ export class StockChecker {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         for (const [id, item] of this.cartItems.entries()) {
             const cookies: string[] = [];
-            for (let i = 0; i < 20; i++) {
-                await this.createIncognitoContext(storeConfig, false);
+            for (let i = 0; i < 10; i++) {
+                const contextCreated = await Promise.race([this.createIncognitoContext(storeConfig, false), this.sleep(6000, false)]);
+                if (!contextCreated) {
+                    continue;
+                }
                 const res = await Promise.race([
                     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                     this.page!.evaluate(
