@@ -207,9 +207,10 @@ export class StockChecker {
             for (let i = 0; i < 10; i++) {
                 const contextCreated = await Promise.race([this.createIncognitoContext(storeConfig, false), this.sleep(6000, false)]);
                 if (!contextCreated) {
+                    this.logger.error(`Unable to create new context for ${id} try ${i} of 10. Skipping`);
                     continue;
                 }
-                const res = await Promise.race([
+                const res: { status: number; success: boolean } = await Promise.race([
                     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                     this.page!.evaluate(
                         async (store: Store, productId: string) =>
@@ -256,14 +257,15 @@ export class StockChecker {
                                 method: "POST",
                                 mode: "cors",
                             })
-                                .then((res) => ({ success: res.status === 200 }))
+                                .then((res) => ({ success: res.status === 200, status: res.status }))
                                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                                .catch((_) => ({ success: false })),
+                                .catch((_) => ({ success: false, status: -1 })),
                         this.store as SerializableOrJSHandle,
                         id
                     ),
                     this.sleep(2000, {
                         success: false,
+                        status: 0,
                     }),
                 ]);
                 if (res.success) {
@@ -272,6 +274,8 @@ export class StockChecker {
                         cookies.push(cartCookie.value);
                         this.logger.info(`Made cookie ${cartCookie.value} for product ${id}`);
                     }
+                } else {
+                    this.logger.error(`Unable to create cookie for ${id} try ${i} of 10`);
                 }
                 await this.sleep();
             }
