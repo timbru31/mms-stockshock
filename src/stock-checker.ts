@@ -66,47 +66,57 @@ export class StockChecker {
         }
 
         await this.createIncognitoContext(storeConfig);
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const res = await this.page!.evaluate(
-            async (store: Store, email: string, password: string) =>
-                await fetch(`${store.baseUrl}/api/v1/graphql`, {
-                    credentials: "include",
-                    headers: {
-                        "content-type": "application/json",
-                        "apollographql-client-name": "pwa-client",
-                        "apollographql-client-version": "7.8.0",
-                        "x-operation": "LoginProfileUser",
-                        "x-cacheable": "false",
-                        "X-MMS-Language": "de",
-                        "X-MMS-Country": store.countryCode,
-                        "X-MMS-Salesline": store.salesLine,
-                        Pragma: "no-cache",
-                        "Cache-Control": "no-cache",
-                    },
-                    referrer: `${store.baseUrl}/`,
-                    body: JSON.stringify({
-                        operationName: "LoginProfileUser",
-                        variables: { email, password },
-                        extensions: {
-                            pwa: { salesLine: store.salesLine, country: store.countryCode, language: "de" },
-                            persistedQuery: { version: 1, sha256Hash: "cfd846cd502b48472f1c55a2887c8055ee41d2e2e4b179a1e718813ba7d832a0" },
+
+        const res = await Promise.race([
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            await this.page!.evaluate(
+                async (store: Store, email: string, password: string) =>
+                    await fetch(`${store.baseUrl}/api/v1/graphql`, {
+                        credentials: "include",
+                        headers: {
+                            "content-type": "application/json",
+                            "apollographql-client-name": "pwa-client",
+                            "apollographql-client-version": "7.8.0",
+                            "x-operation": "LoginProfileUser",
+                            "x-cacheable": "false",
+                            "X-MMS-Language": "de",
+                            "X-MMS-Country": store.countryCode,
+                            "X-MMS-Salesline": store.salesLine,
+                            Pragma: "no-cache",
+                            "Cache-Control": "no-cache",
                         },
-                    }),
-                    method: "POST",
-                    mode: "cors",
-                }).then((res) =>
-                    res.status === 200
-                        ? res
-                              .json()
-                              .then((data) => ({ status: res.status, body: data }))
-                              // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                              .catch((_) => ({ status: res.status, body: null, retryAfter: res.headers.get("Retry-After") }))
-                        : res.text().then((data) => ({ status: res.status, body: data }))
-                ),
-            this.store as SerializableOrJSHandle,
-            storeConfig.email,
-            storeConfig.password
-        );
+                        referrer: `${store.baseUrl}/`,
+                        body: JSON.stringify({
+                            operationName: "LoginProfileUser",
+                            variables: { email, password },
+                            extensions: {
+                                pwa: { salesLine: store.salesLine, country: store.countryCode, language: "de" },
+                                persistedQuery: {
+                                    version: 1,
+                                    sha256Hash: "cfd846cd502b48472f1c55a2887c8055ee41d2e2e4b179a1e718813ba7d832a0",
+                                },
+                            },
+                        }),
+                        method: "POST",
+                        mode: "cors",
+                    }).then((res) =>
+                        res.status === 200
+                            ? res
+                                  .json()
+                                  .then((data) => ({ status: res.status, body: data }))
+                                  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                                  .catch((_) => ({ status: res.status, body: null, retryAfter: res.headers.get("Retry-After") }))
+                            : res.text().then((data) => ({ status: res.status, body: data }))
+                    ),
+                this.store as SerializableOrJSHandle,
+                storeConfig.email,
+                storeConfig.password
+            ),
+            this.sleep(5000, {
+                status: 0,
+                body: { errors: "Timeout" },
+            }),
+        ]);
         if (res.status !== 200 || !res.body || res.body?.errors) {
             if (headless) {
                 this.logger.error(`Login did not succeed, please restart with '--no-headless' option, Status ${res.status}`);
@@ -144,9 +154,14 @@ export class StockChecker {
 
         // This is the fastest site to render without any JS or CSS bloat
         await this.page.setJavaScriptEnabled(false);
-        await this.page.goto(storeConfig.start_url || `${this.store.baseUrl}/404`, {
-            waitUntil: "networkidle0",
-        });
+        try {
+            await this.page.goto(storeConfig.start_url || `${this.store.baseUrl}/404`, {
+                waitUntil: "networkidle0",
+            });
+        } catch (e) {
+            this.logger.error("Unable to visit start page, exiting...");
+            process.exit(1);
+        }
     }
 
     async checkStock(): Promise<void> {
