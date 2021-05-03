@@ -208,6 +208,7 @@ export class StockChecker {
                 const contextCreated = await Promise.race([this.createIncognitoContext(storeConfig, false), this.sleep(6000, false)]);
                 if (!contextCreated) {
                     this.logger.error(`Unable to create new context for ${id} try ${i} of 10. Skipping`);
+                    await this.sleep();
                     continue;
                 }
                 const res: { status: number; success: boolean } = await Promise.race([
