@@ -111,15 +111,18 @@ export class StockChecker {
                             }),
                             method: "POST",
                             mode: "cors",
-                        }).then((res) =>
-                            res.status === 200
-                                ? res
-                                      .json()
-                                      .then((data) => ({ status: res.status, body: data }))
-                                      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                                      .catch((_) => ({ status: res.status, body: null, retryAfter: res.headers.get("Retry-After") }))
-                                : res.text().then((data) => ({ status: res.status, body: data }))
-                        ),
+                        })
+                            .then((res) =>
+                                res.status === 200
+                                    ? res
+                                          .json()
+                                          .then((data) => ({ status: res.status, body: data }))
+                                          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                                          .catch((_) => ({ status: res.status, body: null, retryAfter: res.headers.get("Retry-After") }))
+                                    : res.text().then((data) => ({ status: res.status, body: data }))
+                            )
+                            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                            .catch((_) => ({ status: -1, body: null })),
                     this.store as SerializableOrJSHandle,
                     storeConfig.email,
                     storeConfig.password
@@ -305,10 +308,14 @@ export class StockChecker {
                 }
 
                 if (res.success) {
-                    const cartCookie = (await this.page?.cookies())?.filter((cookie) => cookie.name === "r")[0];
-                    if (cartCookie) {
-                        cookies.push(cartCookie.value);
-                        this.logger.info(`Made cookie ${cartCookie.value} for product ${id}`);
+                    try {
+                        const cartCookie = (await this.page?.cookies())?.filter((cookie) => cookie.name === "r")[0];
+                        if (cartCookie) {
+                            cookies.push(cartCookie.value);
+                            this.logger.info(`Made cookie ${cartCookie.value} for product ${id}`);
+                        }
+                    } catch (e) {
+                        this.logger.error("Unable to get cookie from page, error %O", e);
                     }
                 } else {
                     this.logger.error(`Unable to create cookie for ${id} try ${i} of 10`);
@@ -339,26 +346,30 @@ export class StockChecker {
 
     // See https://intoli.com/blog/making-chrome-headless-undetectable/
     private async patchHairlineDetection() {
-        await this.page?.evaluateOnNewDocument(() => {
-            // store the existing descriptor
-            const elementDescriptor = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "offsetHeight");
+        try {
+            await this.page?.evaluateOnNewDocument(() => {
+                // store the existing descriptor
+                const elementDescriptor = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "offsetHeight");
 
-            // redefine the property with a patched descriptor
-            Object.defineProperty(HTMLDivElement.prototype, "offsetHeight", {
-                ...elementDescriptor,
-                get: function () {
-                    if (this.id === "modernizr") {
-                        return 1;
-                    }
-                    return elementDescriptor?.get?.apply(this);
-                },
+                // redefine the property with a patched descriptor
+                Object.defineProperty(HTMLDivElement.prototype, "offsetHeight", {
+                    ...elementDescriptor,
+                    get: function () {
+                        if (this.id === "modernizr") {
+                            return 1;
+                        }
+                        return elementDescriptor?.get?.apply(this);
+                    },
+                });
             });
-        });
+        } catch (e) {
+            this.logger.error("Unable to patch hairline detection, error %O", e);
+        }
     }
 
     private async handleWishlistError(res: { status: number; body: WishlistReponse | null; retryAfterHeader: string | null }) {
         this.logger.error(`Wishlist query did not succeed, status code: ${res.status}`);
-        if (res.body?.errors) {
+        if (res?.body?.errors) {
             this.logger.error("Error: %O", res.body.errors);
         }
         if (res.status === 429 && res?.retryAfterHeader) {
@@ -430,13 +441,16 @@ export class StockChecker {
                                 },
                             }),
                             mode: "cors",
-                        }).then((res) =>
-                            res
-                                .json()
-                                .then((data) => ({ status: res.status, body: data, retryAfterHeader: null }))
-                                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                                .catch((_) => ({ status: res.status, body: null, retryAfterHeader: res.headers.get("Retry-After") }))
-                        ),
+                        })
+                            .then((res) =>
+                                res
+                                    .json()
+                                    .then((data) => ({ status: res.status, body: data, retryAfterHeader: null }))
+                                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                                    .catch((_) => ({ status: res.status, body: null, retryAfterHeader: res.headers.get("Retry-After") }))
+                            )
+                            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                            .catch((_) => ({ status: -1, body: null, retryAfterHeader: null })),
                     this.store as SerializableOrJSHandle,
                     offset
                 ),
@@ -591,7 +605,7 @@ export class StockChecker {
 
     private addToCooldownMap(isProductBuyable: boolean, item: Item) {
         const endTime = add(new Date(), {
-            minutes: isProductBuyable ? 1 : 5,
+            minutes: isProductBuyable ? 5 : 20,
         });
         this.cooldowns.set(item?.product?.id, {
             id: item?.product?.id,
