@@ -19,10 +19,12 @@ jobs:
             - name: Checkout
               uses: actions/checkout@v2
 
-            - name: Build
+            - name: Prepare Node.js
               uses: actions/setup-node@v2.1.5
               with:
                   node-version: "14"
+
+            - name: Build
               run: |
                   npm ci
                   npm run build
