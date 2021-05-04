@@ -1,7 +1,8 @@
 FROM timbru31/node-chrome:alpine
 
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
-    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser \
+    NODE_ENV=production
 
 ARG STORE
 ENV STORE ${STORE}
@@ -11,7 +12,7 @@ RUN mkdir -p /opt/mms-stockshock \
     && chown -R stonks:stonks /opt/mms-stockshock
 
 COPY package*.json /opt/mms-stockshock
-COPY src /opt/mms-stockshock/src
+COPY dist /opt/mms-stockshock/dist
 COPY tsconfig.json /opt/mms-stockshock
 
 USER stonks

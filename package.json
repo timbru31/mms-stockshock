@@ -5,7 +5,10 @@
     "description": "A simple bot for MediaMarkt and Saturn to check if items on the wishlist are available",
     "main": "index.js",
     "scripts": {
-        "start": "ts-node src/index.ts",
+        "postinstall": "patch-package",
+        "build": "tsc",
+        "start:dev": "ts-node src/index.ts",
+        "start": "node dist/index.js",
         "test": "eslint . --ext .ts",
         "prepare": "husky install"
     },
@@ -21,6 +24,7 @@
         "@slack/webhook": "^6.0.0",
         "date-fns": "^2.21.1",
         "inquirer": "^8.0.0",
+        "patch-package": "^6.4.7",
         "puppeteer": "^9.0.0",
         "puppeteer-extra": "^3.1.18",
         "puppeteer-extra-plugin-stealth": "^2.7.8",

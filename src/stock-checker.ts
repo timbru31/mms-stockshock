@@ -71,56 +71,63 @@ export class StockChecker {
             process.exit(1);
         }
 
-        const res = await Promise.race([
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            this.page!.evaluate(
-                async (store: Store, email: string, password: string) =>
-                    await fetch(`${store.baseUrl}/api/v1/graphql?anti-cache=${new Date().getTime()}`, {
-                        credentials: "include",
-                        headers: {
-                            "content-type": "application/json",
-                            "apollographql-client-name": "pwa-client",
-                            "apollographql-client-version": "7.9.0",
-                            "x-operation": "LoginProfileUser",
-                            "x-cacheable": "false",
-                            "X-MMS-Language": "de",
-                            "X-MMS-Country": store.countryCode,
-                            "X-MMS-Salesline": store.salesLine,
-                            Pragma: "no-cache",
-                            "Cache-Control": "no-cache",
-                        },
-                        referrer: `${store.baseUrl}/`,
-                        body: JSON.stringify({
-                            operationName: "LoginProfileUser",
-                            variables: { email, password },
-                            extensions: {
-                                pwa: { salesLine: store.salesLine, country: store.countryCode, language: "de" },
-                                persistedQuery: {
-                                    version: 1,
-                                    sha256Hash: "cfd846cd502b48472f1c55a2887c8055ee41d2e2e4b179a1e718813ba7d832a0",
-                                },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let res: { status: number; body?: any };
+        try {
+            res = await Promise.race([
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                this.page!.evaluate(
+                    async (store: Store, email: string, password: string) =>
+                        await fetch(`${store.baseUrl}/api/v1/graphql?anti-cache=${new Date().getTime()}`, {
+                            credentials: "include",
+                            headers: {
+                                "content-type": "application/json",
+                                "apollographql-client-name": "pwa-client",
+                                "apollographql-client-version": "7.9.0",
+                                "x-operation": "LoginProfileUser",
+                                "x-cacheable": "false",
+                                "X-MMS-Language": "de",
+                                "X-MMS-Country": store.countryCode,
+                                "X-MMS-Salesline": store.salesLine,
+                                Pragma: "no-cache",
+                                "Cache-Control": "no-cache",
                             },
-                        }),
-                        method: "POST",
-                        mode: "cors",
-                    }).then((res) =>
-                        res.status === 200
-                            ? res
-                                  .json()
-                                  .then((data) => ({ status: res.status, body: data }))
-                                  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                                  .catch((_) => ({ status: res.status, body: null, retryAfter: res.headers.get("Retry-After") }))
-                            : res.text().then((data) => ({ status: res.status, body: data }))
-                    ),
-                this.store as SerializableOrJSHandle,
-                storeConfig.email,
-                storeConfig.password
-            ),
-            this.sleep(5000, {
-                status: 0,
-                body: { errors: "Timeout" },
-            }),
-        ]);
+                            referrer: `${store.baseUrl}/`,
+                            body: JSON.stringify({
+                                operationName: "LoginProfileUser",
+                                variables: { email, password },
+                                extensions: {
+                                    pwa: { salesLine: store.salesLine, country: store.countryCode, language: "de" },
+                                    persistedQuery: {
+                                        version: 1,
+                                        sha256Hash: "cfd846cd502b48472f1c55a2887c8055ee41d2e2e4b179a1e718813ba7d832a0",
+                                    },
+                                },
+                            }),
+                            method: "POST",
+                            mode: "cors",
+                        }).then((res) =>
+                            res.status === 200
+                                ? res
+                                      .json()
+                                      .then((data) => ({ status: res.status, body: data }))
+                                      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                                      .catch((_) => ({ status: res.status, body: null, retryAfter: res.headers.get("Retry-After") }))
+                                : res.text().then((data) => ({ status: res.status, body: data }))
+                        ),
+                    this.store as SerializableOrJSHandle,
+                    storeConfig.email,
+                    storeConfig.password
+                ),
+                this.sleep(5000, {
+                    status: 0,
+                    body: { errors: "Timeout" },
+                }),
+            ]);
+        } catch (e) {
+            res = { status: -1 };
+            this.logger.error(e);
+        }
         if (res.status !== 200 || !res.body || res.body?.errors) {
             if (headless) {
                 this.logger.error(`Login did not succeed, please restart with '--no-headless' option, Status ${res.status}`);
