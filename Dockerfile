@@ -19,4 +19,4 @@ USER stonks
 WORKDIR /opt/mms-stockshock
 
 RUN npm install
-CMD ["npm", "start", "--", "--store", "$STORE", "--sandbox", "false"]
+CMD ["node", "dist/index.js", "--store", "$STORE", "--sandbox", "false"]
