@@ -16,4 +16,4 @@ USER stonks
 WORKDIR /opt/mms-stockshock
 
 RUN npm install
-CMD ["sh", "-c", "node dist/index.js --store ${STORE} --sandbox false"]
+CMD ["sh", "-c", "node --unhandled-rejections=strict dist/index.js --store ${STORE} --sandbox false"]

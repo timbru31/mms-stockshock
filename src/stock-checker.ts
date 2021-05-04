@@ -65,7 +65,12 @@ export class StockChecker {
             throw new Error("Puppeteer context not inialized!");
         }
 
-        const contextCreated = await Promise.race([this.createIncognitoContext(storeConfig, false), this.sleep(6000, false)]);
+        let contextCreated = false;
+        try {
+            contextCreated = await Promise.race([this.createIncognitoContext(storeConfig, false), this.sleep(6000, false)]);
+        } catch (e) {
+            this.logger.error("Context creation failed, error %O", e);
+        }
         if (!contextCreated) {
             this.logger.error(`Login did not succeed, please restart with '--no-headless' option. Context could not be created`);
             process.exit(1);
@@ -147,7 +152,7 @@ export class StockChecker {
 
     private async createIncognitoContext(storeConfig: StoreConfiguration, exitOnFail = true) {
         if (this.context) {
-            this.context.close();
+            await this.context.close();
         }
 
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -156,7 +161,7 @@ export class StockChecker {
 
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         this.page = await this.browser!.newPage();
-        this.page.setUserAgent(new UserAgent().toString());
+        await this.page.setUserAgent(new UserAgent().toString());
         await this.patchHairlineDetection();
 
         if (storeConfig.proxy_url && storeConfig.proxy_username && storeConfig.proxy_password) {
@@ -200,7 +205,7 @@ export class StockChecker {
             if (!totalItems) {
                 throw new Error("Nothing on wishlist!");
             }
-            this.checkItems(res.body?.data?.wishlistItems?.items);
+            await this.checkItems(res.body?.data?.wishlistItems?.items);
 
             if (totalItems > this.MAX_ITEMS_PER_QUERY) {
                 const remainingQueryCalls = Math.ceil((totalItems - this.MAX_ITEMS_PER_QUERY) / this.MAX_ITEMS_PER_QUERY);
@@ -211,7 +216,7 @@ export class StockChecker {
                     if (res.status !== 200 || !res.body || res.body?.errors) {
                         await this.handleWishlistError(res);
                     } else {
-                        this.checkItems(res.body?.data?.wishlistItems?.items);
+                        await this.checkItems(res.body?.data?.wishlistItems?.items);
                     }
                 }
             }
@@ -223,7 +228,12 @@ export class StockChecker {
         for (const [id, item] of this.cartItems.entries()) {
             const cookies: string[] = [];
             for (let i = 0; i < 10; i++) {
-                const contextCreated = await Promise.race([this.createIncognitoContext(storeConfig, false), this.sleep(6000, false)]);
+                let contextCreated = false;
+                try {
+                    contextCreated = await Promise.race([this.createIncognitoContext(storeConfig, false), this.sleep(6000, false)]);
+                } catch (e) {
+                    this.logger.error("Context creation failed, error %O", e);
+                }
                 if (!contextCreated) {
                     this.logger.error(`Unable to create new context for ${id} try ${i} of 10. Skipping`);
                     await this.sleep();
@@ -306,7 +316,7 @@ export class StockChecker {
                 await this.sleep();
             }
             if (cookies) {
-                this.notifyCookies(item, cookies);
+                await this.notifyCookies(item, cookies);
             }
         }
         this.reLoginRequired = true;
@@ -354,7 +364,7 @@ export class StockChecker {
         if (res.status === 429 && res?.retryAfterHeader) {
             let cooldown = Number(res.retryAfterHeader);
             this.logger.error(`Too many requests, we need to cooldown and sleep ${cooldown} seconds`);
-            this.notifyRateLimit(cooldown);
+            await this.notifyRateLimit(cooldown);
             if (cooldown > 300) {
                 this.reLoginRequired = true;
                 cooldown = 320;
@@ -375,69 +385,74 @@ export class StockChecker {
         return new Promise<T>((resolve) => setTimeout(() => resolve(returnValue || ({} as T)), sleepTime || randomSleepTime));
     }
 
-    private async performWishlistQuery(
+    private performWishlistQuery(
         offset = 0
     ): Promise<{
         status: number;
         body: WishlistReponse | null;
         retryAfterHeader: string | null;
     }> {
-        return await Promise.race([
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            this.page!.evaluate(
-                async (store: Store, offset: number) =>
-                    await fetch(`${store.baseUrl}/api/v1/graphql?anti-cache=${new Date().getTime()}`, {
-                        credentials: "include",
-                        headers: {
-                            "content-type": "application/json",
-                            "apollographql-client-name": "pwa-client",
-                            "apollographql-client-version": "7.9.0",
-                            "x-operation": "GetUser",
-                            "x-cacheable": "false",
-                            "X-MMS-Language": "de",
-                            "X-MMS-Country": store.countryCode,
-                            "X-MMS-Salesline": store.salesLine,
-                            Pragma: "no-cache",
-                            "Cache-Control": "no-cache",
-                        },
-                        referrer: `${store.baseUrl}/`,
-                        method: "POST",
-                        body: JSON.stringify({
-                            operationName: "WishlistItems",
-                            variables: {
-                                hasMarketplace: true,
-                                shouldFetchBasket: true,
-                                limit: 24,
-                                offset,
+        try {
+            return Promise.race([
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                this.page!.evaluate(
+                    async (store: Store, offset: number) =>
+                        await fetch(`${store.baseUrl}/api/v1/graphql?anti-cache=${new Date().getTime()}`, {
+                            credentials: "include",
+                            headers: {
+                                "content-type": "application/json",
+                                "apollographql-client-name": "pwa-client",
+                                "apollographql-client-version": "7.9.0",
+                                "x-operation": "GetUser",
+                                "x-cacheable": "false",
+                                "X-MMS-Language": "de",
+                                "X-MMS-Country": store.countryCode,
+                                "X-MMS-Salesline": store.salesLine,
+                                Pragma: "no-cache",
+                                "Cache-Control": "no-cache",
                             },
-                            extensions: {
-                                pwa: { salesLine: store.salesLine, country: store.countryCode, language: "de" },
-                                persistedQuery: {
-                                    version: 1,
-                                    sha256Hash: "34f689a65435266a00785158604c61a7ad262c5a5bac523dd1af68c406f72248",
+                            referrer: `${store.baseUrl}/`,
+                            method: "POST",
+                            body: JSON.stringify({
+                                operationName: "WishlistItems",
+                                variables: {
+                                    hasMarketplace: true,
+                                    shouldFetchBasket: true,
+                                    limit: 24,
+                                    offset,
                                 },
-                            },
-                        }),
-                        mode: "cors",
-                    }).then((res) =>
-                        res
-                            .json()
-                            .then((data) => ({ status: res.status, body: data, retryAfterHeader: null }))
-                            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                            .catch((_) => ({ status: res.status, body: null, retryAfterHeader: res.headers.get("Retry-After") }))
-                    ),
-                this.store as SerializableOrJSHandle,
-                offset
-            ),
-            this.sleep(5000, {
-                status: 0,
-                retryAfterHeader: null,
-                body: { errors: "Timeout" },
-            }),
-        ]);
+                                extensions: {
+                                    pwa: { salesLine: store.salesLine, country: store.countryCode, language: "de" },
+                                    persistedQuery: {
+                                        version: 1,
+                                        sha256Hash: "34f689a65435266a00785158604c61a7ad262c5a5bac523dd1af68c406f72248",
+                                    },
+                                },
+                            }),
+                            mode: "cors",
+                        }).then((res) =>
+                            res
+                                .json()
+                                .then((data) => ({ status: res.status, body: data, retryAfterHeader: null }))
+                                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                                .catch((_) => ({ status: res.status, body: null, retryAfterHeader: res.headers.get("Retry-After") }))
+                        ),
+                    this.store as SerializableOrJSHandle,
+                    offset
+                ),
+                this.sleep(5000, {
+                    status: 0,
+                    retryAfterHeader: null,
+                    body: { errors: "Timeout" },
+                }),
+            ]);
+        } catch (error) {
+            this.logger.error("Unable to perform wishlist query: %O", error);
+            return Promise.resolve({ status: 0, body: null, retryAfterHeader: null });
+        }
     }
 
-    private checkItems(items: Item[] | undefined): void {
+    private async checkItems(items: Item[] | undefined): Promise<void> {
         if (items) {
             for (const item of items) {
                 if (!item) {
@@ -457,7 +472,7 @@ export class StockChecker {
                     }
 
                     if (!this.cooldowns.has(itemId)) {
-                        this.notifyStock(item);
+                        await this.notifyStock(item);
                     }
 
                     if (this.canProductBeAddedToCart(item) && !this.cartCooldowns.has(itemId)) {
@@ -507,7 +522,7 @@ export class StockChecker {
         return item?.product?.onlineStatus;
     }
 
-    private notifyStock(item: Item) {
+    private async notifyStock(item: Item) {
         let message;
         const fullAlert = this.isProductBuyable(item);
         if (fullAlert) {
@@ -524,16 +539,20 @@ export class StockChecker {
             );
         }
         if (this.webhook) {
-            this.webhook.send({
-                text: message,
-                username: `Stock Shock ${fullAlert ? "🧚" : "⚡️"}`,
-                attachments: [
-                    {
-                        title_link: `${this.store.baseUrl}${item.product.url}`,
-                        image_url: `https://assets.mmsrg.com/isr/166325/c1/-/${item.product.titleImageId}/mobile_200_200.png`,
-                    },
-                ],
-            });
+            try {
+                await this.webhook.send({
+                    text: message,
+                    username: `Stock Shock ${fullAlert ? "🧚" : "⚡️"}`,
+                    attachments: [
+                        {
+                            title_link: `${this.store.baseUrl}${item.product.url}`,
+                            image_url: `https://assets.mmsrg.com/isr/166325/c1/-/${item.product.titleImageId}/mobile_200_200.png`,
+                        },
+                    ],
+                });
+            } catch {
+                // Ignore
+            }
         }
         this.logger.info(message);
         if (fullAlert) {
@@ -544,23 +563,27 @@ export class StockChecker {
         this.addToCooldownMap(fullAlert, item);
     }
 
-    private notifyCookies(item: Item, cookies: string[]) {
+    private async notifyCookies(item: Item, cookies: string[]) {
         const message = this.decorateMessageWithRoles(
             `🍪 ${cookies.length} cart cookies were made for ${item?.product?.title} for ${this.store.getName()}:\n\`${cookies.join(
                 "\n"
             )}\``
         );
         if (this.webhook) {
-            this.webhook.send({
-                text: message,
-                username: "Stock Shock 🍪",
-                attachments: [
-                    {
-                        title_link: `${this.store.baseUrl}${item.product.url}`,
-                        image_url: `https://assets.mmsrg.com/isr/166325/c1/-/${item.product.titleImageId}/mobile_200_200.png`,
-                    },
-                ],
-            });
+            try {
+                await this.webhook.send({
+                    text: message,
+                    username: "Stock Shock 🍪",
+                    attachments: [
+                        {
+                            title_link: `${this.store.baseUrl}${item.product.url}`,
+                            image_url: `https://assets.mmsrg.com/isr/166325/c1/-/${item.product.titleImageId}/mobile_200_200.png`,
+                        },
+                    ],
+                });
+            } catch {
+                // Ignore
+            }
         }
 
         this.addToCartCooldownMap(item);
@@ -592,13 +615,17 @@ export class StockChecker {
         process.stdout.write("\x07");
     }
 
-    private notifyRateLimit(seconds: number) {
+    private async notifyRateLimit(seconds: number) {
         if (this.webhook && seconds > 300 && !this.usesProxy) {
             const message = `[${this.store.getName()}] Too many requests, we need to pause ${(seconds / 60).toFixed(2)} minutes... 😴`;
-            this.webhook.send({
-                text: message,
-                username: `Stock Shock 💤`,
-            });
+            try {
+                await this.webhook.send({
+                    text: message,
+                    username: `Stock Shock 💤`,
+                });
+            } catch {
+                // Ignore
+            }
         }
     }
 

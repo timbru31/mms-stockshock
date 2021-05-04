@@ -8,6 +8,7 @@
         "postinstall": "patch-package",
         "build": "tsc",
         "start:dev": "ts-node src/index.ts",
+        "prestart": "npm run build",
         "start": "node dist/index.js",
         "test": "eslint . --ext .ts",
         "prepare": "husky install"
