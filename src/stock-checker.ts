@@ -100,7 +100,7 @@ export class StockChecker {
                                     pwa: { salesLine: store.salesLine, country: store.countryCode, language: "de" },
                                     persistedQuery: {
                                         version: 1,
-                                        sha256Hash: "cfd846cd502b48472f1c55a2887c8055ee41d2e2e4b179a1e718813ba7d832a0",
+                                        sha256Hash: "48888a2943b5b790b95fce729554b6f0818eda790466ca59b074156da0723746",
                                     },
                                 },
                             }),
@@ -131,6 +131,9 @@ export class StockChecker {
         if (res.status !== 200 || !res.body || res.body?.errors) {
             if (headless) {
                 this.logger.error(`Login did not succeed, please restart with '--no-headless' option, Status ${res.status}`);
+                if (res.body) {
+                    this.logger.error("Errors: %O", res.body);
+                }
                 process.exit(1);
             }
             await prompt({
