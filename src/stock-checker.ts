@@ -369,7 +369,7 @@ export class StockChecker {
     }
 
     private setupWebHooks(storeConfig: StoreConfiguration) {
-        if (storeConfig?.stock_webhook_role_ping || storeConfig?.webhook_url) {
+        if (storeConfig?.stock_webhook_url || storeConfig?.webhook_url) {
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             this.stockWebhook = new IncomingWebhook((storeConfig?.stock_webhook_role_ping || storeConfig?.webhook_url)!);
         }
@@ -634,9 +634,9 @@ export class StockChecker {
 
     private async notifyCookies(item: Item, cookies: string[]) {
         const message = this.decorateMessageWithRoles(
-            `🍪 ${cookies.length} cart cookies were made for **${item?.product?.title}** for ${this.store.getName()}:\n\`${cookies.join(
-                "\n"
-            )}\n`,
+            `🍪 ${cookies.length} cart cookies were made for **${item?.product?.id}**, **${
+                item?.product?.title
+            }** for ${this.store.getName()}:\n\`${cookies.join("\n")}\n`,
             this.cookieWebhookRolePing
         );
         if (this.cookieWebhook) {
