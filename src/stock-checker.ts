@@ -5,6 +5,7 @@ import { Browser, BrowserContext, Page, PuppeteerNodeLaunchOptions, Serializable
 import puppeteer from "puppeteer-extra";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import UserAgent from "user-agents";
+import { v4 } from "uuid";
 import { Logger } from "winston";
 
 import { Item } from "./models/api/item";
@@ -82,7 +83,7 @@ export class StockChecker {
             res = await Promise.race([
                 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 this.page!.evaluate(
-                    async (store: Store, email: string, password: string) =>
+                    async (store: Store, email: string, password: string, flowId: string) =>
                         await fetch(`${store.baseUrl}/api/v1/graphql?anti-cache=${new Date().getTime()}`, {
                             credentials: "include",
                             headers: {
@@ -94,6 +95,7 @@ export class StockChecker {
                                 "X-MMS-Language": "de",
                                 "X-MMS-Country": store.countryCode,
                                 "X-MMS-Salesline": store.salesLine,
+                                "x-flow-id": flowId,
                                 Pragma: "no-cache",
                                 "Cache-Control": "no-cache",
                             },
@@ -125,7 +127,8 @@ export class StockChecker {
                             .catch((_) => ({ status: -1, body: null })),
                     this.store as SerializableOrJSHandle,
                     storeConfig.email,
-                    storeConfig.password
+                    storeConfig.password,
+                    v4()
                 ),
                 this.sleep(5000, {
                     status: 0,
@@ -176,6 +179,10 @@ export class StockChecker {
 
         // This is the fastest site to render without any JS or CSS bloat
         await this.page.setJavaScriptEnabled(false);
+        await this.page.setViewport({
+            width: 1024 + Math.floor(Math.random() * 100),
+            height: 768 + Math.floor(Math.random() * 100),
+        });
         try {
             await this.page.goto(storeConfig.start_url || `${this.store.baseUrl}/404`, {
                 waitUntil: "networkidle0",
@@ -247,7 +254,7 @@ export class StockChecker {
                     res = await Promise.race([
                         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                         this.page!.evaluate(
-                            async (store: Store, productId: string) =>
+                            async (store: Store, productId: string, flowId: string) =>
                                 await fetch(`${store.baseUrl}/api/v1/graphql?anti-cache=${new Date().getTime()}`, {
                                     credentials: "include",
                                     headers: {
@@ -259,6 +266,7 @@ export class StockChecker {
                                         "X-MMS-Language": "de",
                                         "X-MMS-Country": store.countryCode,
                                         "X-MMS-Salesline": store.salesLine,
+                                        "x-flow-id": flowId,
                                         Pragma: "no-cache",
                                         "Cache-Control": "no-cache",
                                     },
@@ -295,7 +303,8 @@ export class StockChecker {
                                     // eslint-disable-next-line @typescript-eslint/no-unused-vars
                                     .catch((_) => ({ success: false, status: -2 })),
                             this.store as SerializableOrJSHandle,
-                            id
+                            id,
+                            v4()
                         ),
                         this.sleep(2000, {
                             success: false,
@@ -407,7 +416,7 @@ export class StockChecker {
             return Promise.race([
                 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 this.page!.evaluate(
-                    async (store: Store, offset: number) =>
+                    async (store: Store, offset: number, flowId: string) =>
                         await fetch(`${store.baseUrl}/api/v1/graphql?anti-cache=${new Date().getTime()}`, {
                             credentials: "include",
                             headers: {
@@ -419,6 +428,7 @@ export class StockChecker {
                                 "X-MMS-Language": "de",
                                 "X-MMS-Country": store.countryCode,
                                 "X-MMS-Salesline": store.salesLine,
+                                "x-flow-id": flowId,
                                 Pragma: "no-cache",
                                 "Cache-Control": "no-cache",
                             },
@@ -452,7 +462,8 @@ export class StockChecker {
                             // eslint-disable-next-line @typescript-eslint/no-unused-vars
                             .catch((_) => ({ status: -1, body: null, retryAfterHeader: null })),
                     this.store as SerializableOrJSHandle,
-                    offset
+                    offset,
+                    v4()
                 ),
                 this.sleep(5000, {
                     status: 0,

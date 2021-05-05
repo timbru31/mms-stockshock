@@ -117,19 +117,28 @@ const customLogFormat = format.printf((info) => {
     await stockChecker.logIn(storeConfig, args.headless);
     logger.info("Login succeeded, let's hunt!");
 
+    process.on("unhandledRejection", (reason, promise) => {
+        logger.error("Unhandled Rejection at: %O", promise);
+        logger.error("Unhandled Rejection reason: %O", reason);
+    });
+
     // eslint-disable-next-line no-constant-condition
     while (true) {
-        logger.info("🤖 Beep, I'm alive and well checking your stock");
-        await stockChecker.checkStock();
-        if (stockChecker.cartItems.size) {
-            await stockChecker.createCartCookies(storeConfig);
-            stockChecker.cartItems.clear();
-        }
-        await new Promise((resolve) => setTimeout(resolve, store.getSleepTime()));
-        stockChecker.cleanupCooldowns();
-        if (stockChecker.reLoginRequired) {
-            await stockChecker.logIn(storeConfig, args.headless);
-            logger.info("Re-Login succeeded, let's hunt!");
+        try {
+            logger.info("🤖 Beep, I'm alive and well checking your stock");
+            await stockChecker.checkStock();
+            if (stockChecker.cartItems.size) {
+                await stockChecker.createCartCookies(storeConfig);
+                stockChecker.cartItems.clear();
+            }
+            await new Promise((resolve) => setTimeout(resolve, store.getSleepTime()));
+            stockChecker.cleanupCooldowns();
+            if (stockChecker.reLoginRequired) {
+                await stockChecker.logIn(storeConfig, args.headless);
+                logger.info("Re-Login succeeded, let's hunt!");
+            }
+        } catch (e) {
+            logger.info("🤖 Boop, I'm alive but checking your stock errored: %O", e);
         }
     }
 })();
