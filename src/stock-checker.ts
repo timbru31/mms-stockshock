@@ -634,7 +634,7 @@ export class StockChecker {
 
     private async notifyCookies(item: Item, cookies: string[]) {
         const message = this.decorateMessageWithRoles(
-            `🍪 ${cookies.length} cart cookies were made for ${item?.product?.title} for **${this.store.getName()}**:\n\`${cookies.join(
+            `🍪 ${cookies.length} cart cookies were made for **${item?.product?.title}** for ${this.store.getName()}:\n\`${cookies.join(
                 "\n"
             )}\n`,
             this.cookieWebhookRolePing
