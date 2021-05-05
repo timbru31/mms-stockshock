@@ -636,7 +636,7 @@ export class StockChecker {
         const message = this.decorateMessageWithRoles(
             `🍪 ${cookies.length} cart cookies were made for **${item?.product?.id}**, **${
                 item?.product?.title
-            }** for ${this.store.getName()}:\n\`${cookies.join("\n")}\n`,
+            }** for ${this.store.getName()}:\n\`${cookies.join("\n")}\`\n`,
             this.cookieWebhookRolePing
         );
         if (this.cookieWebhook) {
