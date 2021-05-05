@@ -8,7 +8,13 @@ export interface StoreConfiguration {
     email: string;
     password: string;
     webhook_url?: string;
+    stock_webhook_url?: string;
+    cookie_webhook_url?: string;
+    admin_webhook_url?: string;
     webhook_role_ping?: string;
+    stock_webhook_role_ping?: string;
+    cookie_webhook_role_ping?: string;
+    admin_webhook_role_ping?: string;
     proxy_url?: string;
     proxy_username?: string;
     proxy_password?: string;

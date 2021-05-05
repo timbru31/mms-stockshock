@@ -26,19 +26,19 @@ export class StockChecker {
     private browser: Browser | undefined;
     private context: BrowserContext | undefined;
     private page: Page | undefined;
-    private readonly webhook: IncomingWebhook | undefined;
-    private readonly webhookRolePing: string | undefined;
+    private stockWebhook: IncomingWebhook | undefined;
+    private cookieWebhook: IncomingWebhook | undefined;
+    private adminWebhook: IncomingWebhook | undefined;
+    private stockWebhookRolePing: string | undefined;
+    private cookieWebhookRolePing: string | undefined;
+    private adminWebhookRolePing: string | undefined;
     private readonly logger: Logger;
     private readonly cooldowns = new Map<string, NotificationCooldown>();
     private readonly cartCooldowns = new Map<string, NotificationCooldown>();
 
     constructor(store: Store, logger: Logger, storeConfig: StoreConfiguration) {
-        if (storeConfig?.webhook_url) {
-            this.webhook = new IncomingWebhook(storeConfig.webhook_url);
-        }
-        if (storeConfig?.webhook_role_ping) {
-            this.webhookRolePing = storeConfig.webhook_role_ping;
-        }
+        this.setupWebHooks(storeConfig);
+
         this.store = store;
         this.logger = logger;
     }
@@ -142,9 +142,10 @@ export class StockChecker {
         if (res.status !== 200 || !res.body || res.body?.errors) {
             if (headless) {
                 this.logger.error(`Login did not succeed, please restart with '--no-headless' option, Status ${res.status}`);
-                if (res.body) {
+                if (res.body?.errors) {
                     this.logger.error("Errors: %O", res.body);
                 }
+                await this.notifyAdmin(`😵 [${this.store.getName()}] I'm dying. Hopefully your Docker restarts me!`);
                 process.exit(1);
             }
             await prompt({
@@ -353,6 +354,46 @@ export class StockChecker {
         }
     }
 
+    async notifyAdmin(message: string): Promise<void> {
+        if (this.adminWebhook) {
+            const decoratedMessage = this.decorateMessageWithRoles(message, this.adminWebhookRolePing);
+            try {
+                await this.adminWebhook.send({
+                    text: decoratedMessage,
+                    username: `Bender 🤖`,
+                });
+            } catch {
+                // Ignore
+            }
+        }
+    }
+
+    private setupWebHooks(storeConfig: StoreConfiguration) {
+        if (storeConfig?.stock_webhook_role_ping || storeConfig?.webhook_url) {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            this.stockWebhook = new IncomingWebhook((storeConfig?.stock_webhook_role_ping || storeConfig?.webhook_url)!);
+        }
+        if (storeConfig?.stock_webhook_role_ping || storeConfig?.webhook_role_ping) {
+            this.stockWebhookRolePing = storeConfig?.stock_webhook_role_ping || storeConfig?.webhook_role_ping;
+        }
+
+        if (storeConfig?.cookie_webhook_url || storeConfig?.webhook_url) {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            this.cookieWebhook = new IncomingWebhook((storeConfig?.cookie_webhook_url || storeConfig?.webhook_url)!);
+        }
+        if (storeConfig?.cookie_webhook_role_ping || storeConfig?.webhook_role_ping) {
+            this.cookieWebhookRolePing = storeConfig?.cookie_webhook_role_ping || storeConfig?.webhook_role_ping;
+        }
+
+        if (storeConfig?.admin_webhook_url || storeConfig?.webhook_url) {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            this.adminWebhook = new IncomingWebhook((storeConfig?.admin_webhook_url || storeConfig?.webhook_url)!);
+        }
+        if (storeConfig?.admin_webhook_role_ping || storeConfig?.webhook_role_ping) {
+            this.adminWebhookRolePing = storeConfig?.admin_webhook_role_ping || storeConfig?.webhook_role_ping;
+        }
+    }
+
     // See https://intoli.com/blog/making-chrome-headless-undetectable/
     private async patchHairlineDetection() {
         try {
@@ -552,20 +593,23 @@ export class StockChecker {
         const fullAlert = this.isProductBuyable(item);
         if (fullAlert) {
             message = this.decorateMessageWithRoles(
-                `🟢 Item **available**: ${item?.product?.title} for ${item?.price?.price} ${item?.price?.currency}! Go check it out: ${this.store.baseUrl}${item?.product?.url}`
+                `🟢 Item **available**: ${item?.product?.title} for ${item?.price?.price} ${item?.price?.currency}! Go check it out: ${this.store.baseUrl}${item?.product?.url}`,
+                this.stockWebhookRolePing
             );
         } else if (this.canProductBeAddedToCart(item)) {
             message = this.decorateMessageWithRoles(
-                `🛒 Item **can be added to cart**: ${item?.product?.title} for ${item?.price?.price} ${item?.price?.currency}! Go check it out: ${this.store.baseUrl}${item?.product?.url}?magician=${item?.product?.id}`
+                `🛒 Item **can be added to cart**: ${item?.product?.title} for ${item?.price?.price} ${item?.price?.currency}! Go check it out: ${this.store.baseUrl}${item?.product?.url}?magician=${item?.product?.id}`,
+                this.stockWebhookRolePing
             );
         } else {
             message = this.decorateMessageWithRoles(
-                `🟡 Item for **cart parker**: ${item?.product?.title} for ${item?.price?.price} ${item?.price?.currency}! Go check it out: ${this.store.baseUrl}${item?.product?.url}`
+                `🟡 Item for **cart parker**: ${item?.product?.title} for ${item?.price?.price} ${item?.price?.currency}! Go check it out: ${this.store.baseUrl}${item?.product?.url}`,
+                this.stockWebhookRolePing
             );
         }
-        if (this.webhook) {
+        if (this.stockWebhook) {
             try {
-                await this.webhook.send({
+                await this.stockWebhook.send({
                     text: message,
                     username: `Stock Shock ${fullAlert ? "🧚" : "⚡️"}`,
                     attachments: [
@@ -590,21 +634,16 @@ export class StockChecker {
 
     private async notifyCookies(item: Item, cookies: string[]) {
         const message = this.decorateMessageWithRoles(
-            `🍪 ${cookies.length} cart cookies were made for ${item?.product?.title} for ${this.store.getName()}:\n\`${cookies.join(
+            `🍪 ${cookies.length} cart cookies were made for ${item?.product?.title} for **${this.store.getName()}**:\n\`${cookies.join(
                 "\n"
-            )}\``
+            )}\n`,
+            this.cookieWebhookRolePing
         );
-        if (this.webhook) {
+        if (this.cookieWebhook) {
             try {
-                await this.webhook.send({
+                await this.cookieWebhook.send({
                     text: message,
-                    username: "Stock Shock 🍪",
-                    attachments: [
-                        {
-                            title_link: `${this.store.baseUrl}${item.product.url}`,
-                            image_url: `https://assets.mmsrg.com/isr/166325/c1/-/${item.product.titleImageId}/mobile_200_200.png`,
-                        },
-                    ],
+                    username: "Cookie Monster 🍪 (light)",
                 });
             } catch {
                 // Ignore
@@ -641,10 +680,13 @@ export class StockChecker {
     }
 
     private async notifyRateLimit(seconds: number) {
-        if (this.webhook && seconds > 300 && !this.usesProxy) {
-            const message = `[${this.store.getName()}] Too many requests, we need to pause ${(seconds / 60).toFixed(2)} minutes... 😴`;
+        if (this.adminWebhook && seconds > 300 && !this.usesProxy) {
+            const message = this.decorateMessageWithRoles(
+                `💤 [${this.store.getName()}] Too many requests, we need to pause ${(seconds / 60).toFixed(2)} minutes... 😴`,
+                this.adminWebhookRolePing
+            );
             try {
-                await this.webhook.send({
+                await this.adminWebhook.send({
                     text: message,
                     username: `Stock Shock 💤`,
                 });
@@ -654,11 +696,11 @@ export class StockChecker {
         }
     }
 
-    private decorateMessageWithRoles(message: string) {
-        if (!this.webhookRolePing) {
+    private decorateMessageWithRoles(message: string, webhookRolePing: string | undefined) {
+        if (!webhookRolePing) {
             return message;
         }
 
-        return `${message} <@&${this.webhookRolePing}>`;
+        return `${message} <@&${webhookRolePing}>`;
     }
 }

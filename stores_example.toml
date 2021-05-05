@@ -1,8 +1,12 @@
 [saturn]
 email = ""
 password = ""
+# You can set a webhook for all the types or a dedicated one for each type
 webhook_url = ""
 webhook_role_ping = ""
+stock_webhook_role_ping = ""
+cookie_webhook_role_ping = ""
+admin_webhook_role_ping = ""
 proxy_url = ""
 proxy_username = ""
 proxy_password = ""
@@ -11,8 +15,12 @@ start_url = ""
 [mmde]
 email = ""
 password = ""
+# You can set a webhook for all the types or a dedicated one for each type
 webhook_url = ""
 webhook_role_ping = ""
+stock_webhook_role_ping = ""
+cookie_webhook_role_ping = ""
+admin_webhook_role_ping = ""
 proxy_url = ""
 proxy_username = ""
 proxy_password = ""
@@ -21,8 +29,12 @@ start_url = ""
 [mmat]
 email = ""
 password = ""
+# You can set a webhook for all the types or a dedicated one for each type
 webhook_url = ""
 webhook_role_ping = ""
+stock_webhook_role_ping = ""
+cookie_webhook_role_ping = ""
+admin_webhook_role_ping = ""
 proxy_url = ""
 proxy_username = ""
 proxy_password = ""

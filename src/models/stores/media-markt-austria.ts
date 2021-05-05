@@ -8,6 +8,6 @@ export class MediaMarktAustria extends CommonStore implements Store {
     readonly loginSleepTime = 2500;
 
     getName(): string {
-        return "MediaMarkt";
+        return "MediaMarkt Austria";
     }
 }

@@ -7,6 +7,6 @@ export class MediaMarktGermany extends CommonStore implements Store {
     readonly salesLine = "Media";
 
     getName(): string {
-        return "MediaMarkt";
+        return "MediaMarkt Germany";
     }
 }

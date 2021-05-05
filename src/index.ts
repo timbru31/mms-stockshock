@@ -116,10 +116,12 @@ const customLogFormat = format.printf((info) => {
     await stockChecker.launchPuppeteer(storeConfig, args.headless, args.sandbox);
     await stockChecker.logIn(storeConfig, args.headless);
     logger.info("Login succeeded, let's hunt!");
+    await stockChecker.notifyAdmin(`🤖 [${store.getName()}] Login succeded, let's hunt!`);
 
-    process.on("unhandledRejection", (reason, promise) => {
+    process.on("unhandledRejection", async (reason, promise) => {
         logger.error("Unhandled Rejection at: %O", promise);
         logger.error("Unhandled Rejection reason: %O", reason);
+        await stockChecker.notifyAdmin(`🤖 [${store.getName()}] Unhandled Promise rejection!`);
     });
 
     // eslint-disable-next-line no-constant-condition
@@ -135,10 +137,12 @@ const customLogFormat = format.printf((info) => {
             stockChecker.cleanupCooldowns();
             if (stockChecker.reLoginRequired) {
                 await stockChecker.logIn(storeConfig, args.headless);
+                await stockChecker.notifyAdmin(`🤖 [${store.getName()}] Re-Login required, but was OK!`);
                 logger.info("Re-Login succeeded, let's hunt!");
             }
         } catch (e) {
             logger.info("🤖 Boop, I'm alive but checking your stock errored: %O", e);
+            await stockChecker.notifyAdmin(`🤖 [${store.getName()}] Boop, I'm alive but checking your stock errored!`);
         }
     }
 })();
