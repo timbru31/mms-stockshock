@@ -322,7 +322,9 @@ export class StockChecker {
                         const cartCookie = (await this.page?.cookies())?.filter((cookie) => cookie.name === "r")[0];
                         if (cartCookie) {
                             cookies.push(cartCookie.value);
-                            this.logger.info(`Made cookie ${cartCookie.value} for product ${id}`);
+                            this.logger.info(
+                                `Made cookie ${cartCookie.value} for product ${id}: ${this.store.baseUrl}?cookie=${cartCookie.value}`
+                            );
                         }
                     } catch (e) {
                         this.logger.error("Unable to get cookie from page, error %O", e);
@@ -636,7 +638,7 @@ export class StockChecker {
         const message = this.decorateMessageWithRoles(
             `🍪 ${cookies.length} cart cookies were made for **${item?.product?.id}**, **${
                 item?.product?.title
-            }** for ${this.store.getName()}:\n\`${cookies.join("\n")}\`\n`,
+            }** for ${this.store.getName()}:\n\`${cookies.map((cookie) => `${this.store.baseUrl}?cookie=${cookie}`).join("\n")}\`\n`,
             this.cookieWebhookRolePing
         );
         if (this.cookieWebhook) {
