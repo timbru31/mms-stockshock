@@ -1,5 +1,6 @@
 import { add } from "date-fns";
 import { Item } from "./models/api/item";
+import { Product } from "./models/api/product";
 import { NotificationCooldown } from "./models/cooldown";
 
 export class CooldownManager {
@@ -17,12 +18,12 @@ export class CooldownManager {
         });
     }
 
-    addToCartCooldownMap(item: Item): void {
+    addToCartCooldownMap(product: Product): void {
         const endTime = add(new Date(), {
             hours: 8,
         });
-        this.cartCooldowns.set(item?.product?.id, {
-            id: item?.product?.id,
+        this.cartCooldowns.set(product?.id, {
+            id: product?.id,
             isProductBuyable: null,
             endTime,
         });

@@ -1,6 +1,8 @@
 [saturn]
 email = ""
 password = ""
+categories = []
+category_regex = ""
 # You can set a webhook for all the types or a dedicated one for each type
 webhook_url = ""
 webhook_role_ping = ""
@@ -15,6 +17,8 @@ start_url = ""
 [mmde]
 email = ""
 password = ""
+categories = []
+category_regex = ""
 # You can set a webhook for all the types or a dedicated one for each type
 webhook_url = ""
 webhook_role_ping = ""
@@ -29,6 +33,8 @@ start_url = ""
 [mmat]
 email = ""
 password = ""
+categories = []
+category_regex = ""
 # You can set a webhook for all the types or a dedicated one for each type
 webhook_url = ""
 webhook_role_ping = ""

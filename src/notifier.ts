@@ -3,6 +3,7 @@ import { Item } from "./models/api/item";
 import { ProductHelper } from "./product-helper";
 import { StoreConfiguration } from "./models/stores/config-model";
 import { Store } from "./models/stores/store";
+import { Product } from "./models/api/product";
 
 export class Notifier {
     private stockWebhook: IncomingWebhook | undefined;
@@ -72,10 +73,10 @@ export class Notifier {
         }
     }
 
-    async notifyCookies(item: Item, cookies: string[]): Promise<void> {
+    async notifyCookies(product: Product, cookies: string[]): Promise<void> {
         const message = this.decorateMessageWithRoles(
-            `🍪 ${cookies.length} cart cookies were made for **${item?.product?.id}**, **${
-                item?.product?.title
+            `🍪 ${cookies.length} cart cookies were made for **${product?.id}**, **${
+                product?.title
             }** for ${this.store.getName()}:\n\`${cookies.map((cookie) => `${this.store.baseUrl}?cookie=${cookie}`).join("\n")}\`\n`,
             this.cookieWebhookRolePing
         );
@@ -96,17 +97,23 @@ export class Notifier {
         const fullAlert = this.productHelper.isProductBuyable(item);
         if (fullAlert) {
             message = this.decorateMessageWithRoles(
-                `🟢 Item **available**: ${item?.product?.title} for ${item?.price?.price} ${item?.price?.currency}! Go check it out: ${this.store.baseUrl}${item?.product?.url}?magician=${item?.product?.id}`,
+                `🟢 Item **available**: ${item?.product?.title} for ${item?.price?.price} ${item?.price?.currency}! Go check it out: ${
+                    this.store.baseUrl
+                }${this.getProductURL(item)}?magician=${item?.product?.id}`,
                 this.stockWebhookRolePing
             );
         } else if (this.productHelper.canProductBeAddedToCart(item)) {
             message = this.decorateMessageWithRoles(
-                `🛒 Item **can be added to cart**: ${item?.product?.title} for ${item?.price?.price} ${item?.price?.currency}! Go check it out: ${this.store.baseUrl}${item?.product?.url}?magician=${item?.product?.id}`,
+                `🛒 Item **can be added to cart**: ${item?.product?.title} for ${item?.price?.price} ${
+                    item?.price?.currency
+                }! Go check it out: ${this.store.baseUrl}${this.getProductURL(item)}?magician=${item?.product?.id}`,
                 this.stockWebhookRolePing
             );
         } else {
             message = this.decorateMessageWithRoles(
-                `🟡 Item for **cart parker**: ${item?.product?.title} for ${item?.price?.price} ${item?.price?.currency}! Go check it out: ${this.store.baseUrl}${item?.product?.url}`,
+                `🟡 Item for **cart parker**: ${item?.product?.title} for ${item?.price?.price} ${
+                    item?.price?.currency
+                }! Go check it out: ${this.store.baseUrl}${this.getProductURL(item)}`,
                 this.stockWebhookRolePing
             );
         }
@@ -144,5 +151,9 @@ export class Notifier {
         }
 
         return `${message} <@&${webhookRolePing}>`;
+    }
+
+    private getProductURL(item: Item) {
+        return item?.product?.url || `/de/product/-${item.product.id}.html`;
     }
 }

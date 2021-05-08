@@ -11,6 +11,7 @@ import { StoreConfiguration } from "./models/stores/config-model";
 import { Store } from "./models/stores/store";
 import { Notifier } from "./notifier";
 import { GRAPHQL_CLIENT_VERSION, sleep } from "./utils";
+import { Product } from "./models/api/product";
 
 export class WishlistChecker {
     // This is set by MM/S and a fixed constant
@@ -37,22 +38,22 @@ export class WishlistChecker {
         this.notifier = new Notifier(store, storeConfig);
     }
 
-    async checkWishlist(): Promise<Map<string, Item>> {
+    async checkWishlist(): Promise<Map<string, Product>> {
         if (!this.browserManager.loggedIn) {
             throw new Error("Not logged in!");
         }
-        let cartItems = new Map<string, Item>();
+        let cartProducts = new Map<string, Product>();
 
         const res = await this.performWishlistQuery();
         if (res.status !== 200 || !res.body || res.body?.errors) {
-            await this.handleWishlistError(res);
+            await this.browserManager.handleResponseError(res);
         } else {
             const totalItems = res.body?.data?.wishlistItems?.total;
             if (!totalItems) {
                 throw new Error("Nothing on wishlist!");
             }
             let items = await this.checkItems(res.body?.data?.wishlistItems?.items);
-            cartItems = new Map([...cartItems, ...items]);
+            cartProducts = new Map([...cartProducts, ...items]);
 
             if (totalItems > this.MAX_ITEMS_PER_QUERY) {
                 const remainingQueryCalls = Math.ceil((totalItems - this.MAX_ITEMS_PER_QUERY) / this.MAX_ITEMS_PER_QUERY);
@@ -61,36 +62,15 @@ export class WishlistChecker {
                     const newOffset = additionalQueryCalls * this.MAX_ITEMS_PER_QUERY;
                     const res = await this.performWishlistQuery(newOffset);
                     if (res.status !== 200 || !res.body || res.body?.errors) {
-                        await this.handleWishlistError(res);
+                        await this.browserManager.handleResponseError(res);
                     } else {
                         items = await this.checkItems(res.body?.data?.wishlistItems?.items);
-                        cartItems = new Map([...cartItems, ...items]);
+                        cartProducts = new Map([...cartProducts, ...items]);
                     }
                 }
             }
         }
-        return cartItems;
-    }
-
-    private async handleWishlistError(res: { status: number; body: WishlistReponse | null; retryAfterHeader: string | null }) {
-        this.logger.error(`Wishlist query did not succeed, status code: ${res.status}`);
-        if (res?.body?.errors) {
-            this.logger.error("Error: %O", res.body.errors);
-        }
-        if (res.status === 429 && res?.retryAfterHeader) {
-            let cooldown = Number(res.retryAfterHeader);
-            this.logger.error(`Too many requests, we need to cooldown and sleep ${cooldown} seconds`);
-            await this.notifier.notifyRateLimit(cooldown);
-            if (cooldown > 300) {
-                this.browserManager.reLoginRequired = true;
-                cooldown = 320;
-            }
-            await sleep(cooldown * 1000);
-        }
-
-        if (res.status === 403 || res.status === 0) {
-            this.browserManager.reLoginRequired = true;
-        }
+        return cartProducts;
     }
 
     private performWishlistQuery(
@@ -166,8 +146,8 @@ export class WishlistChecker {
         }
     }
 
-    private async checkItems(items: Item[] | undefined): Promise<Map<string, Item>> {
-        const cartItems = new Map<string, Item>();
+    private async checkItems(items: Item[] | undefined): Promise<Map<string, Product>> {
+        const cartProducts = new Map<string, Product>();
 
         if (items) {
             for (const item of items) {
@@ -194,11 +174,11 @@ export class WishlistChecker {
                     }
 
                     if (this.productHelper.canProductBeAddedToCart(item) && !this.cooldownManager.hasCartCooldown(itemId)) {
-                        cartItems.set(itemId, item);
+                        cartProducts.set(itemId, item.product);
                     }
                 }
             }
         }
-        return cartItems;
+        return cartProducts;
     }
 }

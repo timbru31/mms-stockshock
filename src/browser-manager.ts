@@ -5,6 +5,7 @@ import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import UserAgent from "user-agents";
 import { v4 } from "uuid";
 import { Logger } from "winston";
+import { Response } from "./models/api/response";
 import { StoreConfiguration } from "./models/stores/config-model";
 import { Store } from "./models/stores/store";
 import { Notifier } from "./notifier";
@@ -187,6 +188,27 @@ export class BrowserManager {
             await sleep(this.store.loginSleepTime);
         }
         return true;
+    }
+
+    async handleResponseError(res: { status: number; body: Response | null; retryAfterHeader: string | null }): Promise<void> {
+        this.logger.error(`Query did not succeed, status code: ${res.status}`);
+        if (res?.body?.errors) {
+            this.logger.error("Error: %O", res.body.errors);
+        }
+        if (res.status === 429 && res?.retryAfterHeader) {
+            let cooldown = Number(res.retryAfterHeader);
+            this.logger.error(`Too many requests, we need to cooldown and sleep ${cooldown} seconds`);
+            await this.notifier.notifyRateLimit(cooldown);
+            if (cooldown > 300) {
+                this.reLoginRequired = true;
+                cooldown = 320;
+            }
+            await sleep(cooldown * 1000);
+        }
+
+        if (res.status === 403 || res.status === 0) {
+            this.reLoginRequired = true;
+        }
     }
 
     // See https://intoli.com/blog/making-chrome-headless-undetectable/

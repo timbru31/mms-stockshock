@@ -7,6 +7,8 @@ export interface ConfigModel {
 export interface StoreConfiguration {
     email: string;
     password: string;
+    categories?: string[];
+    category_regex: string;
     webhook_url?: string;
     stock_webhook_url?: string;
     cookie_webhook_url?: string;

@@ -3,14 +3,14 @@ import { v4 } from "uuid";
 import { Logger } from "winston";
 import { BrowserManager } from "./browser-manager";
 import { CooldownManager } from "./cooldown-manager";
-import { Item } from "./models/api/item";
+import { Product } from "./models/api/product";
 import { StoreConfiguration } from "./models/stores/config-model";
 import { Store } from "./models/stores/store";
 import { Notifier } from "./notifier";
 import { GRAPHQL_CLIENT_VERSION, sleep } from "./utils";
 
 export class CartAdder {
-    private cartItems = new Map<string, Item>();
+    private cartProducts = new Map<string, Product>();
     private readonly store: Store;
     private readonly logger: Logger;
     private readonly notifier: Notifier;
@@ -31,18 +31,18 @@ export class CartAdder {
         this.notifier = new Notifier(store, storeConfig);
     }
 
-    clearCartItems(): void {
-        this.cartItems.clear();
+    clearCartProducts(): void {
+        this.cartProducts.clear();
     }
 
-    addNewItems(newItems: Map<string, Item>): void {
-        this.cartItems = new Map([...this.cartItems, ...newItems]);
+    addNewProducts(newProducts: Map<string, Product>): void {
+        this.cartProducts = new Map([...this.cartProducts, ...newProducts]);
     }
 
     async createCartCookies(): Promise<void> {
-        if (this.cartItems.size) {
+        if (this.cartProducts.size) {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            for (const [id, item] of this.cartItems.entries()) {
+            for (const [id, product] of this.cartProducts.entries()) {
                 const cookies: string[] = [];
                 for (let i = 0; i < 10; i++) {
                     let contextCreated = false;
@@ -142,11 +142,11 @@ export class CartAdder {
                     await sleep(this.store.getSleepTime());
                 }
                 if (cookies) {
-                    await this.notifier.notifyCookies(item, cookies);
-                    this.cooldownManager.addToCartCooldownMap(item);
+                    await this.notifier.notifyCookies(product, cookies);
+                    this.cooldownManager.addToCartCooldownMap(product);
                 }
             }
-            this.cartItems.clear();
+            this.cartProducts.clear();
             this.browserManager.reLoginRequired = true;
         }
     }
