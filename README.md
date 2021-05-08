@@ -1,6 +1,6 @@
 # stockshock
 
-> Your friendly 🤖 to check the wishlist of MediaMarkt and Saturn for available items
+> Your friendly 🤖 to check the wishlist and categories of MediaMarkt and Saturn for available items
 
 ## Prerequisities
 
@@ -24,7 +24,8 @@ npm install
 ## Configuration & Usage
 
 Copy the `stores_example.toml` to `stores.toml` and configure your credentials.  
-If desired, configure the webhook URL, too.
+You can setup different categories (use the ID) to check, too.  
+If desired, configure the webhook URL(s), too.
 
 ### Slack/Discord notifications
 
@@ -53,6 +54,23 @@ npm start -- --headless false
 ```
 
 Do **not** close the browser window. You can minimize it though.
+
+### Pass in a store via CLI
+
+You can launch the bot directly with a store by suppyling the store as an argument
+
+```sh
+npm start -- --store <mmde|mmat|saturn>
+```
+
+### Docker
+
+You can use the provided Docker image (https://hub.docker.com/r/timbru31/mms-stockshock), too.
+An example launch command would be:
+
+```sh
+docker run --restart on-failure --memory 500m --memory-swap 500m -v $PWD/stores.toml:/opt/mms-stockshock/stores.toml -e "STORE=mmde" -d timbru31/mms-stockshock
+```
 
 ---
 
