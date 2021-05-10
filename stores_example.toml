@@ -3,6 +3,7 @@ email = ""
 password = ""
 categories = []
 category_regex = ""
+ignore_sleep = false
 # You can set a webhook for all the types or a dedicated one for each type
 webhook_url = ""
 webhook_role_ping = ""
@@ -19,6 +20,7 @@ email = ""
 password = ""
 categories = []
 category_regex = ""
+ignore_sleep = false
 # You can set a webhook for all the types or a dedicated one for each type
 webhook_url = ""
 webhook_role_ping = ""
@@ -35,6 +37,7 @@ email = ""
 password = ""
 categories = []
 category_regex = ""
+ignore_sleep = false
 # You can set a webhook for all the types or a dedicated one for each type
 webhook_url = ""
 webhook_role_ping = ""

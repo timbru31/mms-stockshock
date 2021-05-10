@@ -9,6 +9,7 @@ export interface StoreConfiguration {
     password: string;
     categories?: string[];
     category_regex: string;
+    ignore_sleep?: boolean;
     webhook_url?: string;
     stock_webhook_url?: string;
     cookie_webhook_url?: string;

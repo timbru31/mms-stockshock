@@ -195,7 +195,7 @@ export class BrowserManager {
         if (res?.body?.errors) {
             this.logger.error("Error: %O", res.body.errors);
         }
-        if (res.status === 429 && res?.retryAfterHeader) {
+        if (res.status === 429 && res?.retryAfterHeader && !this.storeConfig.ignore_sleep) {
             let cooldown = Number(res.retryAfterHeader);
             this.logger.error(`Too many requests, we need to cooldown and sleep ${cooldown} seconds`);
             await this.notifier.notifyRateLimit(cooldown);
