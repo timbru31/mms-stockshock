@@ -24,7 +24,7 @@
     "dependencies": {
         "@slack/webhook": "^6.0.0",
         "@types/uuid": "^8.3.0",
-        "date-fns": "^2.21.2",
+        "date-fns": "^2.21.3",
         "inquirer": "^8.0.0",
         "patch-package": "^6.4.7",
         "puppeteer": "^9.1.1",
