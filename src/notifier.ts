@@ -1,10 +1,11 @@
-import { IncomingWebhook } from "@slack/webhook";
+import { IncomingWebhook, IncomingWebhookHTTPError } from "@slack/webhook";
+import { AxiosError } from "axios";
+import { Logger } from "winston";
 import { Item } from "./models/api/item";
-import { ProductHelper } from "./product-helper";
+import { Product } from "./models/api/product";
 import { StoreConfiguration } from "./models/stores/config-model";
 import { Store } from "./models/stores/store";
-import { Product } from "./models/api/product";
-import { Logger } from "winston";
+import { ProductHelper } from "./product-helper";
 
 export class Notifier {
     private readonly stockWebhook: IncomingWebhook | undefined;
@@ -55,7 +56,13 @@ export class Notifier {
                     username: `Bender 🤖`,
                 });
             } catch (e) {
-                this.logger.error("Error sending webook, error: %O", e);
+                this.logger.error("Error sending webook, error code" + (e as IncomingWebhookHTTPError).code);
+                if (((e as IncomingWebhookHTTPError).original as AxiosError)?.response?.headers) {
+                    this.logger.error(
+                        "HTTP error headers, %O",
+                        ((e as IncomingWebhookHTTPError).original as AxiosError)?.response?.headers
+                    );
+                }
             }
         }
     }
@@ -72,7 +79,13 @@ export class Notifier {
                     username: `Stock Shock 💤`,
                 });
             } catch (e) {
-                this.logger.error("Error sending webook, error: %O", e);
+                this.logger.error("Error sending webook, error code" + (e as IncomingWebhookHTTPError).code);
+                if (((e as IncomingWebhookHTTPError).original as AxiosError)?.response?.headers) {
+                    this.logger.error(
+                        "HTTP error headers, %O",
+                        ((e as IncomingWebhookHTTPError).original as AxiosError)?.response?.headers
+                    );
+                }
             }
         }
     }
@@ -91,7 +104,13 @@ export class Notifier {
                     username: "Cookie Monster 🍪 (light)",
                 });
             } catch (e) {
-                this.logger.error("Error sending webook, error: %O", e);
+                this.logger.error("Error sending webook, error code" + (e as IncomingWebhookHTTPError).code);
+                if (((e as IncomingWebhookHTTPError).original as AxiosError)?.response?.headers) {
+                    this.logger.error(
+                        "HTTP error headers, %O",
+                        ((e as IncomingWebhookHTTPError).original as AxiosError)?.response?.headers
+                    );
+                }
             }
         }
     }
@@ -134,7 +153,13 @@ export class Notifier {
                     ],
                 });
             } catch (e) {
-                this.logger.error("Error sending webook, error: %O", e);
+                this.logger.error("Error sending webook, error code" + (e as IncomingWebhookHTTPError).code);
+                if (((e as IncomingWebhookHTTPError).original as AxiosError)?.response?.headers) {
+                    this.logger.error(
+                        "Discord error headers, %O",
+                        ((e as IncomingWebhookHTTPError).original as AxiosError)?.response?.headers
+                    );
+                }
             }
         }
         if (fullAlert) {
