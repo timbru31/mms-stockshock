@@ -4,7 +4,6 @@ import { Logger } from "winston";
 import { BrowserManager } from "./browser-manager";
 import { CooldownManager } from "./cooldown-manager";
 import { Product } from "./models/api/product";
-import { StoreConfiguration } from "./models/stores/config-model";
 import { Store } from "./models/stores/store";
 import { Notifier } from "./notifier";
 import { GRAPHQL_CLIENT_VERSION, sleep } from "./utils";
@@ -17,18 +16,12 @@ export class CartAdder {
     private readonly browserManager: BrowserManager;
     private readonly cooldownManager: CooldownManager;
 
-    constructor(
-        store: Store,
-        logger: Logger,
-        storeConfig: StoreConfiguration,
-        browserManager: BrowserManager,
-        cooldownManager: CooldownManager
-    ) {
+    constructor(store: Store, logger: Logger, browserManager: BrowserManager, cooldownManager: CooldownManager, notifier: Notifier) {
         this.store = store;
         this.logger = logger;
         this.browserManager = browserManager;
         this.cooldownManager = cooldownManager;
-        this.notifier = new Notifier(store, storeConfig);
+        this.notifier = notifier;
     }
 
     clearCartProducts(): void {

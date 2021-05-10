@@ -17,7 +17,7 @@ import { CategoryChecker } from "./category-checker";
     const { store, storeConfig, args } = await getStoreAndStoreConfig(configFile);
 
     const cooldownManager = new CooldownManager();
-    const notifier = new Notifier(store, storeConfig);
+    const notifier = new Notifier(store, storeConfig, logger);
 
     process.on("unhandledRejection", async (reason, promise) => {
         logger.error("Unhandled Rejection at: %O", promise);
@@ -31,15 +31,22 @@ import { CategoryChecker } from "./category-checker";
     logger.info("Login succeeded, let's hunt!");
     await notifier.notifyAdmin(`🤖 [${store.getName()}] Login succeded, let's hunt!`);
 
-    const wishlistChecker = new WishlistChecker(store, logger, storeConfig, browserManager, cooldownManager);
-    const categoryChecker = new CategoryChecker(store, logger, storeConfig, browserManager, cooldownManager);
-    const cartAdder = new CartAdder(store, logger, storeConfig, browserManager, cooldownManager);
+    const wishlistChecker = new WishlistChecker(store, logger, browserManager, cooldownManager, notifier);
+    const categoryChecker = new CategoryChecker(store, logger, browserManager, cooldownManager, notifier);
+    const cartAdder = new CartAdder(store, logger, browserManager, cooldownManager, notifier);
 
     // eslint-disable-next-line no-constant-condition
     while (true) {
         try {
             logger.info("🤖 Beep, I'm alive and well checking your stock");
             logger.info("💌 Checking wishlist items");
+
+            if (browserManager.reLoginRequired) {
+                await browserManager.logIn(args.headless);
+                await notifier.notifyAdmin(`🤖 [${store.getName()}] Re-Login required, but was OK!`);
+                logger.info("Re-Login succeeded, let's hunt!");
+            }
+
             let cartProducts = await wishlistChecker.checkWishlist();
             cartAdder.addNewProducts(cartProducts);
             if (storeConfig.categories?.length) {
@@ -53,14 +60,10 @@ import { CategoryChecker } from "./category-checker";
 
             await sleep(store.getSleepTime());
             cooldownManager.cleanupCooldowns();
-            if (browserManager.reLoginRequired) {
-                await browserManager.logIn(args.headless);
-                await notifier.notifyAdmin(`🤖 [${store.getName()}] Re-Login required, but was OK!`);
-                logger.info("Re-Login succeeded, let's hunt!");
-            }
         } catch (e) {
             logger.info("🤖 Boop, I'm alive but checking your stock errored: %O", e);
             await notifier.notifyAdmin(`🤖 [${store.getName()}] Boop, I'm alive but checking your stock errored!`);
+            browserManager.reLoginRequired = true;
         }
     }
 })();

@@ -4,18 +4,20 @@ import { ProductHelper } from "./product-helper";
 import { StoreConfiguration } from "./models/stores/config-model";
 import { Store } from "./models/stores/store";
 import { Product } from "./models/api/product";
+import { Logger } from "winston";
 
 export class Notifier {
-    private stockWebhook: IncomingWebhook | undefined;
-    private cookieWebhook: IncomingWebhook | undefined;
-    private adminWebhook: IncomingWebhook | undefined;
-    private stockWebhookRolePing: string | undefined;
-    private cookieWebhookRolePing: string | undefined;
-    private adminWebhookRolePing: string | undefined;
-    private store: Store;
-    private productHelper = new ProductHelper();
+    private readonly stockWebhook: IncomingWebhook | undefined;
+    private readonly cookieWebhook: IncomingWebhook | undefined;
+    private readonly adminWebhook: IncomingWebhook | undefined;
+    private readonly stockWebhookRolePing: string | undefined;
+    private readonly cookieWebhookRolePing: string | undefined;
+    private readonly adminWebhookRolePing: string | undefined;
+    private readonly store: Store;
+    private readonly logger: Logger;
+    private readonly productHelper = new ProductHelper();
 
-    constructor(store: Store, storeConfig: StoreConfiguration) {
+    constructor(store: Store, storeConfig: StoreConfiguration, logger: Logger) {
         this.store = store;
         if (storeConfig?.stock_webhook_url || storeConfig?.webhook_url) {
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -40,6 +42,8 @@ export class Notifier {
         if (storeConfig?.admin_webhook_role_ping || storeConfig?.webhook_role_ping) {
             this.adminWebhookRolePing = storeConfig?.admin_webhook_role_ping || storeConfig?.webhook_role_ping;
         }
+
+        this.logger = logger;
     }
 
     async notifyAdmin(message: string): Promise<void> {
@@ -50,8 +54,8 @@ export class Notifier {
                     text: decoratedMessage,
                     username: `Bender 🤖`,
                 });
-            } catch {
-                // Ignore
+            } catch (e) {
+                this.logger.error("Error sending webook, error: %O", e);
             }
         }
     }
@@ -67,8 +71,8 @@ export class Notifier {
                     text: message,
                     username: `Stock Shock 💤`,
                 });
-            } catch {
-                // Ignore
+            } catch (e) {
+                this.logger.error("Error sending webook, error: %O", e);
             }
         }
     }
@@ -86,8 +90,8 @@ export class Notifier {
                     text: message,
                     username: "Cookie Monster 🍪 (light)",
                 });
-            } catch {
-                // Ignore
+            } catch (e) {
+                this.logger.error("Error sending webook, error: %O", e);
             }
         }
     }
@@ -129,8 +133,8 @@ export class Notifier {
                         },
                     ],
                 });
-            } catch {
-                // Ignore
+            } catch (e) {
+                this.logger.error("Error sending webook, error: %O", e);
             }
         }
         if (fullAlert) {

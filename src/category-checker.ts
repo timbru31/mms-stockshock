@@ -6,7 +6,6 @@ import { CooldownManager } from "./cooldown-manager";
 
 import { Item } from "./models/api/item";
 import { ProductHelper } from "./product-helper";
-import { StoreConfiguration } from "./models/stores/config-model";
 import { Store } from "./models/stores/store";
 import { Notifier } from "./notifier";
 import { GRAPHQL_CLIENT_VERSION, sleep } from "./utils";
@@ -22,18 +21,12 @@ export class CategoryChecker {
     private readonly cooldownManager: CooldownManager;
     private readonly productHelper = new ProductHelper();
 
-    constructor(
-        store: Store,
-        logger: Logger,
-        storeConfig: StoreConfiguration,
-        browserManager: BrowserManager,
-        cooldownManager: CooldownManager
-    ) {
+    constructor(store: Store, logger: Logger, browserManager: BrowserManager, cooldownManager: CooldownManager, notifier: Notifier) {
         this.store = store;
         this.logger = logger;
         this.browserManager = browserManager;
         this.cooldownManager = cooldownManager;
-        this.notifier = new Notifier(store, storeConfig);
+        this.notifier = notifier;
     }
 
     async checkCategory(category: string, categoryRegex?: string): Promise<Map<string, Product>> {
