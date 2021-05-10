@@ -57,6 +57,9 @@ export class Notifier {
                 });
             } catch (e) {
                 this.logger.error("Error sending webook, error code" + (e as IncomingWebhookHTTPError).code);
+                if (((e as IncomingWebhookHTTPError).original as AxiosError)?.response?.data) {
+                    this.logger.error("Discord error data, %O", ((e as IncomingWebhookHTTPError).original as AxiosError)?.response?.data);
+                }
                 if (((e as IncomingWebhookHTTPError).original as AxiosError)?.response?.headers) {
                     this.logger.error(
                         "HTTP error headers, %O",
@@ -80,6 +83,9 @@ export class Notifier {
                 });
             } catch (e) {
                 this.logger.error("Error sending webook, error code" + (e as IncomingWebhookHTTPError).code);
+                if (((e as IncomingWebhookHTTPError).original as AxiosError)?.response?.data) {
+                    this.logger.error("Discord error data, %O", ((e as IncomingWebhookHTTPError).original as AxiosError)?.response?.data);
+                }
                 if (((e as IncomingWebhookHTTPError).original as AxiosError)?.response?.headers) {
                     this.logger.error(
                         "HTTP error headers, %O",
@@ -105,6 +111,9 @@ export class Notifier {
                 });
             } catch (e) {
                 this.logger.error("Error sending webook, error code" + (e as IncomingWebhookHTTPError).code);
+                if (((e as IncomingWebhookHTTPError).original as AxiosError)?.response?.data) {
+                    this.logger.error("Discord error data, %O", ((e as IncomingWebhookHTTPError).original as AxiosError)?.response?.data);
+                }
                 if (((e as IncomingWebhookHTTPError).original as AxiosError)?.response?.headers) {
                     this.logger.error(
                         "HTTP error headers, %O",
@@ -154,6 +163,9 @@ export class Notifier {
                 });
             } catch (e) {
                 this.logger.error("Error sending webook, error code" + (e as IncomingWebhookHTTPError).code);
+                if (((e as IncomingWebhookHTTPError).original as AxiosError)?.response?.data) {
+                    this.logger.error("Discord error data, %O", ((e as IncomingWebhookHTTPError).original as AxiosError)?.response?.data);
+                }
                 if (((e as IncomingWebhookHTTPError).original as AxiosError)?.response?.headers) {
                     this.logger.error(
                         "Discord error headers, %O",
