@@ -15,7 +15,8 @@
         "moduleResolution": "node",
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
-        "esModuleInterop": true
+        "esModuleInterop": true,
+        "typeRoots": ["node_modules/@types", "types"]
     },
     "include": ["src/"],
     "compileOnSave": false

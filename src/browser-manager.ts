@@ -1,4 +1,5 @@
 import { prompt } from "inquirer";
+import { Server } from "proxy-chain";
 import { Browser, BrowserContext, Page, PuppeteerNodeLaunchOptions, SerializableOrJSHandle } from "puppeteer";
 import puppeteer from "puppeteer-extra";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
@@ -22,29 +23,64 @@ export class BrowserManager {
     private readonly storeConfig: StoreConfiguration;
     private readonly logger: Logger;
     private readonly notifier: Notifier;
+    private readonly proxies: string[] = [];
+    private proxyIndex = 0;
+    private proxyServer: Server | undefined;
 
     constructor(store: Store, storeConfig: StoreConfiguration, logger: Logger, notifier: Notifier) {
         this.logger = logger;
         this.store = store;
         this.storeConfig = storeConfig;
         this.notifier = notifier;
+
+        if (this.storeConfig.proxy_urls?.length) {
+            this.proxies = this.storeConfig.proxy_urls;
+        }
+    }
+
+    rotateProxy(): void {
+        this.proxyIndex++;
+        if (this.proxyIndex >= this.proxies.length) {
+            this.proxyIndex = 0;
+        }
+    }
+
+    async shutdown(): Promise<void> {
+        await this.cleanOldReferences();
+        await this.proxyServer?.close(true);
     }
 
     async launchPuppeteer(headless = true, sandbox = true): Promise<void> {
+        await this.cleanOldReferences();
+
         const args = [];
         if (!sandbox) {
             args.push("--no-sandbox");
         }
 
-        if (this.storeConfig.proxy_url) {
+        if (this.storeConfig.proxy_urls?.length) {
+            if (!this.proxyServer) {
+                this.proxyServer = new Server({
+                    port: 0,
+                    prepareRequestFunction: () => {
+                        return {
+                            requestAuthentication: false,
+                            upstreamProxyUrl: this.proxies[this.proxyIndex],
+                        };
+                    },
+                });
+                await this.proxyServer.listen();
+            }
+            args.push(`--proxy-server=http://127.0.0.1:${this.proxyServer.port}`);
+        } else if (this.storeConfig.proxy_url) {
             args.push(`--proxy-server=${this.storeConfig.proxy_url}`);
         }
 
-        this.browser = await puppeteer.launch(({
+        this.browser = await puppeteer.launch({
             headless,
             defaultViewport: null,
             args,
-        } as unknown) as PuppeteerNodeLaunchOptions);
+        } as unknown as PuppeteerNodeLaunchOptions);
     }
 
     async logIn(headless = true): Promise<void> {
@@ -110,7 +146,7 @@ export class BrowserManager {
                                     : res.text().then((data) => ({ status: res.status, body: data }))
                             )
                             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                            .catch((_) => ({ status: -1, body: null })),
+                            .catch((_) => ({ status: -2, body: null })),
                     this.store as SerializableOrJSHandle,
                     this.storeConfig.email,
                     this.storeConfig.password,
@@ -118,13 +154,13 @@ export class BrowserManager {
                     GRAPHQL_CLIENT_VERSION
                 ),
                 sleep(5000, {
-                    status: 0,
+                    status: -1,
                     body: { errors: "Timeout" },
                 }),
             ]);
         } catch (e) {
-            res = { status: -1 };
-            this.logger.error(e);
+            res = { status: 0 };
+            this.logger.error("Error, %O", e);
         }
         if (res.status !== 200 || !res.body || res.body?.errors) {
             if (headless) {
@@ -147,12 +183,17 @@ export class BrowserManager {
     async createIncognitoContext(exitOnFail = true): Promise<boolean> {
         if (this.context) {
             await this.context.close();
+            this.context = undefined;
         }
 
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         this.context = await this.browser!.createIncognitoBrowserContext();
         puppeteer.use(StealthPlugin());
 
+        if (this.page) {
+            await this.page.close();
+            this.page = undefined;
+        }
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         this.page = await this.browser!.newPage();
         await this.page.setUserAgent(new UserAgent().toString());
@@ -195,15 +236,21 @@ export class BrowserManager {
         if (res?.body?.errors) {
             this.logger.error("Error: %O", res.body.errors);
         }
-        if (res.status === 429 && res?.retryAfterHeader && !this.storeConfig.ignore_sleep) {
-            let cooldown = Number(res.retryAfterHeader);
-            this.logger.error(`Too many requests, we need to cooldown and sleep ${cooldown} seconds`);
-            await this.notifier.notifyRateLimit(cooldown);
-            if (cooldown > 300) {
+        if (res.status === 429 && res?.retryAfterHeader) {
+            if (this.proxies?.length) {
+                this.rotateProxy();
                 this.reLoginRequired = true;
-                cooldown = 320;
             }
-            await sleep(cooldown * 1000);
+            if (!this.storeConfig.ignore_sleep) {
+                let cooldown = Number(res.retryAfterHeader);
+                this.logger.error(`Too many requests, we need to cooldown and sleep ${cooldown} seconds`);
+                await this.notifier.notifyRateLimit(cooldown);
+                if (cooldown > 300) {
+                    this.reLoginRequired = true;
+                    cooldown = 320;
+                }
+                await sleep(cooldown * 1000);
+            }
         }
 
         if (res.status === 403 || res.status === 0) {
@@ -231,6 +278,21 @@ export class BrowserManager {
             });
         } catch (e) {
             this.logger.error("Unable to patch hairline detection, error %O", e);
+        }
+    }
+
+    private async cleanOldReferences() {
+        if (this.page) {
+            await this.page.close();
+            this.page = undefined;
+        }
+        if (this.context) {
+            await this.context.close();
+            this.context = undefined;
+        }
+        if (this.browser) {
+            await this.browser.close();
+            this.browser = undefined;
         }
     }
 }

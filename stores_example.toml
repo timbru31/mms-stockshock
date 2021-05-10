@@ -10,6 +10,10 @@ webhook_role_ping = ""
 stock_webhook_role_ping = ""
 cookie_webhook_role_ping = ""
 admin_webhook_role_ping = ""
+# Important!
+# If you use multiple proxies the them as http://user:pass@foo.bar:8080
+# Set only proxy_urls or proxy_url NOT both
+proxy_urls = []
 proxy_url = ""
 proxy_username = ""
 proxy_password = ""
@@ -27,6 +31,10 @@ webhook_role_ping = ""
 stock_webhook_role_ping = ""
 cookie_webhook_role_ping = ""
 admin_webhook_role_ping = ""
+# Important!
+# If you use multiple proxies the them as http://user:pass@foo.bar:8080
+# Set only proxy_urls or proxy_url NOT both
+proxy_urls = []
 proxy_url = ""
 proxy_username = ""
 proxy_password = ""
@@ -44,6 +52,10 @@ webhook_role_ping = ""
 stock_webhook_role_ping = ""
 cookie_webhook_role_ping = ""
 admin_webhook_role_ping = ""
+# Important!
+# If you use multiple proxies the them as http://user:pass@foo.bar:8080
+# Set only proxy_urls or proxy_url NOT both
+proxy_urls = []
 proxy_url = ""
 proxy_username = ""
 proxy_password = ""

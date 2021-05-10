@@ -21,5 +21,6 @@ export interface StoreConfiguration {
     proxy_url?: string;
     proxy_username?: string;
     proxy_password?: string;
+    proxy_urls?: string[];
     start_url?: string;
 }

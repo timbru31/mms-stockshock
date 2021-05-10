@@ -114,7 +114,7 @@ export class CartAdder {
                         ]);
                     } catch (e) {
                         res = { success: false, status: 0 };
-                        this.logger.error(e);
+                        this.logger.error("Error, %O", e);
                     }
 
                     if (res.success) {
