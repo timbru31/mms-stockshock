@@ -34,10 +34,13 @@ import { WishlistChecker } from "./wishlist-checker";
 
     let shouldRun = true;
 
-    process.on("SIGINT", async () => {
-        console.log("👋 Shutting down...");
-        shouldRun = false;
-        await browserManager.shutdown();
+    ["SIGINT", "SIGTERM"].forEach((evt) => {
+        process.on(evt, () => {
+            console.log("👋 Shutting down...");
+            shouldRun = false;
+            cooldownManager.saveCooldowns();
+            browserManager.shutdown();
+        });
     });
 
     const browserManager = new BrowserManager(store, storeConfig, logger, notifier);

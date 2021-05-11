@@ -1,4 +1,5 @@
 import { add } from "date-fns";
+import { existsSync, readFileSync, writeFileSync } from "fs";
 import { Item } from "./models/api/item";
 import { Product } from "./models/api/product";
 import { NotificationCooldown } from "./models/cooldown";
@@ -6,6 +7,24 @@ import { NotificationCooldown } from "./models/cooldown";
 export class CooldownManager {
     private readonly cooldowns = new Map<string, NotificationCooldown>();
     private readonly cartCooldowns = new Map<string, NotificationCooldown>();
+
+    constructor() {
+        if (existsSync("cart-cooldowns.json")) {
+            try {
+                this.cartCooldowns = new Map(JSON.parse(readFileSync("cart-cooldowns.json", "utf-8")));
+            } catch {
+                this.cartCooldowns = new Map<string, NotificationCooldown>();
+            }
+        }
+
+        if (existsSync("cooldowns.json")) {
+            try {
+                this.cooldowns = new Map(JSON.parse(readFileSync("cooldowns.json", "utf-8")));
+            } catch {
+                this.cooldowns = new Map<string, NotificationCooldown>();
+            }
+        }
+    }
 
     addToCooldownMap(isProductBuyable: boolean, item: Item): void {
         const endTime = add(new Date(), {
@@ -59,5 +78,12 @@ export class CooldownManager {
 
     hasCartCooldown(itemId: string): boolean {
         return this.cartCooldowns.has(itemId);
+    }
+
+    saveCooldowns(): void {
+        const cartCooldowns = JSON.stringify(Array.from(this.cartCooldowns.entries()));
+        const cooldowns = JSON.stringify(Array.from(this.cooldowns.entries()));
+        writeFileSync("cart-cooldowns.json", cartCooldowns, "utf-8");
+        writeFileSync("cooldowns.json", cooldowns, "utf-8");
     }
 }

@@ -5,3 +5,5 @@ stores.toml
 yarn.lock
 npm-debug.log
 stockshock.log
+cooldowns.json
+cart-cooldowns.json

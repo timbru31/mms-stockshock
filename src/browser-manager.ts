@@ -96,7 +96,7 @@ export class BrowserManager {
         }
         if (!contextCreated) {
             this.logger.error(`Login did not succeed, please restart with '--no-headless' option. Context could not be created`);
-            process.exit(1);
+            process.kill(process.pid, "SIGINT");
         }
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -169,7 +169,7 @@ export class BrowserManager {
                     this.logger.error("Errors: %O", res.body);
                 }
                 await this.notifier.notifyAdmin(`😵 [${this.store.getName()}] I'm dying. Hopefully your Docker restarts me!`);
-                process.exit(1);
+                process.kill(process.pid, "SIGINT");
             }
             await prompt({
                 name: "noop",
@@ -220,7 +220,7 @@ export class BrowserManager {
         } catch (e) {
             this.logger.error("Unable to visit start page...");
             if (exitOnFail) {
-                process.exit(1);
+                process.kill(process.pid, "SIGINT");
             }
             return false;
         }
