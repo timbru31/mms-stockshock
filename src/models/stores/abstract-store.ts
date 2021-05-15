@@ -7,6 +7,7 @@ export abstract class CommonStore implements Store {
     abstract baseUrl: string;
     abstract countryCode: string;
     abstract salesLine: string;
+    abstract shortCode: string;
 
     abstract getName(): string;
 

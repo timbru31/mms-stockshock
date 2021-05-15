@@ -52,11 +52,7 @@ export class CooldownManager {
     cleanupCooldowns(): void {
         const now = new Date();
         for (const [id, cooldown] of this.cooldowns) {
-            console.log("checking ID", id);
-            console.log("now", now);
-            console.log("endTime", cooldown.endTime);
             if (isAfter(now, typeof cooldown.endTime === "string" ? parseISO(cooldown.endTime as string) : cooldown.endTime)) {
-                console.log("deleting!!");
                 this.cooldowns.delete(id);
             }
         }

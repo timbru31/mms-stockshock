@@ -4,6 +4,7 @@ password = ""
 categories = []
 category_regex = ""
 ignore_sleep = false
+cookies = 10
 # You can set a webhook for all the types or a dedicated one for each type
 webhook_url = ""
 webhook_role_ping = ""
@@ -18,6 +19,10 @@ proxy_url = ""
 proxy_username = ""
 proxy_password = ""
 start_url = ""
+dynamo_db_region = ""
+dynamo_db_table_name = ""
+dynamo_db_access_key = ""
+dynamo_db_secret_access_key = ""
 
 [mmde]
 email = ""
@@ -25,6 +30,7 @@ password = ""
 categories = []
 category_regex = ""
 ignore_sleep = false
+cookies = 10
 # You can set a webhook for all the types or a dedicated one for each type
 webhook_url = ""
 webhook_role_ping = ""
@@ -39,6 +45,10 @@ proxy_url = ""
 proxy_username = ""
 proxy_password = ""
 start_url = ""
+dynamo_db_region = ""
+dynamo_db_table_name = ""
+dynamo_db_access_key = ""
+dynamo_db_secret_access_key = ""
 
 [mmat]
 email = ""
@@ -46,6 +56,7 @@ password = ""
 categories = []
 category_regex = ""
 ignore_sleep = false
+cookies = 10
 # You can set a webhook for all the types or a dedicated one for each type
 webhook_url = ""
 webhook_role_ping = ""
@@ -60,3 +71,7 @@ proxy_url = ""
 proxy_username = ""
 proxy_password = ""
 start_url = ""
+dynamo_db_region = ""
+dynamo_db_table_name = ""
+dynamo_db_access_key = ""
+dynamo_db_secret_access_key = ""

@@ -131,21 +131,21 @@ export class Notifier {
             message = this.decorateMessageWithRoles(
                 `🟢 Item **available**: ${item?.product?.title} for ${item?.price?.price} ${item?.price?.currency}! Go check it out: ${
                     this.store.baseUrl
-                }${this.getProductURL(item)}?magician=${item?.product?.id}`,
+                }${this.productHelper.getProductURL(item)}?magician=${item?.product?.id}`,
                 this.stockWebhookRolePing
             );
         } else if (this.productHelper.canProductBeAddedToCart(item)) {
             message = this.decorateMessageWithRoles(
                 `🛒 Item **can be added to cart**: ${item?.product?.title} for ${item?.price?.price} ${
                     item?.price?.currency
-                }! Go check it out: ${this.store.baseUrl}${this.getProductURL(item)}?magician=${item?.product?.id}`,
+                }! Go check it out: ${this.store.baseUrl}${this.productHelper.getProductURL(item)}?magician=${item?.product?.id}`,
                 this.stockWebhookRolePing
             );
         } else {
             message = this.decorateMessageWithRoles(
                 `🟡 Item for **cart parker**: ${item?.product?.title} for ${item?.price?.price} ${
                     item?.price?.currency
-                }! Go check it out: ${this.store.baseUrl}${this.getProductURL(item)}`,
+                }! Go check it out: ${this.store.baseUrl}${this.productHelper.getProductURL(item)}`,
                 this.stockWebhookRolePing
             );
         }
@@ -192,9 +192,5 @@ export class Notifier {
         }
 
         return `${message} <@&${webhookRolePing}>`;
-    }
-
-    private getProductURL(item: Item) {
-        return item?.product?.url || `/de/product/-${item.product.id}.html`;
     }
 }

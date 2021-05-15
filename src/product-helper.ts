@@ -39,4 +39,8 @@ export class ProductHelper {
     canProductBeAddedToCart(item: Item): boolean {
         return item?.product?.onlineStatus;
     }
+
+    getProductURL(item: Item): string {
+        return item?.product?.url || `/de/product/-${item.product.id}.html`;
+    }
 }

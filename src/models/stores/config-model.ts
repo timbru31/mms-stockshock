@@ -10,6 +10,7 @@ export interface StoreConfiguration {
     categories?: string[];
     category_regex: string;
     ignore_sleep?: boolean;
+    cookies?: number;
     webhook_url?: string;
     stock_webhook_url?: string;
     cookie_webhook_url?: string;
@@ -23,4 +24,8 @@ export interface StoreConfiguration {
     proxy_password?: string;
     proxy_urls?: string[];
     start_url?: string;
+    dynamo_db_region?: string;
+    dynamo_db_table_name?: string;
+    dynamo_db_access_key?: string;
+    dynamo_db_secret_access_key?: string;
 }

@@ -2,6 +2,7 @@ export interface Store {
     baseUrl: string;
     countryCode: string;
     salesLine: string;
+    shortCode: string;
     loginSleepTime?: number;
 
     getSleepTime(): number;

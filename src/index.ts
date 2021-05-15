@@ -4,6 +4,7 @@ import { CartAdder } from "./cart-adder";
 import { CategoryChecker } from "./category-checker";
 import { getStoreAndStoreConfig } from "./cli-helper";
 import { CooldownManager } from "./cooldown-manager";
+import { DynamoDBCookieStore } from "./dynamodb-cookie-store";
 import { CliArguments } from "./models/cli";
 import { Store } from "./models/stores/store";
 import { Notifier } from "./notifier";
@@ -51,7 +52,11 @@ import { WishlistChecker } from "./wishlist-checker";
 
     const wishlistChecker = new WishlistChecker(store, logger, browserManager, cooldownManager, notifier);
     const categoryChecker = new CategoryChecker(store, logger, browserManager, cooldownManager, notifier);
-    const cartAdder = new CartAdder(store, logger, browserManager, cooldownManager, notifier);
+    let cookieStore: DynamoDBCookieStore | undefined;
+    if (storeConfig.dynamo_db_region && storeConfig.dynamo_db_table_name) {
+        cookieStore = new DynamoDBCookieStore(store, storeConfig);
+    }
+    const cartAdder = new CartAdder(store, logger, browserManager, cooldownManager, notifier, cookieStore);
 
     while (shouldRun) {
         try {
@@ -74,7 +79,7 @@ import { WishlistChecker } from "./wishlist-checker";
             }
 
             await sleep(store.getSleepTime());
-            await cartAdder.createCartCookies();
+            await cartAdder.createCartCookies(storeConfig.cookies ?? 10);
 
             cooldownManager.cleanupCooldowns();
             await sleep(store.getSleepTime());

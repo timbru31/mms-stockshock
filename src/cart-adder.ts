@@ -3,6 +3,7 @@ import { v4 } from "uuid";
 import { Logger } from "winston";
 import { BrowserManager } from "./browser-manager";
 import { CooldownManager } from "./cooldown-manager";
+import { DynamoDBCookieStore } from "./dynamodb-cookie-store";
 import { Product } from "./models/api/product";
 import { Store } from "./models/stores/store";
 import { Notifier } from "./notifier";
@@ -15,13 +16,22 @@ export class CartAdder {
     private readonly notifier: Notifier;
     private readonly browserManager: BrowserManager;
     private readonly cooldownManager: CooldownManager;
+    private readonly cookieStore: DynamoDBCookieStore | undefined;
 
-    constructor(store: Store, logger: Logger, browserManager: BrowserManager, cooldownManager: CooldownManager, notifier: Notifier) {
+    constructor(
+        store: Store,
+        logger: Logger,
+        browserManager: BrowserManager,
+        cooldownManager: CooldownManager,
+        notifier: Notifier,
+        cookieStore: DynamoDBCookieStore | undefined
+    ) {
         this.store = store;
         this.logger = logger;
         this.browserManager = browserManager;
         this.cooldownManager = cooldownManager;
         this.notifier = notifier;
+        this.cookieStore = cookieStore;
     }
 
     clearCartProducts(): void {
@@ -32,12 +42,12 @@ export class CartAdder {
         this.cartProducts = new Map([...this.cartProducts, ...newProducts]);
     }
 
-    async createCartCookies(): Promise<void> {
+    async createCartCookies(cookieAmount = 10): Promise<void> {
         if (this.cartProducts.size) {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             for (const [id, product] of this.cartProducts.entries()) {
                 const cookies: string[] = [];
-                for (let i = 0; i < 10; i++) {
+                for (let i = 0; i < cookieAmount; i++) {
                     let contextCreated = false;
                     try {
                         contextCreated = await Promise.race([this.browserManager.createIncognitoContext(false), sleep(6000, false)]);
@@ -137,6 +147,9 @@ export class CartAdder {
                 if (cookies) {
                     await this.notifier.notifyCookies(product, cookies);
                     this.cooldownManager.addToCartCooldownMap(product);
+                    if (this.cookieStore) {
+                        this.cookieStore.storeCookies(product, cookies);
+                    }
                 }
             }
             this.cartProducts.clear();

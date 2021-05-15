@@ -5,6 +5,7 @@ export class Saturn extends CommonStore implements Store {
     readonly baseUrl = "https://www.saturn.de";
     readonly countryCode = "DE";
     readonly salesLine = "Saturn";
+    readonly shortCode = "saturn";
 
     getName(): string {
         return "Saturn";
