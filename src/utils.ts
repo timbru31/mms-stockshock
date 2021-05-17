@@ -4,7 +4,7 @@ import { parse } from "toml";
 import { createLogger as createWinstonLogger, format, Logger, transports } from "winston";
 import { ConfigModel } from "./models/stores/config-model";
 
-export const GRAPHQL_CLIENT_VERSION = "7.11.1";
+export const GRAPHQL_CLIENT_VERSION = "7.12.1";
 
 export async function sleep<T>(sleepTime: number, returnValue?: T): Promise<T> {
     return new Promise<T>((resolve) => setTimeout(() => resolve(returnValue || ({} as T)), sleepTime));
