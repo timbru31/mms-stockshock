@@ -2,6 +2,12 @@
 
 > Your friendly 🤖 to check the wishlist and categories of MediaMarkt and Saturn for available items
 
+## No support 🚨
+
+Sadly, I can't offer any support to help you get the bot up and running.  
+You need to figure the things out on your own.  
+**However**, if you believe you found an actual bug, please open an issue.
+
 ## Prerequisities
 
 You need to put items on your wishlist in order to have this bot working.
@@ -24,12 +30,14 @@ npm install
 ## Configuration & Usage
 
 Copy the `stores_example.toml` to `stores.toml` and configure your credentials.  
+**You need to supply the query hashes from the MM/S API as they change too often to maintain!**
+
 You can setup different categories (use the ID) to check, too.  
-If desired, configure the webhook URL(s), too.
+If desired, configure the webhook URL(s) or proxies.
 
 ### Slack/Discord notifications
 
-Any Slack compatible webhook URL can be used, for instance Discord.  
+Any _Slack compatible_ webhook URL can be used, for instance Discord.  
 Here is an example how the message looks like:
 
 ![Discord Notification](docs/stockshock-discord-notification.png)

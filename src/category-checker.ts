@@ -12,17 +12,27 @@ import { GRAPHQL_CLIENT_VERSION, sleep } from "./utils";
 import { CategoryResponse } from "./models/api/category-response";
 import { Product } from "./models/api/product";
 import { SelectedProductResponse } from "./models/api/selected-product-response";
+import { StoreConfiguration } from "./models/stores/config-model";
 
 export class CategoryChecker {
     private readonly store: Store;
+    private readonly storeConfiguration: StoreConfiguration;
     private readonly logger: Logger;
     private readonly notifier: Notifier;
     private readonly browserManager: BrowserManager;
     private readonly cooldownManager: CooldownManager;
     private readonly productHelper = new ProductHelper();
 
-    constructor(store: Store, logger: Logger, browserManager: BrowserManager, cooldownManager: CooldownManager, notifier: Notifier) {
+    constructor(
+        store: Store,
+        storeConfiguration: StoreConfiguration,
+        logger: Logger,
+        browserManager: BrowserManager,
+        cooldownManager: CooldownManager,
+        notifier: Notifier
+    ) {
         this.store = store;
+        this.storeConfiguration = storeConfiguration;
         this.logger = logger;
         this.browserManager = browserManager;
         this.cooldownManager = cooldownManager;
@@ -42,7 +52,7 @@ export class CategoryChecker {
 
         const res = await this.performCategoryQuery(category);
         if (res.status !== 200 || !res.body || res.body?.errors) {
-            await this.browserManager.handleResponseError(res);
+            await this.browserManager.handleResponseError("CategoryV4", res);
         } else {
             const totalPages = res.body?.data?.categoryV4?.paging?.pageCount;
 
@@ -60,7 +70,7 @@ export class CategoryChecker {
                     await sleep(this.store.getSleepTime());
                     const res = await this.performCategoryQuery(category, additionalQueryCalls);
                     if (res.status !== 200 || !res.body || res.body?.errors) {
-                        await this.browserManager.handleResponseError(res);
+                        await this.browserManager.handleResponseError("CategoryV4", res);
                     } else {
                         if (res?.body?.data?.categoryV4?.products) {
                             for (const product of res.body.data.categoryV4.products) {
@@ -77,7 +87,7 @@ export class CategoryChecker {
             for (const productId of productIds) {
                 const res = await this.performProductDetailsQuery(productId);
                 if (res.status !== 200 || !res.body || res.body?.errors) {
-                    await this.browserManager.handleResponseError(res);
+                    await this.browserManager.handleResponseError("GetSelectProduct", res);
                 } else {
                     if (res?.body?.data) {
                         await this.checkItem(res.body.data, cartProducts);
@@ -101,7 +111,14 @@ export class CategoryChecker {
             return Promise.race([
                 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 this.browserManager.page!.evaluate(
-                    async (store: Store, page: number, category: string, flowId: string, graphQLClientVersion: string) =>
+                    async (
+                        store: Store,
+                        page: number,
+                        category: string,
+                        flowId: string,
+                        graphQLClientVersion: string,
+                        categorySHA256: string
+                    ) =>
                         await fetch(`${store.baseUrl}/api/v1/graphql?anti-cache=${new Date().getTime()}`, {
                             credentials: "include",
                             headers: {
@@ -128,10 +145,10 @@ export class CategoryChecker {
                                     page,
                                 },
                                 extensions: {
-                                    pwa: { salesLine: store.salesLine, country: store.countryCode, language: "de" },
+                                    pwa: { salesLine: store.salesLine, country: store.countryCode, language: "de", contentful: true },
                                     persistedQuery: {
                                         version: 1,
-                                        sha256Hash: "059e0d217e1245a9221360b7f9c4fe3bc8de9b9e0469931b454d743cc939040c",
+                                        sha256Hash: categorySHA256,
                                     },
                                 },
                             }),
@@ -150,7 +167,8 @@ export class CategoryChecker {
                     page,
                     category,
                     v4(),
-                    GRAPHQL_CLIENT_VERSION
+                    GRAPHQL_CLIENT_VERSION,
+                    this.storeConfiguration.categorySHA256
                 ),
                 sleep(5000, {
                     status: 0,
@@ -164,9 +182,7 @@ export class CategoryChecker {
         }
     }
 
-    private performProductDetailsQuery(
-        productId: string
-    ): Promise<{
+    private performProductDetailsQuery(productId: string): Promise<{
         status: number;
         body: SelectedProductResponse | null;
         retryAfterHeader: string | null;
@@ -175,7 +191,7 @@ export class CategoryChecker {
             return Promise.race([
                 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 this.browserManager.page!.evaluate(
-                    async (store: Store, productId: string, flowId: string, graphQLClientVersion: string) =>
+                    async (store: Store, productId: string, flowId: string, graphQLClientVersion: string, getProductSHA256: string) =>
                         await fetch(`${store.baseUrl}/api/v1/graphql?anti-cache=${new Date().getTime()}`, {
                             credentials: "include",
                             headers: {
@@ -200,10 +216,10 @@ export class CategoryChecker {
                                     id: productId,
                                 },
                                 extensions: {
-                                    pwa: { salesLine: store.salesLine, country: store.countryCode, language: "de" },
+                                    pwa: { salesLine: store.salesLine, country: store.countryCode, language: "de", contentful: true },
                                     persistedQuery: {
                                         version: 1,
-                                        sha256Hash: "d203d965a247095d9402904cfd22f8678f93fd138875696e0ca238ff18c4e02d",
+                                        sha256Hash: getProductSHA256,
                                     },
                                 },
                             }),
@@ -221,7 +237,8 @@ export class CategoryChecker {
                     this.store as SerializableOrJSHandle,
                     productId,
                     v4(),
-                    GRAPHQL_CLIENT_VERSION
+                    GRAPHQL_CLIENT_VERSION,
+                    this.storeConfiguration.getProductSHA256
                 ),
                 sleep(5000, {
                     status: 0,

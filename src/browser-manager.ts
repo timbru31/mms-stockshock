@@ -105,7 +105,14 @@ export class BrowserManager {
             res = await Promise.race([
                 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 this.page!.evaluate(
-                    async (store: Store, email: string, password: string, flowId: string, graphQLClientVersion: string) =>
+                    async (
+                        store: Store,
+                        email: string,
+                        password: string,
+                        flowId: string,
+                        graphQLClientVersion: string,
+                        loginSHA256: string
+                    ) =>
                         await fetch(`${store.baseUrl}/api/v1/graphql?anti-cache=${new Date().getTime()}`, {
                             credentials: "include",
                             headers: {
@@ -129,7 +136,7 @@ export class BrowserManager {
                                     pwa: { salesLine: store.salesLine, country: store.countryCode, language: "de" },
                                     persistedQuery: {
                                         version: 1,
-                                        sha256Hash: "48888a2943b5b790b95fce729554b6f0818eda790466ca59b074156da0723746",
+                                        sha256Hash: loginSHA256,
                                     },
                                 },
                             }),
@@ -151,7 +158,8 @@ export class BrowserManager {
                     this.storeConfig.email,
                     this.storeConfig.password,
                     v4(),
-                    GRAPHQL_CLIENT_VERSION
+                    GRAPHQL_CLIENT_VERSION,
+                    this.storeConfig.loginSHA256
                 ),
                 sleep(5000, {
                     status: -1,
@@ -231,8 +239,11 @@ export class BrowserManager {
         return true;
     }
 
-    async handleResponseError(res: { status: number; body: Response | null; retryAfterHeader: string | null }): Promise<void> {
-        this.logger.error(`Query did not succeed, status code: ${res.status}`);
+    async handleResponseError(
+        query: string,
+        res: { status: number; body: Response | null; retryAfterHeader: string | null }
+    ): Promise<void> {
+        this.logger.error(`${query} query did not succeed, status code: ${res.status}`);
         if (res?.body?.errors) {
             this.logger.error("Error: %O", res.body.errors);
         }

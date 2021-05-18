@@ -5,6 +5,7 @@ import { BrowserManager } from "./browser-manager";
 import { CooldownManager } from "./cooldown-manager";
 import { DynamoDBCookieStore } from "./dynamodb-cookie-store";
 import { Product } from "./models/api/product";
+import { StoreConfiguration } from "./models/stores/config-model";
 import { Store } from "./models/stores/store";
 import { Notifier } from "./notifier";
 import { GRAPHQL_CLIENT_VERSION, sleep } from "./utils";
@@ -12,6 +13,7 @@ import { GRAPHQL_CLIENT_VERSION, sleep } from "./utils";
 export class CartAdder {
     private cartProducts = new Map<string, Product>();
     private readonly store: Store;
+    private readonly storeConfiguration: StoreConfiguration;
     private readonly logger: Logger;
     private readonly notifier: Notifier;
     private readonly browserManager: BrowserManager;
@@ -20,6 +22,7 @@ export class CartAdder {
 
     constructor(
         store: Store,
+        storeConfiguration: StoreConfiguration,
         logger: Logger,
         browserManager: BrowserManager,
         cooldownManager: CooldownManager,
@@ -27,6 +30,7 @@ export class CartAdder {
         cookieStore: DynamoDBCookieStore | undefined
     ) {
         this.store = store;
+        this.storeConfiguration = storeConfiguration;
         this.logger = logger;
         this.browserManager = browserManager;
         this.cooldownManager = cooldownManager;
@@ -64,7 +68,7 @@ export class CartAdder {
                         res = await Promise.race([
                             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                             this.browserManager.page!.evaluate(
-                                async (store: Store, productId: string, flowId: string, graphQLClientVersion) =>
+                                async (store: Store, productId: string, flowId: string, graphQLClientVersion, addProductSHA256: string) =>
                                     await fetch(`${store.baseUrl}/api/v1/graphql?anti-cache=${new Date().getTime()}`, {
                                         credentials: "include",
                                         headers: {
@@ -102,7 +106,7 @@ export class CartAdder {
                                                 },
                                                 persistedQuery: {
                                                     version: 1,
-                                                    sha256Hash: "404e7401c3363865cc3d92d5c5454ef7d382128c014c75f5fc39ed7ce549e2b9",
+                                                    sha256Hash: addProductSHA256,
                                                 },
                                             },
                                         }),
@@ -115,7 +119,8 @@ export class CartAdder {
                                 this.store as SerializableOrJSHandle,
                                 id,
                                 v4(),
-                                GRAPHQL_CLIENT_VERSION
+                                GRAPHQL_CLIENT_VERSION,
+                                this.storeConfiguration.addProductSHA256
                             ),
                             sleep(2000, {
                                 success: false,

@@ -50,13 +50,13 @@ import { WishlistChecker } from "./wishlist-checker";
     logger.info("Login succeeded, let's hunt!");
     await notifier.notifyAdmin(`🤖 [${store.getName()}] Login succeded, let's hunt!`);
 
-    const wishlistChecker = new WishlistChecker(store, logger, browserManager, cooldownManager, notifier);
-    const categoryChecker = new CategoryChecker(store, logger, browserManager, cooldownManager, notifier);
+    const wishlistChecker = new WishlistChecker(store, storeConfig, logger, browserManager, cooldownManager, notifier);
+    const categoryChecker = new CategoryChecker(store, storeConfig, logger, browserManager, cooldownManager, notifier);
     let cookieStore: DynamoDBCookieStore | undefined;
     if (storeConfig.dynamo_db_region && storeConfig.dynamo_db_table_name) {
         cookieStore = new DynamoDBCookieStore(store, storeConfig);
     }
-    const cartAdder = new CartAdder(store, logger, browserManager, cooldownManager, notifier, cookieStore);
+    const cartAdder = new CartAdder(store, storeConfig, logger, browserManager, cooldownManager, notifier, cookieStore);
 
     while (shouldRun) {
         try {

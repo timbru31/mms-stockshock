@@ -11,20 +11,30 @@ import { Store } from "./models/stores/store";
 import { Notifier } from "./notifier";
 import { GRAPHQL_CLIENT_VERSION, sleep } from "./utils";
 import { Product } from "./models/api/product";
+import { StoreConfiguration } from "./models/stores/config-model";
 
 export class WishlistChecker {
     // This is set by MM/S and a fixed constant
     readonly MAX_ITEMS_PER_QUERY = 24;
 
     private readonly store: Store;
+    private readonly storeConfiguration: StoreConfiguration;
     private readonly logger: Logger;
     private readonly notifier: Notifier;
     private readonly browserManager: BrowserManager;
     private readonly cooldownManager: CooldownManager;
     private readonly productHelper = new ProductHelper();
 
-    constructor(store: Store, logger: Logger, browserManager: BrowserManager, cooldownManager: CooldownManager, notifier: Notifier) {
+    constructor(
+        store: Store,
+        storeConfiguration: StoreConfiguration,
+        logger: Logger,
+        browserManager: BrowserManager,
+        cooldownManager: CooldownManager,
+        notifier: Notifier
+    ) {
         this.store = store;
+        this.storeConfiguration = storeConfiguration;
         this.logger = logger;
         this.browserManager = browserManager;
         this.cooldownManager = cooldownManager;
@@ -39,7 +49,7 @@ export class WishlistChecker {
 
         const res = await this.performWishlistQuery();
         if (res.status !== 200 || !res.body || res.body?.errors) {
-            await this.browserManager.handleResponseError(res);
+            await this.browserManager.handleResponseError("WishlistItems", res);
         } else {
             const totalItems = res.body?.data?.wishlistItems?.total;
             if (!totalItems) {
@@ -55,7 +65,7 @@ export class WishlistChecker {
                     const newOffset = additionalQueryCalls * this.MAX_ITEMS_PER_QUERY;
                     const res = await this.performWishlistQuery(newOffset);
                     if (res.status !== 200 || !res.body || res.body?.errors) {
-                        await this.browserManager.handleResponseError(res);
+                        await this.browserManager.handleResponseError("WishlistItems", res);
                     } else {
                         items = await this.checkItems(res.body?.data?.wishlistItems?.items);
                         cartProducts = new Map([...cartProducts, ...items]);
@@ -66,9 +76,7 @@ export class WishlistChecker {
         return cartProducts;
     }
 
-    private performWishlistQuery(
-        offset = 0
-    ): Promise<{
+    private performWishlistQuery(offset = 0): Promise<{
         status: number;
         body: WishlistReponse | null;
         retryAfterHeader: string | null;
@@ -77,7 +85,7 @@ export class WishlistChecker {
             return Promise.race([
                 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 this.browserManager.page!.evaluate(
-                    async (store: Store, offset: number, flowId: string, graphQLClientVersion: string) =>
+                    async (store: Store, offset: number, flowId: string, graphQLClientVersion: string, wishlistSHA256: string) =>
                         await fetch(`${store.baseUrl}/api/v1/graphql?anti-cache=${new Date().getTime()}`, {
                             credentials: "include",
                             headers: {
@@ -107,7 +115,7 @@ export class WishlistChecker {
                                     pwa: { salesLine: store.salesLine, country: store.countryCode, language: "de" },
                                     persistedQuery: {
                                         version: 1,
-                                        sha256Hash: "34f689a65435266a00785158604c61a7ad262c5a5bac523dd1af68c406f72248",
+                                        sha256Hash: wishlistSHA256,
                                     },
                                 },
                             }),
@@ -125,7 +133,8 @@ export class WishlistChecker {
                     this.store as SerializableOrJSHandle,
                     offset,
                     v4(),
-                    GRAPHQL_CLIENT_VERSION
+                    GRAPHQL_CLIENT_VERSION,
+                    this.storeConfiguration.wishlistSHA256
                 ),
                 sleep(5000, {
                     status: 0,

@@ -5,6 +5,7 @@ categories = []
 category_regex = ""
 ignore_sleep = false
 cookies = 10
+start_url = ""
 # You can set a webhook for all the types or a dedicated one for each type
 webhook_url = ""
 webhook_role_ping = ""
@@ -18,11 +19,16 @@ proxy_urls = []
 proxy_url = ""
 proxy_username = ""
 proxy_password = ""
-start_url = ""
 dynamo_db_region = ""
 dynamo_db_table_name = ""
 dynamo_db_access_key = ""
 dynamo_db_secret_access_key = ""
+# The hashes from the queries. Tend to change often
+loginSHA256 = ""
+categorySHA256 = ""
+wishlistSHA256 = ""
+addProductSHA256 = ""
+getProductSHA256 = ""
 
 [mmde]
 email = ""
@@ -31,6 +37,7 @@ categories = []
 category_regex = ""
 ignore_sleep = false
 cookies = 10
+start_url = ""
 # You can set a webhook for all the types or a dedicated one for each type
 webhook_url = ""
 webhook_role_ping = ""
@@ -44,11 +51,16 @@ proxy_urls = []
 proxy_url = ""
 proxy_username = ""
 proxy_password = ""
-start_url = ""
 dynamo_db_region = ""
 dynamo_db_table_name = ""
 dynamo_db_access_key = ""
 dynamo_db_secret_access_key = ""
+# The hashes from the queries. Tend to change often
+loginSHA256 = ""
+categorySHA256 = ""
+wishlistSHA256 = ""
+addProductSHA256 = ""
+getProductSHA256 = ""
 
 [mmat]
 email = ""
@@ -57,6 +69,7 @@ categories = []
 category_regex = ""
 ignore_sleep = false
 cookies = 10
+start_url = ""
 # You can set a webhook for all the types or a dedicated one for each type
 webhook_url = ""
 webhook_role_ping = ""
@@ -70,8 +83,13 @@ proxy_urls = []
 proxy_url = ""
 proxy_username = ""
 proxy_password = ""
-start_url = ""
 dynamo_db_region = ""
 dynamo_db_table_name = ""
 dynamo_db_access_key = ""
 dynamo_db_secret_access_key = ""
+# The hashes from the queries. Tend to change often
+loginSHA256 = ""
+categorySHA256 = ""
+wishlistSHA256 = ""
+addProductSHA256 = ""
+getProductSHA256 = ""
