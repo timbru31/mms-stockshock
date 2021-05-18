@@ -43,7 +43,7 @@
         "@types/user-agents": "^1.0.1",
         "@types/yargs": "^16.0.1",
         "@typescript-eslint/eslint-plugin": "^4.24.0",
-        "@typescript-eslint/parser": "^4.23.0",
+        "@typescript-eslint/parser": "^4.24.0",
         "eslint": "^7.26.0",
         "husky": "^6.0.0",
         "lint-staged": "^11.0.0",
