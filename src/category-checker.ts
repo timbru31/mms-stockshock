@@ -42,7 +42,7 @@ export class CategoryChecker {
     async checkCategory(category: string, categoryRegex?: string): Promise<Map<string, Product>> {
         let categoryRegExp: RegExp | null = null;
         if (categoryRegex) {
-            categoryRegExp = new RegExp(categoryRegex);
+            categoryRegExp = new RegExp(categoryRegex, "i");
         }
         if (!this.browserManager.loggedIn) {
             throw new Error("Not logged in!");
