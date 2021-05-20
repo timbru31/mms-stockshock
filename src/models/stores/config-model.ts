@@ -17,6 +17,7 @@ export interface StoreConfiguration {
     // Misc config settings
     ignore_sleep?: boolean;
     cookies?: number;
+    announce_cookies: boolean;
 
     // Webhooks for notifications
     webhook_url?: string;

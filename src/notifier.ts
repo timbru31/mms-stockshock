@@ -14,6 +14,7 @@ export class Notifier {
     private readonly stockWebhookRolePing: string | undefined;
     private readonly cookieWebhookRolePing: string | undefined;
     private readonly adminWebhookRolePing: string | undefined;
+    private readonly announceCookies: boolean = true;
     private readonly store: Store;
     private readonly logger: Logger;
     private readonly productHelper = new ProductHelper();
@@ -43,6 +44,8 @@ export class Notifier {
         if (storeConfig?.admin_webhook_role_ping || storeConfig?.webhook_role_ping) {
             this.adminWebhookRolePing = storeConfig?.admin_webhook_role_ping || storeConfig?.webhook_role_ping;
         }
+
+        this.announceCookies = storeConfig.announce_cookies ?? true;
 
         this.logger = logger;
     }
@@ -97,12 +100,13 @@ export class Notifier {
     }
 
     async notifyCookies(product: Product, cookies: string[]): Promise<void> {
-        const message = this.decorateMessageWithRoles(
-            `🍪 ${cookies.length} cart cookies were made for **${product?.id}**, **${
-                product?.title
-            }** for ${this.store.getName()}:\n\`${cookies.map((cookie) => `${this.store.baseUrl}?cookie=${cookie}`).join("\n")}\`\n`,
-            this.cookieWebhookRolePing
-        );
+        let rawMessage = `🍪 ${cookies.length} cart cookies were made for **${product?.id}**, **${
+            product?.title
+        }** for ${this.store.getName()}`;
+        if (this.announceCookies) {
+            rawMessage += `:\n\`${cookies.map((cookie) => `${this.store.baseUrl}?cookie=${cookie}`).join("\n")}\`\n`;
+        }
+        const message = this.decorateMessageWithRoles(rawMessage, this.cookieWebhookRolePing);
         if (this.cookieWebhook) {
             try {
                 await this.cookieWebhook.send({

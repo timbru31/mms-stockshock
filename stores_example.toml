@@ -6,6 +6,7 @@ category_regex = ""
 ignore_sleep = false
 # Beware that >10 can cause issues with Discord's 2000 characters limit!
 cookies = 10
+announce_cookies = true
 start_url = ""
 # You can set a webhook for all the types or a dedicated one for each type
 webhook_url = ""
@@ -39,6 +40,7 @@ category_regex = ""
 ignore_sleep = false
 # Beware that >10 can cause issues with Discord's 2000 characters limit!
 cookies = 10
+announce_cookies = true
 start_url = ""
 # You can set a webhook for all the types or a dedicated one for each type
 webhook_url = ""
@@ -72,6 +74,7 @@ category_regex = ""
 ignore_sleep = false
 # Beware that >10 can cause issues with Discord's 2000 characters limit!
 cookies = 10
+announce_cookies = true
 start_url = ""
 # You can set a webhook for all the types or a dedicated one for each type
 webhook_url = ""
