@@ -4,6 +4,7 @@ import { Logger } from "winston";
 import { BrowserManager } from "./browser-manager";
 import { CooldownManager } from "./cooldown-manager";
 import { DynamoDBCookieStore } from "./dynamodb-cookie-store";
+import { AddProdoductResponse } from "./models/api/add-product-response";
 import { Product } from "./models/api/product";
 import { StoreConfiguration } from "./models/stores/config-model";
 import { Store } from "./models/stores/store";
@@ -46,24 +47,29 @@ export class CartAdder {
         this.cartProducts = new Map([...this.cartProducts, ...newProducts]);
     }
 
-    async createCartCookies(cookieAmount = 10): Promise<void> {
+    async createCartCookies(cookieAmount = 10, newSession = true): Promise<void> {
         if (this.cartProducts.size) {
+            if (newSession) {
+                cookieAmount = 1;
+            }
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             for (const [id, product] of this.cartProducts.entries()) {
                 const cookies: string[] = [];
                 for (let i = 0; i < cookieAmount; i++) {
-                    let contextCreated = false;
-                    try {
-                        contextCreated = await Promise.race([this.browserManager.createIncognitoContext(false), sleep(6000, false)]);
-                    } catch (e) {
-                        this.logger.error("Context creation failed, error %O", e);
+                    if (newSession) {
+                        let contextCreated = false;
+                        try {
+                            contextCreated = await Promise.race([this.browserManager.createIncognitoContext(false), sleep(6000, false)]);
+                        } catch (e) {
+                            this.logger.error("Context creation failed, error %O", e);
+                        }
+                        if (!contextCreated) {
+                            this.logger.error(`Unable to create new context for ${id} try ${i} of 10. Skipping`);
+                            await sleep(this.store.getSleepTime());
+                            continue;
+                        }
                     }
-                    if (!contextCreated) {
-                        this.logger.error(`Unable to create new context for ${id} try ${i} of 10. Skipping`);
-                        await sleep(this.store.getSleepTime());
-                        continue;
-                    }
-                    let res: { status: number; success: boolean };
+                    let res: { status: number; success: boolean; body: AddProdoductResponse | null; retryAfterHeader: string | null };
                     try {
                         res = await Promise.race([
                             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -113,9 +119,25 @@ export class CartAdder {
                                         method: "POST",
                                         mode: "cors",
                                     })
-                                        .then((res) => ({ success: res.status === 200, status: res.status }))
+                                        .then((res) =>
+                                            res
+                                                .json()
+                                                .then((data) => ({
+                                                    success: res.status === 200,
+                                                    status: res.status,
+                                                    body: data,
+                                                    retryAfterHeader: null,
+                                                }))
+                                                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                                                .catch((_) => ({
+                                                    success: false,
+                                                    status: res.status,
+                                                    body: null,
+                                                    retryAfterHeader: res.headers.get("Retry-After"),
+                                                }))
+                                        )
                                         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                                        .catch((_) => ({ success: false, status: -2 })),
+                                        .catch((_) => ({ success: false, status: -2, body: null, retryAfterHeader: null })),
                                 this.store as SerializableOrJSHandle,
                                 id,
                                 v4(),
@@ -125,10 +147,12 @@ export class CartAdder {
                             sleep(2000, {
                                 success: false,
                                 status: -1,
+                                body: null,
+                                retryAfterHeader: null,
                             }),
                         ]);
                     } catch (e) {
-                        res = { success: false, status: 0 };
+                        res = { success: false, status: 0, body: null, retryAfterHeader: null };
                         this.logger.error("Error, %O", e);
                     }
 
