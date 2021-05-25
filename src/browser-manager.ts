@@ -11,7 +11,7 @@ import { Response } from "./models/api/response";
 import { StoreConfiguration } from "./models/stores/config-model";
 import { Store } from "./models/stores/store";
 import { Notifier } from "./notifier";
-import { GRAPHQL_CLIENT_VERSION, sleep } from "./utils";
+import { GRAPHQL_CLIENT_VERSION, shuffle, sleep } from "./utils";
 
 export class BrowserManager {
     reLoginRequired = false;
@@ -35,7 +35,7 @@ export class BrowserManager {
         this.notifier = notifier;
 
         if (this.storeConfig.proxy_urls?.length) {
-            this.proxies = this.storeConfig.proxy_urls;
+            this.proxies = shuffle(this.storeConfig.proxy_urls);
         }
     }
 
