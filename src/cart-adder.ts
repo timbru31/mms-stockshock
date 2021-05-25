@@ -69,7 +69,7 @@ export class CartAdder {
                             continue;
                         }
                     }
-                    let res: { status: number; success: boolean; body: AddProdoductResponse | null; retryAfterHeader: string | null };
+                    let res: { status: number; success: boolean; body: AddProdoductResponse | null; retryAfterHeader?: string | null };
                     try {
                         res = await Promise.race([
                             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -126,7 +126,6 @@ export class CartAdder {
                                                     success: res.status === 200,
                                                     status: res.status,
                                                     body: data,
-                                                    retryAfterHeader: null,
                                                 }))
                                                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
                                                 .catch((_) => ({
@@ -137,7 +136,7 @@ export class CartAdder {
                                                 }))
                                         )
                                         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                                        .catch((_) => ({ success: false, status: -2, body: null, retryAfterHeader: null })),
+                                        .catch((_) => ({ success: false, status: -2, body: null })),
                                 this.store as SerializableOrJSHandle,
                                 id,
                                 v4(),
@@ -148,11 +147,10 @@ export class CartAdder {
                                 success: false,
                                 status: -1,
                                 body: null,
-                                retryAfterHeader: null,
                             }),
                         ]);
                     } catch (e) {
-                        res = { success: false, status: 0, body: null, retryAfterHeader: null };
+                        res = { success: false, status: 0, body: null };
                         this.logger.error("Error, %O", e);
                     }
 

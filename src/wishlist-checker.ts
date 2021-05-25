@@ -79,7 +79,7 @@ export class WishlistChecker {
     private performWishlistQuery(offset = 0): Promise<{
         status: number;
         body: WishlistReponse | null;
-        retryAfterHeader: string | null;
+        retryAfterHeader?: string | null;
     }> {
         try {
             return Promise.race([
@@ -124,12 +124,12 @@ export class WishlistChecker {
                             .then((res) =>
                                 res
                                     .json()
-                                    .then((data) => ({ status: res.status, body: data, retryAfterHeader: null }))
+                                    .then((data) => ({ status: res.status, body: data }))
                                     // eslint-disable-next-line @typescript-eslint/no-unused-vars
                                     .catch((_) => ({ status: res.status, body: null, retryAfterHeader: res.headers.get("Retry-After") }))
                             )
                             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                            .catch((_) => ({ status: -1, body: null, retryAfterHeader: null })),
+                            .catch((_) => ({ status: -1, body: null })),
                     this.store as SerializableOrJSHandle,
                     offset,
                     v4(),
@@ -138,13 +138,12 @@ export class WishlistChecker {
                 ),
                 sleep(5000, {
                     status: 0,
-                    retryAfterHeader: null,
                     body: { errors: "Timeout" },
                 }),
             ]);
         } catch (error) {
             this.logger.error("Unable to perform wishlist query: %O", error);
-            return Promise.resolve({ status: 0, body: null, retryAfterHeader: null });
+            return Promise.resolve({ status: 0, body: null });
         }
     }
 

@@ -105,7 +105,7 @@ export class CategoryChecker {
     ): Promise<{
         status: number;
         body: CategoryResponse | null;
-        retryAfterHeader: string | null;
+        retryAfterHeader?: string | null;
     }> {
         try {
             return Promise.race([
@@ -157,12 +157,12 @@ export class CategoryChecker {
                             .then((res) =>
                                 res
                                     .json()
-                                    .then((data) => ({ status: res.status, body: data, retryAfterHeader: null }))
+                                    .then((data) => ({ status: res.status, body: data }))
                                     // eslint-disable-next-line @typescript-eslint/no-unused-vars
                                     .catch((_) => ({ status: res.status, body: null, retryAfterHeader: res.headers.get("Retry-After") }))
                             )
                             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                            .catch((_) => ({ status: -1, body: null, retryAfterHeader: null })),
+                            .catch((_) => ({ status: -1, body: null })),
                     this.store as SerializableOrJSHandle,
                     page,
                     category,
@@ -172,20 +172,19 @@ export class CategoryChecker {
                 ),
                 sleep(5000, {
                     status: 0,
-                    retryAfterHeader: null,
                     body: { errors: "Timeout" },
                 }),
             ]);
         } catch (error) {
             this.logger.error("Unable to perform wishlist query: %O", error);
-            return Promise.resolve({ status: 0, body: null, retryAfterHeader: null });
+            return Promise.resolve({ status: 0, body: null });
         }
     }
 
     private performProductDetailsQuery(productId: string): Promise<{
         status: number;
         body: SelectedProductResponse | null;
-        retryAfterHeader: string | null;
+        retryAfterHeader?: string | null;
     }> {
         try {
             return Promise.race([
@@ -228,12 +227,12 @@ export class CategoryChecker {
                             .then((res) =>
                                 res
                                     .json()
-                                    .then((data) => ({ status: res.status, body: data, retryAfterHeader: null }))
+                                    .then((data) => ({ status: res.status, body: data }))
                                     // eslint-disable-next-line @typescript-eslint/no-unused-vars
                                     .catch((_) => ({ status: res.status, body: null, retryAfterHeader: res.headers.get("Retry-After") }))
                             )
                             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                            .catch((_) => ({ status: -1, body: null, retryAfterHeader: null })),
+                            .catch((_) => ({ status: -1, body: null })),
                     this.store as SerializableOrJSHandle,
                     productId,
                     v4(),
@@ -242,13 +241,12 @@ export class CategoryChecker {
                 ),
                 sleep(5000, {
                     status: 0,
-                    retryAfterHeader: null,
                     body: { errors: "Timeout" },
                 }),
             ]);
         } catch (error) {
             this.logger.error("Unable to perform wishlist query: %O", error);
-            return Promise.resolve({ status: 0, body: null, retryAfterHeader: null });
+            return Promise.resolve({ status: 0, body: null });
         }
     }
 

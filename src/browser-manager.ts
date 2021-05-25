@@ -6,6 +6,7 @@ import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import UserAgent from "user-agents";
 import { v4 } from "uuid";
 import { Logger } from "winston";
+import { LoginResponse } from "./models/api/login-response";
 import { Response } from "./models/api/response";
 import { StoreConfiguration } from "./models/stores/config-model";
 import { Store } from "./models/stores/store";
@@ -99,8 +100,7 @@ export class BrowserManager {
             process.kill(process.pid, "SIGINT");
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        let res: { status: number; body?: any };
+        let res: { status: number; body: LoginResponse | null; retryAfterHeader?: string | null };
         try {
             res = await Promise.race([
                 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -149,8 +149,16 @@ export class BrowserManager {
                                           .json()
                                           .then((data) => ({ status: res.status, body: data }))
                                           // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                                          .catch((_) => ({ status: res.status, body: null, retryAfter: res.headers.get("Retry-After") }))
-                                    : res.text().then((data) => ({ status: res.status, body: data }))
+                                          .catch((_) => ({
+                                              status: res.status,
+                                              body: null,
+                                              retryAfterHeader: res.headers.get("Retry-After"),
+                                          }))
+                                    : res.text().then((data) => ({
+                                          status: res.status,
+                                          body: data,
+                                          retryAfterHeader: res.headers.get("Retry-After"),
+                                      }))
                             )
                             // eslint-disable-next-line @typescript-eslint/no-unused-vars
                             .catch((_) => ({ status: -2, body: null })),
@@ -167,7 +175,7 @@ export class BrowserManager {
                 }),
             ]);
         } catch (e) {
-            res = { status: 0 };
+            res = { status: 0, body: null };
             this.logger.error("Error, %O", e);
         }
         if (res.status !== 200 || !res.body || res.body?.errors) {
@@ -175,6 +183,9 @@ export class BrowserManager {
                 this.logger.error(`Login did not succeed, please restart with '--no-headless' option, Status ${res.status}`);
                 if (res.body?.errors) {
                     this.logger.error("Errors: %O", res.body);
+                }
+                if (res.retryAfterHeader) {
+                    this.logger.error("Retry after: %O", res.retryAfterHeader);
                 }
                 await this.notifier.notifyAdmin(`😵 [${this.store.getName()}] I'm dying. Hopefully your Docker restarts me!`);
                 process.kill(process.pid, "SIGINT");
@@ -241,7 +252,7 @@ export class BrowserManager {
 
     async handleResponseError(
         query: string,
-        res: { status: number; body: Response | null; retryAfterHeader: string | null }
+        res: { status: number; body: Response | null; retryAfterHeader?: string | null }
     ): Promise<void> {
         this.logger.error(`${query} query did not succeed, status code: ${res.status}`);
         if (res?.body?.errors) {
