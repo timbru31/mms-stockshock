@@ -49,7 +49,7 @@ export class BasketAdder {
 
     async createBasketCookies(cookieAmount = 10, newSession = true): Promise<void> {
         if (this.basketProducts.size) {
-            if (newSession) {
+            if (!newSession) {
                 cookieAmount = 1;
             }
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
