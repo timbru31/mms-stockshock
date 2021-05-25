@@ -28,8 +28,7 @@ export class CooldownManager {
 
     addToCooldownMap(isProductBuyable: boolean, item: Item): void {
         const endTime = add(new Date(), {
-            minutes: isProductBuyable ? 5 : 0,
-            hours: isProductBuyable ? 0 : 4,
+            minutes: isProductBuyable ? 5 : 30,
         });
         this.cooldowns.set(item?.product?.id, {
             id: item?.product?.id,
