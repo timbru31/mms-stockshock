@@ -2,7 +2,7 @@ import { Item } from "./models/api/item";
 
 export class ProductHelper {
     /*
-     * Check if an item can be added to cart (onlineStatus) - this overrules everything
+     * Check if an item can be added to basket (onlineStatus) - this overrules everything
      * Otherwise check if the item is listed as IN_WAREHOUSE or LONG_TAIL with at least a quantity > 0
      * There seems to be IN_STORE too, where the quantity does not matter. Probably a local store will ship the item
      * Special note: LONG_TAIL needs to be purchasable (onlineStatus)!
@@ -36,7 +36,7 @@ export class ProductHelper {
         return false;
     }
 
-    canProductBeAddedToCart(item: Item): boolean {
+    canProductBeAddedToBasket(item: Item): boolean {
         return item?.product?.onlineStatus;
     }
 

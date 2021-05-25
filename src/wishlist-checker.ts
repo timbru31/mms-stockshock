@@ -45,7 +45,7 @@ export class WishlistChecker {
         if (!this.browserManager.loggedIn) {
             throw new Error("Not logged in!");
         }
-        let cartProducts = new Map<string, Product>();
+        let basketProducts = new Map<string, Product>();
 
         const res = await this.performWishlistQuery();
         if (res.status !== 200 || !res.body || res.body?.errors) {
@@ -56,7 +56,7 @@ export class WishlistChecker {
                 throw new Error("Nothing on wishlist!");
             }
             let items = await this.checkItems(res.body?.data?.wishlistItems?.items);
-            cartProducts = new Map([...cartProducts, ...items]);
+            basketProducts = new Map([...basketProducts, ...items]);
 
             if (totalItems > this.MAX_ITEMS_PER_QUERY) {
                 const remainingQueryCalls = Math.ceil((totalItems - this.MAX_ITEMS_PER_QUERY) / this.MAX_ITEMS_PER_QUERY);
@@ -68,12 +68,12 @@ export class WishlistChecker {
                         await this.browserManager.handleResponseError("WishlistItems", res);
                     } else {
                         items = await this.checkItems(res.body?.data?.wishlistItems?.items);
-                        cartProducts = new Map([...cartProducts, ...items]);
+                        basketProducts = new Map([...basketProducts, ...items]);
                     }
                 }
             }
         }
-        return cartProducts;
+        return basketProducts;
     }
 
     private performWishlistQuery(offset = 0): Promise<{
@@ -148,7 +148,7 @@ export class WishlistChecker {
     }
 
     private async checkItems(items: Item[] | undefined): Promise<Map<string, Product>> {
-        const cartProducts = new Map<string, Product>();
+        const basketProducts = new Map<string, Product>();
 
         if (items) {
             for (const item of items) {
@@ -174,12 +174,12 @@ export class WishlistChecker {
                         this.cooldownManager.addToCooldownMap(isProductBuyable, item);
                     }
 
-                    if (this.productHelper.canProductBeAddedToCart(item) && !this.cooldownManager.hasCartCooldown(itemId)) {
-                        cartProducts.set(itemId, item.product);
+                    if (this.productHelper.canProductBeAddedToBasket(item) && !this.cooldownManager.hasBasketCooldown(itemId)) {
+                        basketProducts.set(itemId, item.product);
                     }
                 }
             }
         }
-        return cartProducts;
+        return basketProducts;
     }
 }

@@ -11,8 +11,8 @@ import { Store } from "./models/stores/store";
 import { Notifier } from "./notifier";
 import { GRAPHQL_CLIENT_VERSION, sleep } from "./utils";
 
-export class CartAdder {
-    private cartProducts = new Map<string, Product>();
+export class BasketAdder {
+    private basketProducts = new Map<string, Product>();
     private readonly store: Store;
     private readonly storeConfiguration: StoreConfiguration;
     private readonly logger: Logger;
@@ -39,21 +39,21 @@ export class CartAdder {
         this.cookieStore = cookieStore;
     }
 
-    clearCartProducts(): void {
-        this.cartProducts.clear();
+    clearBasketProducts(): void {
+        this.basketProducts.clear();
     }
 
     addNewProducts(newProducts: Map<string, Product>): void {
-        this.cartProducts = new Map([...this.cartProducts, ...newProducts]);
+        this.basketProducts = new Map([...this.basketProducts, ...newProducts]);
     }
 
-    async createCartCookies(cookieAmount = 10, newSession = true): Promise<void> {
-        if (this.cartProducts.size) {
+    async createBasketCookies(cookieAmount = 10, newSession = true): Promise<void> {
+        if (this.basketProducts.size) {
             if (newSession) {
                 cookieAmount = 1;
             }
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            for (const [id, product] of this.cartProducts.entries()) {
+            for (const [id, product] of this.basketProducts.entries()) {
                 const cookies: string[] = [];
                 for (let i = 0; i < cookieAmount; i++) {
                     if (newSession) {
@@ -156,11 +156,11 @@ export class CartAdder {
 
                     if (res.success) {
                         try {
-                            const cartCookie = (await this.browserManager.page?.cookies())?.filter((cookie) => cookie.name === "r")[0];
-                            if (cartCookie) {
-                                cookies.push(cartCookie.value);
+                            const basketCookie = (await this.browserManager.page?.cookies())?.filter((cookie) => cookie.name === "r")[0];
+                            if (basketCookie) {
+                                cookies.push(basketCookie.value);
                                 this.logger.info(
-                                    `Made cookie ${cartCookie.value} for product ${id}: ${this.store.baseUrl}?cookie=${cartCookie.value}`
+                                    `Made cookie ${basketCookie.value} for product ${id}: ${this.store.baseUrl}?cookie=${basketCookie.value}`
                                 );
                             }
                         } catch (e) {
@@ -173,13 +173,13 @@ export class CartAdder {
                 }
                 if (cookies) {
                     await this.notifier.notifyCookies(product, cookies);
-                    this.cooldownManager.addToCartCooldownMap(product);
+                    this.cooldownManager.addToBasketCooldownMap(product);
                     if (this.cookieStore) {
                         this.cookieStore.storeCookies(product, cookies);
                     }
                 }
             }
-            this.cartProducts.clear();
+            this.basketProducts.clear();
             this.browserManager.reLoginRequired = true;
         }
     }

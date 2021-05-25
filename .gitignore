@@ -6,4 +6,5 @@ yarn.lock
 npm-debug.log
 stockshock.log
 cooldowns.json
+basket-cooldowns.json
 cart-cooldowns.json

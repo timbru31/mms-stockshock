@@ -1,6 +1,6 @@
 import { Logger } from "winston";
 import { BrowserManager } from "./browser-manager";
-import { CartAdder } from "./cart-adder";
+import { BasketAdder } from "./basket-adder";
 import { CategoryChecker } from "./category-checker";
 import { getStoreAndStoreConfig } from "./cli-helper";
 import { CooldownManager } from "./cooldown-manager";
@@ -56,7 +56,7 @@ import { WishlistChecker } from "./wishlist-checker";
     if (storeConfig.dynamo_db_region && storeConfig.dynamo_db_table_name) {
         cookieStore = new DynamoDBCookieStore(store, storeConfig);
     }
-    const cartAdder = new CartAdder(store, storeConfig, logger, browserManager, cooldownManager, notifier, cookieStore);
+    const basketAdder = new BasketAdder(store, storeConfig, logger, browserManager, cooldownManager, notifier, cookieStore);
 
     while (shouldRun) {
         try {
@@ -64,22 +64,22 @@ import { WishlistChecker } from "./wishlist-checker";
             logger.info("💌 Checking wishlist items");
 
             await reLoginIfRequired(browserManager, args, notifier, store, logger);
-            let cartProducts = await wishlistChecker.checkWishlist();
-            cartAdder.addNewProducts(cartProducts);
+            let basketProducts = await wishlistChecker.checkWishlist();
+            basketAdder.addNewProducts(basketProducts);
             await reLoginIfRequired(browserManager, args, notifier, store, logger);
 
             if (storeConfig.categories?.length) {
                 for (const categoryId of storeConfig.categories) {
                     logger.info(`📄 Checking category ${categoryId}`);
                     await sleep(store.getSleepTime());
-                    cartProducts = await categoryChecker.checkCategory(categoryId, storeConfig.category_regex);
-                    cartAdder.addNewProducts(cartProducts);
+                    basketProducts = await categoryChecker.checkCategory(categoryId, storeConfig.category_regex);
+                    basketAdder.addNewProducts(basketProducts);
                     await reLoginIfRequired(browserManager, args, notifier, store, logger);
                 }
             }
 
             await sleep(store.getSleepTime());
-            await cartAdder.createCartCookies(storeConfig.cookies ?? 10);
+            await basketAdder.createBasketCookies(storeConfig.cookies ?? 10);
 
             cooldownManager.cleanupCooldowns();
             await sleep(store.getSleepTime());

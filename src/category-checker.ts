@@ -47,7 +47,7 @@ export class CategoryChecker {
         if (!this.browserManager.loggedIn) {
             throw new Error("Not logged in!");
         }
-        const cartProducts = new Map<string, Product>();
+        const basketProducts = new Map<string, Product>();
         const productIds: string[] = [];
 
         const res = await this.performCategoryQuery(category);
@@ -90,13 +90,13 @@ export class CategoryChecker {
                     await this.browserManager.handleResponseError("GetSelectProduct", res);
                 } else {
                     if (res?.body?.data) {
-                        await this.checkItem(res.body.data, cartProducts);
+                        await this.checkItem(res.body.data, basketProducts);
                     }
                 }
                 await sleep(this.store.getSleepTime());
             }
         }
-        return cartProducts;
+        return basketProducts;
     }
 
     private performCategoryQuery(
@@ -250,15 +250,15 @@ export class CategoryChecker {
         }
     }
 
-    private async checkItem(item: Item | undefined, cartProducts: Map<string, Product>): Promise<Map<string, Product>> {
+    private async checkItem(item: Item | undefined, basketProducts: Map<string, Product>): Promise<Map<string, Product>> {
         if (!item) {
-            return cartProducts;
+            return basketProducts;
         }
 
         if (this.productHelper.isProductAvailable(item)) {
             const itemId = item?.product?.id;
             if (!itemId) {
-                return cartProducts;
+                return basketProducts;
             }
             const isProductBuyable = this.productHelper.isProductBuyable(item);
 
@@ -273,10 +273,10 @@ export class CategoryChecker {
                 this.cooldownManager.addToCooldownMap(isProductBuyable, item);
             }
 
-            if (this.productHelper.canProductBeAddedToCart(item) && !this.cooldownManager.hasCartCooldown(itemId)) {
-                cartProducts.set(itemId, item.product);
+            if (this.productHelper.canProductBeAddedToBasket(item) && !this.cooldownManager.hasBasketCooldown(itemId)) {
+                basketProducts.set(itemId, item.product);
             }
         }
-        return cartProducts;
+        return basketProducts;
     }
 }

@@ -6,14 +6,14 @@ import { NotificationCooldown } from "./models/cooldown";
 
 export class CooldownManager {
     private readonly cooldowns = new Map<string, NotificationCooldown>();
-    private readonly cartCooldowns = new Map<string, NotificationCooldown>();
+    private readonly basketCooldowns = new Map<string, NotificationCooldown>();
 
     constructor() {
-        if (existsSync("cart-cooldowns.json")) {
+        if (existsSync("basket-cooldowns.json")) {
             try {
-                this.cartCooldowns = new Map(JSON.parse(readFileSync("cart-cooldowns.json", "utf-8")));
+                this.basketCooldowns = new Map(JSON.parse(readFileSync("basket-cooldowns.json", "utf-8")));
             } catch {
-                this.cartCooldowns = new Map<string, NotificationCooldown>();
+                this.basketCooldowns = new Map<string, NotificationCooldown>();
             }
         }
 
@@ -38,11 +38,11 @@ export class CooldownManager {
         });
     }
 
-    addToCartCooldownMap(product: Product): void {
+    addToBasketCooldownMap(product: Product): void {
         const endTime = add(new Date(), {
             hours: 8,
         });
-        this.cartCooldowns.set(product?.id, {
+        this.basketCooldowns.set(product?.id, {
             id: product?.id,
             isProductBuyable: null,
             endTime,
@@ -57,9 +57,9 @@ export class CooldownManager {
             }
         }
 
-        for (const [id, cooldown] of this.cartCooldowns) {
+        for (const [id, cooldown] of this.basketCooldowns) {
             if (isAfter(now, typeof cooldown.endTime === "string" ? parseISO(cooldown.endTime as string) : cooldown.endTime)) {
-                this.cartCooldowns.delete(id);
+                this.basketCooldowns.delete(id);
             }
         }
     }
@@ -76,14 +76,14 @@ export class CooldownManager {
         return this.cooldowns.get(itemId);
     }
 
-    hasCartCooldown(itemId: string): boolean {
-        return this.cartCooldowns.has(itemId);
+    hasBasketCooldown(itemId: string): boolean {
+        return this.basketCooldowns.has(itemId);
     }
 
     saveCooldowns(): void {
-        const cartCooldowns = JSON.stringify(Array.from(this.cartCooldowns.entries()));
+        const basketCooldowns = JSON.stringify(Array.from(this.basketCooldowns.entries()));
         const cooldowns = JSON.stringify(Array.from(this.cooldowns.entries()));
-        writeFileSync("cart-cooldowns.json", cartCooldowns, "utf-8");
+        writeFileSync("basket-cooldowns.json", basketCooldowns, "utf-8");
         writeFileSync("cooldowns.json", cooldowns, "utf-8");
     }
 }

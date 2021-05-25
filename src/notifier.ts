@@ -100,7 +100,7 @@ export class Notifier {
     }
 
     async notifyCookies(product: Product, cookies: string[]): Promise<void> {
-        let rawMessage = `🍪 ${cookies.length} cart cookies were made for **${product?.id}**, **${
+        let rawMessage = `🍪 ${cookies.length} basket cookies were made for **${product?.id}**, **${
             product?.title
         }** for ${this.store.getName()}`;
         if (this.announceCookies) {
@@ -138,16 +138,16 @@ export class Notifier {
                 }! Go check it out: ${this.store.baseUrl}${this.productHelper.getProductURL(item)}?magician=${item?.product?.id}`,
                 this.stockWebhookRolePing
             );
-        } else if (this.productHelper.canProductBeAddedToCart(item)) {
+        } else if (this.productHelper.canProductBeAddedToBasket(item)) {
             message = this.decorateMessageWithRoles(
-                `🛒 Item **can be added to cart**: ${item?.product?.id}, ${item?.product?.title} for ${item?.price?.price} ${
+                `🛒 Item **can be added to basket**: ${item?.product?.id}, ${item?.product?.title} for ${item?.price?.price} ${
                     item?.price?.currency
                 }! Go check it out: ${this.store.baseUrl}${this.productHelper.getProductURL(item)}?magician=${item?.product?.id}`,
                 this.stockWebhookRolePing
             );
         } else {
             message = this.decorateMessageWithRoles(
-                `🟡 Item for **cart parker**: ${item?.product?.id}, ${item?.product?.title} for ${item?.price?.price} ${
+                `🟡 Item for **basket parker**: ${item?.product?.id}, ${item?.product?.title} for ${item?.price?.price} ${
                     item?.price?.currency
                 }! Go check it out: ${this.store.baseUrl}${this.productHelper.getProductURL(item)}`,
                 this.stockWebhookRolePing
