@@ -3,10 +3,12 @@ import { existsSync, readFileSync, writeFileSync } from "fs";
 import { Item } from "./models/api/item";
 import { Product } from "./models/api/product";
 import { NotificationCooldown } from "./models/cooldown";
+import { ProductHelper } from "./product-helper";
 
 export class CooldownManager {
     private readonly cooldowns = new Map<string, NotificationCooldown>();
     private readonly basketCooldowns = new Map<string, NotificationCooldown>();
+    private readonly productHelper = new ProductHelper();
 
     constructor() {
         if (existsSync("basket-cooldowns.json")) {
@@ -27,8 +29,10 @@ export class CooldownManager {
     }
 
     addToCooldownMap(isProductBuyable: boolean, item: Item): void {
+        const canBeAddedToBasket = this.productHelper.canProductBeAddedToBasket(item);
         const endTime = add(new Date(), {
-            minutes: isProductBuyable ? 5 : 30,
+            minutes: isProductBuyable ? 5 : canBeAddedToBasket ? 0 : 30,
+            hours: isProductBuyable ? 0 : canBeAddedToBasket ? 4 : 0,
         });
         this.cooldowns.set(item?.product?.id, {
             id: item?.product?.id,
