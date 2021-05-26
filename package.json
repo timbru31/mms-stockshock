@@ -22,7 +22,7 @@
         "node": ">=14"
     },
     "dependencies": {
-        "@aws-sdk/client-dynamodb": "^3.16.0",
+        "@aws-sdk/client-dynamodb": "^3.17.0",
         "@slack/webhook": "^6.0.0",
         "@types/uuid": "^8.3.0",
         "date-fns": "^2.21.3",
