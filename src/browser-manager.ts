@@ -258,7 +258,7 @@ export class BrowserManager {
         if (res?.body?.errors) {
             this.logger.error("Error: %O", res.body.errors);
         }
-        if (res.status === 429 && res?.retryAfterHeader) {
+        if (res.status === 403 || (res.status === 429 && res?.retryAfterHeader)) {
             if (this.proxies?.length) {
                 this.rotateProxy();
                 this.reLoginRequired = true;
