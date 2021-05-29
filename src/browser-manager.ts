@@ -64,6 +64,7 @@ export class BrowserManager {
                 this.proxyServer = new Server({
                     port: 0,
                     prepareRequestFunction: () => {
+                        this.logger.info("Using proxy %O", this.proxies[this.proxyIndex]);
                         return {
                             requestAuthentication: false,
                             upstreamProxyUrl: this.proxies[this.proxyIndex],
@@ -169,7 +170,7 @@ export class BrowserManager {
                     GRAPHQL_CLIENT_VERSION,
                     this.storeConfig.loginSHA256
                 ),
-                sleep(5000, {
+                sleep(10000, {
                     status: -1,
                     body: { errors: "Timeout" },
                 }),
