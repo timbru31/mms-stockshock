@@ -8,7 +8,7 @@ RUN mkdir -p /opt/mms-stockshock \
     && adduser -D stonks \
     && chown -R stonks:stonks /opt/mms-stockshock
 
-COPY package*.json /opt/mms-stockshock
+COPY package*.json /opt/mms-stockshock/
 COPY dist /opt/mms-stockshock/dist
 COPY tsconfig.json /opt/mms-stockshock
 
