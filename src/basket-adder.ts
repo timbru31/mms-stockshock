@@ -64,7 +64,7 @@ export class BasketAdder {
                             this.logger.error("Context creation failed, error %O", e);
                         }
                         if (!contextCreated) {
-                            this.logger.error(`Unable to create new context for ${id} try ${i} of 10. Skipping`);
+                            this.logger.error(`Unable to create new context for ${id} try ${i} of ${cookieAmount}. Skipping`);
                             await sleep(this.store.getSleepTime());
                             continue;
                         }
@@ -171,7 +171,7 @@ export class BasketAdder {
                     }
                     await sleep(this.store.getSleepTime());
                 }
-                if (cookies) {
+                if (cookies?.length) {
                     await this.notifier.notifyCookies(product, cookies);
                     this.cooldownManager.addToBasketCooldownMap(product);
                     if (this.cookieStore) {
