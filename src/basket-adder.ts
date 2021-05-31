@@ -167,7 +167,7 @@ export class BasketAdder {
                             this.logger.error("Unable to get cookie from page, error %O", e);
                         }
                     } else {
-                        this.logger.error(`Unable to create cookie for ${id} try ${i} of 10`);
+                        this.logger.error(`Unable to create cookie for ${id} try ${i} of ${cookieAmount}`);
                     }
                     await sleep(this.store.getSleepTime());
                 }
