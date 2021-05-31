@@ -4,7 +4,7 @@ import { Logger } from "winston";
 import { BrowserManager } from "./browser-manager";
 import { CooldownManager } from "./cooldown-manager";
 import { DynamoDBCookieStore } from "./dynamodb-cookie-store";
-import { AddProdoductResponse } from "./models/api/add-product-response";
+import { AddProductResponse } from "./models/api/add-product-response";
 import { Product } from "./models/api/product";
 import { StoreConfiguration } from "./models/stores/config-model";
 import { Store } from "./models/stores/store";
@@ -69,7 +69,7 @@ export class BasketAdder {
                             continue;
                         }
                     }
-                    let res: { status: number; success: boolean; body: AddProdoductResponse | null; retryAfterHeader?: string | null };
+                    let res: { status: number; success: boolean; body: AddProductResponse | null; retryAfterHeader?: string | null };
                     try {
                         res = await Promise.race([
                             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
