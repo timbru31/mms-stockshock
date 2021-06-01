@@ -29,7 +29,7 @@
         "inquirer": "^8.1.0",
         "patch-package": "^6.4.7",
         "proxy-chain": "^1.0.2",
-        "puppeteer": "^9.1.1",
+        "puppeteer": "^10.0.0",
         "puppeteer-extra": "^3.1.18",
         "puppeteer-extra-plugin-stealth": "^2.7.8",
         "toml": "^3.0.0",
