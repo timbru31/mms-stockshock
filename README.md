@@ -33,7 +33,7 @@ Copy the `stores_example.toml` to `stores.toml` and configure your credentials.
 **You need to supply the query hashes from the MM/S API as they change too often to maintain!**
 
 You can setup different categories (use the ID) to check, too.  
-If desired, configure the webhook URL(s) or proxies.
+If desired, configure the webhook URL(s), websocket announcements or proxies.
 
 ### Slack/Discord notifications
 

@@ -1,6 +1,6 @@
 {
     "name": "stockshock",
-    "version": "1.2.1",
+    "version": "1.3.0",
     "private": true,
     "description": "A simple bot for MediaMarkt and Saturn to check if items on the wishlist are available",
     "main": "dist/index.js",
@@ -36,11 +36,13 @@
         "user-agents": "^1.0.669",
         "uuid": "^8.3.2",
         "winston": "^3.3.3",
+        "ws": "^7.4.6",
         "yargs": "^17.0.1"
     },
     "devDependencies": {
         "@types/inquirer": "^7.3.1",
         "@types/user-agents": "^1.0.1",
+        "@types/ws": "^7.4.4",
         "@types/yargs": "^17.0.0",
         "@typescript-eslint/eslint-plugin": "^4.25.0",
         "@typescript-eslint/parser": "^4.25.0",

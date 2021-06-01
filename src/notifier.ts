@@ -6,6 +6,10 @@ import { Product } from "./models/api/product";
 import { StoreConfiguration } from "./models/stores/config-model";
 import { Store } from "./models/stores/store";
 import { ProductHelper } from "./product-helper";
+import WebSocket from "ws";
+import http from "http";
+import https from "https";
+import { readFileSync } from "fs";
 
 export class Notifier {
     private readonly stockWebhook: IncomingWebhook | undefined;
@@ -18,6 +22,7 @@ export class Notifier {
     private readonly store: Store;
     private readonly logger: Logger;
     private readonly productHelper = new ProductHelper();
+    private readonly wss: WebSocket.Server | null;
 
     constructor(store: Store, storeConfig: StoreConfiguration, logger: Logger) {
         this.store = store;
@@ -48,6 +53,40 @@ export class Notifier {
         this.announceCookies = storeConfig.announce_cookies ?? true;
 
         this.logger = logger;
+        this.wss = this.setupWebSocketServer(storeConfig);
+    }
+
+    setupWebSocketServer(storeConfig: StoreConfiguration): WebSocket.Server | null {
+        if (!storeConfig.use_websocket) {
+            return null;
+        }
+
+        let server: http.Server | https.Server;
+        if (storeConfig.websocket_https) {
+            server = https.createServer({
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                cert: readFileSync(storeConfig.websocket_cert_path!),
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                key: readFileSync(storeConfig.websocket_key_path!),
+            });
+        } else {
+            server = http.createServer();
+        }
+        const wss = new WebSocket.Server({ noServer: true });
+
+        server.on("upgrade", (request, socket, head) => {
+            if (request.headers["sec-websocket-protocol"] !== storeConfig.websocket_password) {
+                socket.write("HTTP/1.1 401 Unauthorized\r\n\r\n");
+                socket.destroy();
+                this.logger.info(`😵‍💫 WebSocket connection from client from ${socket?.remoteAddress} was denied!`);
+                return;
+            }
+            this.logger.info(`👌 WebSocket client from${socket?.remoteAddress} connected successfully`);
+            wss.handleUpgrade(request, socket, head, (ws) => wss.emit("connection", ws, request));
+        });
+
+        server.listen(storeConfig.websocket_port ?? 8080);
+        return wss;
     }
 
     async notifyAdmin(message: string): Promise<void> {
@@ -138,6 +177,19 @@ export class Notifier {
                 }! Go check it out: ${this.store.baseUrl}${this.productHelper.getProductURL(item)}?magician=${item?.product?.id}`,
                 this.stockWebhookRolePing
             );
+            if (this.wss) {
+                for (const client of this.wss.clients) {
+                    if (client.readyState === WebSocket.OPEN) {
+                        client.send(
+                            JSON.stringify({
+                                direct: true,
+                                productTitle: item.product.title,
+                                productId: item.product.id,
+                            })
+                        );
+                    }
+                }
+            }
         } else if (this.productHelper.canProductBeAddedToBasket(item)) {
             message = this.decorateMessageWithRoles(
                 `🛒 Item **can be added to basket**: ${item?.product?.id}, ${item?.product?.title} for ${item?.price?.price} ${
@@ -152,6 +204,19 @@ export class Notifier {
                 }! Go check it out: ${this.store.baseUrl}${this.productHelper.getProductURL(item)}`,
                 this.stockWebhookRolePing
             );
+            if (this.wss) {
+                for (const client of this.wss.clients) {
+                    if (client.readyState === WebSocket.OPEN) {
+                        client.send(
+                            JSON.stringify({
+                                direct: false,
+                                productTitle: item.product.title,
+                                productId: item.product.id,
+                            })
+                        );
+                    }
+                }
+            }
         }
         if (this.stockWebhook) {
             try {

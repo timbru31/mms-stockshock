@@ -41,6 +41,14 @@ export interface StoreConfiguration {
     dynamo_db_access_key?: string;
     dynamo_db_secret_access_key?: string;
 
+    // WebSocket config
+    use_websocket?: boolean;
+    websocket_password?: string;
+    websocket_port?: number;
+    websocket_https?: boolean;
+    websocket_cert_path?: string;
+    websocket_key_path?: string;
+
     // SHA256 hashes for queries
     loginSHA256: string;
     categorySHA256: string;

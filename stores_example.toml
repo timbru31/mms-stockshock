@@ -1,30 +1,44 @@
 [saturn]
 email = ""
 password = ""
+start_url = ""
+
 categories = []
 category_regex = ""
 ignore_sleep = false
+
 # Beware that >10 can cause issues with Discord's 2000 characters limit!
 cookies = 10
 announce_cookies = true
-start_url = ""
+
 # You can set a webhook for all the types or a dedicated one for each type
 webhook_url = ""
 webhook_role_ping = ""
 stock_webhook_role_ping = ""
 cookie_webhook_role_ping = ""
 admin_webhook_role_ping = ""
+
 # Important!
-# If you use multiple proxies the them as http://user:pass@foo.bar:8080
+# If you use multiple proxies, use the basic auth format: http://user:pass@foo.bar:8080
 # Set only proxy_urls or proxy_url NOT both
 proxy_urls = []
 proxy_url = ""
 proxy_username = ""
 proxy_password = ""
+
 dynamo_db_region = ""
 dynamo_db_table_name = ""
 dynamo_db_access_key = ""
 dynamo_db_secret_access_key = ""
+
+# WebSocket config
+use_websocket = false
+websocket_password = ""
+websocket_port = 8080
+websocket_https = false
+websocket_cert_path = ""
+websocket_key_path = ""
+
 # The hashes from the queries. Tend to change often
 loginSHA256 = ""
 categorySHA256 = ""
@@ -35,30 +49,44 @@ getProductSHA256 = ""
 [mmde]
 email = ""
 password = ""
+start_url = ""
+
 categories = []
 category_regex = ""
 ignore_sleep = false
+
 # Beware that >10 can cause issues with Discord's 2000 characters limit!
 cookies = 10
 announce_cookies = true
-start_url = ""
+
 # You can set a webhook for all the types or a dedicated one for each type
 webhook_url = ""
 webhook_role_ping = ""
 stock_webhook_role_ping = ""
 cookie_webhook_role_ping = ""
 admin_webhook_role_ping = ""
+
 # Important!
-# If you use multiple proxies the them as http://user:pass@foo.bar:8080
+# If you use multiple proxies, use the basic auth format: http://user:pass@foo.bar:8080
 # Set only proxy_urls or proxy_url NOT both
 proxy_urls = []
 proxy_url = ""
 proxy_username = ""
 proxy_password = ""
+
 dynamo_db_region = ""
 dynamo_db_table_name = ""
 dynamo_db_access_key = ""
 dynamo_db_secret_access_key = ""
+
+# WebSocket config
+use_websocket = false
+websocket_password = ""
+websocket_port = 8080
+websocket_https = false
+websocket_cert_path = ""
+websocket_key_path = ""
+
 # The hashes from the queries. Tend to change often
 loginSHA256 = ""
 categorySHA256 = ""
@@ -69,30 +97,44 @@ getProductSHA256 = ""
 [mmat]
 email = ""
 password = ""
+start_url = ""
+
 categories = []
 category_regex = ""
 ignore_sleep = false
+
 # Beware that >10 can cause issues with Discord's 2000 characters limit!
 cookies = 10
 announce_cookies = true
-start_url = ""
+
 # You can set a webhook for all the types or a dedicated one for each type
 webhook_url = ""
 webhook_role_ping = ""
 stock_webhook_role_ping = ""
 cookie_webhook_role_ping = ""
 admin_webhook_role_ping = ""
+
 # Important!
-# If you use multiple proxies the them as http://user:pass@foo.bar:8080
+# If you use multiple proxies, use the basic auth format: http://user:pass@foo.bar:8080
 # Set only proxy_urls or proxy_url NOT both
 proxy_urls = []
 proxy_url = ""
 proxy_username = ""
 proxy_password = ""
+
 dynamo_db_region = ""
 dynamo_db_table_name = ""
 dynamo_db_access_key = ""
 dynamo_db_secret_access_key = ""
+
+# WebSocket config
+use_websocket = false
+websocket_password = ""
+websocket_port = 8080
+websocket_https = false
+websocket_cert_path = ""
+websocket_key_path = ""
+
 # The hashes from the queries. Tend to change often
 loginSHA256 = ""
 categorySHA256 = ""
