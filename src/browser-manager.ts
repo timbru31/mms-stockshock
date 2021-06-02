@@ -6,7 +6,6 @@ import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import UserAgent from "user-agents";
 import { v4 } from "uuid";
 import { Logger } from "winston";
-import { CooldownManager } from "./cooldown-manager";
 import { LoginResponse } from "./models/api/login-response";
 import { Response } from "./models/api/response";
 import { StoreConfiguration } from "./models/stores/config-model";
