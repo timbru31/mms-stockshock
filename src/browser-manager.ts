@@ -6,6 +6,7 @@ import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import UserAgent from "user-agents";
 import { v4 } from "uuid";
 import { Logger } from "winston";
+import { CooldownManager } from "./cooldown-manager";
 import { LoginResponse } from "./models/api/login-response";
 import { Response } from "./models/api/response";
 import { StoreConfiguration } from "./models/stores/config-model";
@@ -24,15 +25,17 @@ export class BrowserManager {
     private readonly storeConfig: StoreConfiguration;
     private readonly logger: Logger;
     private readonly notifier: Notifier;
+    private readonly cooldownManager: CooldownManager;
     private readonly proxies: string[] = [];
     private proxyIndex = 0;
     private proxyServer: Server | undefined;
 
-    constructor(store: Store, storeConfig: StoreConfiguration, logger: Logger, notifier: Notifier) {
+    constructor(store: Store, storeConfig: StoreConfiguration, logger: Logger, notifier: Notifier, cooldownManager: CooldownManager) {
         this.logger = logger;
         this.store = store;
         this.storeConfig = storeConfig;
         this.notifier = notifier;
+        this.cooldownManager = cooldownManager;
 
         if (this.storeConfig.proxy_urls?.length) {
             this.proxies = shuffle(this.storeConfig.proxy_urls);
@@ -47,6 +50,8 @@ export class BrowserManager {
     }
 
     async shutdown(): Promise<void> {
+        this.notifier.closeWebSocketServer();
+        this.cooldownManager.saveCooldowns();
         await this.cleanOldReferences();
         await this.proxyServer?.close(true);
     }
@@ -98,6 +103,7 @@ export class BrowserManager {
         }
         if (!contextCreated) {
             this.logger.error(`Login did not succeed, please restart with '--no-headless' option. Context could not be created`);
+            await this.shutdown();
             process.kill(process.pid, "SIGINT");
         }
 
@@ -189,6 +195,7 @@ export class BrowserManager {
                     this.logger.error("Retry after: %O", res.retryAfterHeader);
                 }
                 await this.notifier.notifyAdmin(`😵 [${this.store.getName()}] I'm dying. Hopefully your Docker restarts me!`);
+                await this.shutdown();
                 process.kill(process.pid, "SIGINT");
             }
             await prompt({
@@ -240,6 +247,7 @@ export class BrowserManager {
         } catch (e) {
             this.logger.error("Unable to visit start page...");
             if (exitOnFail) {
+                await this.shutdown();
                 process.kill(process.pid, "SIGINT");
             }
             return false;

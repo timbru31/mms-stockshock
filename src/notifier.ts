@@ -89,6 +89,10 @@ export class Notifier {
         return wss;
     }
 
+    closeWebSocketServer(): void {
+        this.wss?.close();
+    }
+
     async notifyAdmin(message: string): Promise<void> {
         if (this.adminWebhook) {
             const decoratedMessage = this.decorateMessageWithRoles(message, this.adminWebhookRolePing);
