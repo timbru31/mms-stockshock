@@ -81,7 +81,7 @@ export class Notifier {
                 this.logger.info(`😵‍💫 WebSocket connection from client from ${socket?.remoteAddress} was denied!`);
                 return;
             }
-            this.logger.info(`👌 WebSocket client from${socket?.remoteAddress} connected successfully`);
+            this.logger.info(`👌 WebSocket client from ${socket?.remoteAddress} connected successfully`);
             wss.handleUpgrade(request, socket, head, (ws) => wss.emit("connection", ws, request));
         });
 
@@ -183,8 +183,8 @@ export class Notifier {
                         client.send(
                             JSON.stringify({
                                 direct: true,
-                                productTitle: item.product.title,
-                                productId: item.product.id,
+                                title: item.product.title,
+                                id: item.product.id,
                             })
                         );
                     }
@@ -210,8 +210,8 @@ export class Notifier {
                         client.send(
                             JSON.stringify({
                                 direct: false,
-                                productTitle: item.product.title,
-                                productId: item.product.id,
+                                title: item.product.title,
+                                id: item.product.id,
                             })
                         );
                     }
