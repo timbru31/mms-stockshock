@@ -39,11 +39,13 @@ import { WishlistChecker } from "./wishlist-checker";
         process.on(evt, () => {
             console.log("👋 Shutting down...");
             shouldRun = false;
+            notifier.closeWebSocketServer();
+            cooldownManager.saveCooldowns();
             browserManager.shutdown();
         });
     });
 
-    const browserManager = new BrowserManager(store, storeConfig, logger, notifier, cooldownManager);
+    const browserManager = new BrowserManager(store, storeConfig, logger, notifier);
     await browserManager.launchPuppeteer(args.headless, args.sandbox);
     await browserManager.logIn(args.headless);
     logger.info("Login succeeded, let's hunt!");
