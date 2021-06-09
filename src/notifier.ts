@@ -179,11 +179,12 @@ export class Notifier {
         const message = new MessageEmbed().setTimestamp();
         message.setImage(`https://assets.mmsrg.com/isr/166325/c1/-/${item.product.titleImageId}/mobile_200_200.png`);
         message.setTitle(item?.product?.title);
-        message.setURL(`${this.store.baseUrl}${this.productHelper.getProductURL(item)}?magician=${item?.product?.id}`);
+        message.setURL(`${this.store.baseUrl}${this.productHelper.getProductURL(item)}`);
 
         const hasCookie = this.cookieStore ? await this.cookieStore.hasCookies(item.product) : false;
         message.addFields([
-            { name: "\u200B", value: "\u200B" },
+            { name: "Magician", value: `${this.store.baseUrl}${this.productHelper.getProductURL(item)}?magician=${item?.product?.id}` },
+            { name: "ProductID", value: item.product.id },
             {
                 name: "Price",
                 value: `${item?.price?.price ?? "0"} ${item?.price?.currency ?? "𑿠"}`,
@@ -258,7 +259,10 @@ export class Notifier {
         }
         if (this.stockChannel) {
             try {
-                await this.stockChannel.send({ embed: message, content: this.stockRolePing ? `<@&${this.stockRolePing}>` : undefined });
+                await this.stockChannel.send({
+                    embed: message,
+                    content: this.decorateMessageWithRoles(item.product.title, this.stockRolePing),
+                });
             } catch (e) {
                 this.logger.error("Error sending message, error: %O", e);
             }
