@@ -176,8 +176,8 @@ export class Notifier {
         const fullAlert = this.productHelper.isProductBuyable(item);
         if (fullAlert) {
             message = this.decorateMessageWithRoles(
-                `🟢 Item **available**: ${item?.product?.id}, ${item?.product?.title} for ${item?.price?.price} ${
-                    item?.price?.currency
+                `🟢 Item **available**: ${item?.product?.id}, ${item?.product?.title} for ${item?.price?.price ?? "0"} ${
+                    item?.price?.currency ?? "𑿠"
                 }! Go check it out: ${this.store.baseUrl}${this.productHelper.getProductURL(item)}?magician=${item?.product?.id}`,
                 this.stockWebhookRolePing
             );
@@ -196,15 +196,15 @@ export class Notifier {
             }
         } else if (this.productHelper.canProductBeAddedToBasket(item)) {
             message = this.decorateMessageWithRoles(
-                `🛒 Item **can be added to basket**: ${item?.product?.id}, ${item?.product?.title} for ${item?.price?.price} ${
-                    item?.price?.currency
+                `🛒 Item **can be added to basket**: ${item?.product?.id}, ${item?.product?.title} for ${item?.price?.price ?? "0"} ${
+                    item?.price?.currency ?? "𑿠"
                 }! Go check it out: ${this.store.baseUrl}${this.productHelper.getProductURL(item)}?magician=${item?.product?.id}`,
                 this.stockWebhookRolePing
             );
         } else {
             message = this.decorateMessageWithRoles(
-                `🟡 Item for **basket parker**: ${item?.product?.id}, ${item?.product?.title} for ${item?.price?.price} ${
-                    item?.price?.currency
+                `🟡 Item for **basket parker**: ${item?.product?.id}, ${item?.product?.title} for ${item?.price?.price ?? "0"} ${
+                    item?.price?.currency ?? "𑿠"
                 }! Go check it out: ${this.store.baseUrl}${this.productHelper.getProductURL(item)}`,
                 this.stockWebhookRolePing
             );
