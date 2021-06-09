@@ -57,11 +57,6 @@ import { WishlistChecker } from "./wishlist-checker";
     });
 
     const browserManager = new BrowserManager(store, storeConfig, logger, notifier);
-    await browserManager.launchPuppeteer(args.headless, args.sandbox);
-    await browserManager.logIn(args.headless);
-    logger.info("Login succeeded, let's hunt!");
-    await notifier.notifyAdmin(`🤖 [${store.getName()}] Login succeded, let's hunt!`);
-
     const wishlistChecker = new WishlistChecker(store, storeConfig, logger, browserManager, cooldownManager, notifier);
     const categoryChecker = new CategoryChecker(store, storeConfig, logger, browserManager, cooldownManager, notifier);
     const basketAdder = new BasketAdder(store, storeConfig, logger, browserManager, cooldownManager, notifier, cookieStore);
@@ -104,7 +99,7 @@ async function reLoginIfRequired(browserManager: BrowserManager, args: CliArgume
     if (browserManager.reLoginRequired) {
         await browserManager.launchPuppeteer(args.headless, args.sandbox);
         await browserManager.logIn(args.headless);
-        await notifier.notifyAdmin(`🤖 [${store.getName()}] Re-Login required, but was OK!`);
-        logger.info("Re-Login succeeded, let's hunt!");
+        await notifier.notifyAdmin(`🤖 [${store.getName()}] (Re-)Login required, but was OK!`);
+        logger.info("(Re-)Login succeeded, let's hunt!");
     }
 }

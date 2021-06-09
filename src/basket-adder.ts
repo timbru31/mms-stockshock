@@ -59,7 +59,7 @@ export class BasketAdder {
                     if (newSession) {
                         let contextCreated = false;
                         try {
-                            contextCreated = await Promise.race([this.browserManager.createIncognitoContext(false), sleep(6000, false)]);
+                            contextCreated = await Promise.race([this.browserManager.createIncognitoContext(), sleep(6000, false)]);
                         } catch (e) {
                             this.logger.error("Context creation failed, error %O", e);
                         }

@@ -14,7 +14,7 @@ import { Notifier } from "./notifier";
 import { GRAPHQL_CLIENT_VERSION, shuffle, sleep } from "./utils";
 
 export class BrowserManager {
-    reLoginRequired = false;
+    reLoginRequired = true;
     loggedIn = false;
     page: Page | undefined;
 
@@ -92,13 +92,13 @@ export class BrowserManager {
 
         let contextCreated = false;
         try {
-            contextCreated = await Promise.race([this.createIncognitoContext(false), sleep(6000, false)]);
+            contextCreated = await Promise.race([this.createIncognitoContext(), sleep(6000, false)]);
         } catch (e) {
             this.logger.error("Context creation failed, error %O", e);
         }
         if (!contextCreated) {
             this.logger.error(`Login did not succeed, please restart with '--no-headless' option. Context could not be created`);
-            process.kill(process.pid, "SIGINT");
+            throw new Error("Login did not succeed. Context could not be created");
         }
 
         let res: { status: number; body: LoginResponse | null; retryAfterHeader?: string | null };
@@ -181,15 +181,15 @@ export class BrowserManager {
         }
         if (res.status !== 200 || !res.body || res.body?.errors) {
             if (headless) {
-                this.logger.error(`Login did not succeed, please restart with '--no-headless' option, Status ${res.status}`);
+                this.logger.error(`Login did not succeed. Status ${res.status}`);
                 if (res.body?.errors) {
                     this.logger.error("Errors: %O", res.body);
                 }
                 if (res.retryAfterHeader) {
                     this.logger.error("Retry after: %O", res.retryAfterHeader);
                 }
-                await this.notifier.notifyAdmin(`😵 [${this.store.getName()}] I'm dying. Hopefully your Docker restarts me!`);
-                process.kill(process.pid, "SIGINT");
+                await this.notifier.notifyAdmin(`😵 [${this.store.getName()}] Login did not succeed. Status ${res.status}`);
+                throw new Error(`Login did not succeed. Status ${res.status}`);
             }
             await prompt({
                 name: "noop",
@@ -200,7 +200,7 @@ export class BrowserManager {
         this.reLoginRequired = false;
     }
 
-    async createIncognitoContext(exitOnFail = true): Promise<boolean> {
+    async createIncognitoContext(): Promise<boolean> {
         if (this.context) {
             await this.context.close();
             this.context = undefined;
@@ -239,9 +239,6 @@ export class BrowserManager {
             });
         } catch (e) {
             this.logger.error("Unable to visit start page...");
-            if (exitOnFail) {
-                process.kill(process.pid, "SIGINT");
-            }
             return false;
         }
 
