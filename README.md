@@ -35,9 +35,9 @@ Copy the `stores_example.toml` to `stores.toml` and configure your credentials.
 You can setup different categories (use the ID) to check, too.  
 If desired, configure the webhook URL(s), websocket announcements or proxies.
 
-### Slack/Discord notifications
+### Discord notifications
 
-Any _Slack compatible_ webhook URL can be used, for instance Discord.  
+Discord can be used to send rich notifications to your server. You need to create a bot and have the bot credentials at hand.  
 Here is an example how the message looks like:
 
 ![Discord Notification](docs/stockshock-discord-notification.png)

@@ -11,12 +11,16 @@ ignore_sleep = false
 cookies = 10
 announce_cookies = true
 
-# You can set a webhook for all the types or a dedicated one for each type
-webhook_url = ""
-webhook_role_ping = ""
-stock_webhook_role_ping = ""
-cookie_webhook_role_ping = ""
-admin_webhook_role_ping = ""
+# You can set the same channel or role for all the types or a dedicated one for each type
+discord_bot_token = ""
+discord_channel = ""
+stock_discord_channel = ""
+cookie_discord_channel = ""
+admin_discord_channel = ""
+discord_role_ping = ""
+stock_discord_role_ping = ""
+cookie_discord_role_ping = ""
+admin_discord_role_ping = ""
 
 # Important!
 # If you use multiple proxies, use the basic auth format: http://user:pass@foo.bar:8080
@@ -59,12 +63,16 @@ ignore_sleep = false
 cookies = 10
 announce_cookies = true
 
-# You can set a webhook for all the types or a dedicated one for each type
-webhook_url = ""
-webhook_role_ping = ""
-stock_webhook_role_ping = ""
-cookie_webhook_role_ping = ""
-admin_webhook_role_ping = ""
+# You can set the same channel or role for all the types or a dedicated one for each type
+discord_bot_token = ""
+discord_channel = ""
+stock_discord_channel = ""
+cookie_discord_channel = ""
+admin_discord_channel = ""
+discord_role_ping = ""
+stock_discord_role_ping = ""
+cookie_discord_role_ping = ""
+admin_discord_role_ping = ""
 
 # Important!
 # If you use multiple proxies, use the basic auth format: http://user:pass@foo.bar:8080
@@ -107,12 +115,16 @@ ignore_sleep = false
 cookies = 10
 announce_cookies = true
 
-# You can set a webhook for all the types or a dedicated one for each type
-webhook_url = ""
-webhook_role_ping = ""
-stock_webhook_role_ping = ""
-cookie_webhook_role_ping = ""
-admin_webhook_role_ping = ""
+# You can set the same channel or role for all the types or a dedicated one for each type
+discord_bot_token = ""
+discord_channel = ""
+stock_discord_channel = ""
+cookie_discord_channel = ""
+admin_discord_channel = ""
+discord_role_ping = ""
+stock_discord_role_ping = ""
+cookie_discord_role_ping = ""
+admin_discord_role_ping = ""
 
 # Important!
 # If you use multiple proxies, use the basic auth format: http://user:pass@foo.bar:8080

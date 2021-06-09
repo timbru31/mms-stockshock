@@ -19,15 +19,16 @@ export interface StoreConfiguration {
     cookies?: number;
     announce_cookies: boolean;
 
-    // Webhooks for notifications
-    webhook_url?: string;
-    stock_webhook_url?: string;
-    cookie_webhook_url?: string;
-    admin_webhook_url?: string;
-    webhook_role_ping?: string;
-    stock_webhook_role_ping?: string;
-    cookie_webhook_role_ping?: string;
-    admin_webhook_role_ping?: string;
+    // Discord channels for notifications
+    discord_bot_token?: string;
+    discord_channel?: string;
+    stock_discord_channel?: string;
+    cookie_discord_channel?: string;
+    admin_discord_channel?: string;
+    discord_role_ping?: string;
+    stock_discord_role_ping?: string;
+    cookie_discord_role_ping?: string;
+    admin_discord_role_ping?: string;
 
     // Proxies
     proxy_url?: string;

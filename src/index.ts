@@ -25,7 +25,12 @@ import { WishlistChecker } from "./wishlist-checker";
     }
 
     const cooldownManager = new CooldownManager();
-    const notifier = new Notifier(store, storeConfig, logger);
+
+    let cookieStore: DynamoDBCookieStore | undefined;
+    if (storeConfig.dynamo_db_region && storeConfig.dynamo_db_table_name) {
+        cookieStore = new DynamoDBCookieStore(store, storeConfig);
+    }
+    const notifier = new Notifier(store, storeConfig, logger, cookieStore);
 
     process.on("unhandledRejection", async (reason, promise) => {
         logger.error("⚡️ Unhandled Rejection at: %O", promise);
@@ -53,10 +58,6 @@ import { WishlistChecker } from "./wishlist-checker";
 
     const wishlistChecker = new WishlistChecker(store, storeConfig, logger, browserManager, cooldownManager, notifier);
     const categoryChecker = new CategoryChecker(store, storeConfig, logger, browserManager, cooldownManager, notifier);
-    let cookieStore: DynamoDBCookieStore | undefined;
-    if (storeConfig.dynamo_db_region && storeConfig.dynamo_db_table_name) {
-        cookieStore = new DynamoDBCookieStore(store, storeConfig);
-    }
     const basketAdder = new BasketAdder(store, storeConfig, logger, browserManager, cooldownManager, notifier, cookieStore);
 
     while (shouldRun) {

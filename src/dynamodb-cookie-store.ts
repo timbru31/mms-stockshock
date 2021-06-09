@@ -1,4 +1,11 @@
-import { DynamoDBClient, DynamoDBClientConfig, UpdateItemCommand, UpdateItemCommandInput } from "@aws-sdk/client-dynamodb";
+import {
+    DynamoDBClient,
+    DynamoDBClientConfig,
+    GetItemCommandInput,
+    GetItemCommand,
+    UpdateItemCommand,
+    UpdateItemCommandInput,
+} from "@aws-sdk/client-dynamodb";
 
 import { Product } from "./models/api/product";
 import { StoreConfiguration } from "./models/stores/config-model";
@@ -46,5 +53,25 @@ export class DynamoDBCookieStore {
         };
         const command = new UpdateItemCommand(params);
         await this.client.send(command);
+    }
+
+    async hasCookies(product: Product): Promise<boolean> {
+        const params: GetItemCommandInput = {
+            TableName: this.storeConfiguration.dynamo_db_table_name,
+            Key: {
+                store: { S: this.store.shortCode },
+                productId: { S: product.id },
+            },
+        };
+        const command = new GetItemCommand(params);
+        try {
+            const response = await this.client.send(command);
+            if (response.Item?.cookies.L?.length) {
+                return true;
+            }
+            return false;
+        } catch (e) {
+            return false;
+        }
     }
 }

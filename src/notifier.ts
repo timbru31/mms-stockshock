@@ -1,5 +1,3 @@
-import { IncomingWebhook, IncomingWebhookHTTPError } from "@slack/webhook";
-import { AxiosError } from "axios";
 import { Logger } from "winston";
 import { Item } from "./models/api/item";
 import { Product } from "./models/api/product";
@@ -10,49 +8,35 @@ import WebSocket from "ws";
 import http from "http";
 import https from "https";
 import { readFileSync } from "fs";
+import { Client, GuildEmoji, MessageEmbed, TextChannel } from "discord.js";
+import { DynamoDBCookieStore } from "./dynamodb-cookie-store";
 
 export class Notifier {
-    private readonly stockWebhook: IncomingWebhook | undefined;
-    private readonly cookieWebhook: IncomingWebhook | undefined;
-    private readonly adminWebhook: IncomingWebhook | undefined;
-    private readonly stockWebhookRolePing: string | undefined;
-    private readonly cookieWebhookRolePing: string | undefined;
-    private readonly adminWebhookRolePing: string | undefined;
+    private discordBot: Client | undefined;
+    private stockChannel: TextChannel | undefined;
+    private stockRolePing: string | undefined;
+    private cookieChannel: TextChannel | undefined;
+    private cookieRolePing: string | undefined;
+    private adminChannel: TextChannel | undefined;
+    private adminRolePing: string | undefined;
+    private noCookieEmoji: GuildEmoji | undefined | null;
     private readonly announceCookies: boolean = true;
     private readonly store: Store;
     private readonly logger: Logger;
     private readonly productHelper = new ProductHelper();
     private readonly wss: WebSocket.Server | null;
+    private readonly cookieStore: DynamoDBCookieStore | undefined;
 
-    constructor(store: Store, storeConfig: StoreConfiguration, logger: Logger) {
+    constructor(store: Store, storeConfig: StoreConfiguration, logger: Logger, cookieStore: DynamoDBCookieStore | undefined) {
         this.store = store;
-        if (storeConfig?.stock_webhook_url || storeConfig?.webhook_url) {
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            this.stockWebhook = new IncomingWebhook((storeConfig?.stock_webhook_url || storeConfig?.webhook_url)!);
-        }
-        if (storeConfig?.stock_webhook_role_ping || storeConfig?.webhook_role_ping) {
-            this.stockWebhookRolePing = storeConfig?.stock_webhook_role_ping || storeConfig?.webhook_role_ping;
-        }
-
-        if (storeConfig?.cookie_webhook_url || storeConfig?.webhook_url) {
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            this.cookieWebhook = new IncomingWebhook((storeConfig?.cookie_webhook_url || storeConfig?.webhook_url)!);
-        }
-        if (storeConfig?.cookie_webhook_role_ping || storeConfig?.webhook_role_ping) {
-            this.cookieWebhookRolePing = storeConfig?.cookie_webhook_role_ping || storeConfig?.webhook_role_ping;
-        }
-
-        if (storeConfig?.admin_webhook_url || storeConfig?.webhook_url) {
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            this.adminWebhook = new IncomingWebhook((storeConfig?.admin_webhook_url || storeConfig?.webhook_url)!);
-        }
-        if (storeConfig?.admin_webhook_role_ping || storeConfig?.webhook_role_ping) {
-            this.adminWebhookRolePing = storeConfig?.admin_webhook_role_ping || storeConfig?.webhook_role_ping;
+        if (storeConfig?.discord_bot_token) {
+            this.setupDiscordBot(storeConfig);
         }
 
         this.announceCookies = storeConfig.announce_cookies ?? true;
 
         this.logger = logger;
+        this.cookieStore = cookieStore;
         this.wss = this.setupWebSocketServer(storeConfig);
     }
 
@@ -93,51 +77,77 @@ export class Notifier {
         this.wss?.close();
     }
 
+    private async setupDiscordBot(storeConfig: StoreConfiguration) {
+        this.discordBot = new Client();
+        await this.discordBot.login(storeConfig.discord_bot_token);
+        this.discordBot.once("ready", async () => {
+            this.discordBot?.user?.setStatus("online");
+            this.discordBot?.user?.setActivity({ name: "eating your cookies. 🍪", type: "PLAYING" });
+
+            if (storeConfig?.stock_discord_channel || storeConfig?.discord_channel) {
+                const tempChannel = this.discordBot?.channels.cache.get(
+                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                    (storeConfig?.stock_discord_channel || storeConfig?.discord_channel)!
+                );
+                if (((channel): channel is TextChannel => channel?.type === "text")(tempChannel)) {
+                    this.stockChannel = tempChannel;
+                }
+            }
+            if (storeConfig?.stock_discord_role_ping || storeConfig?.discord_role_ping) {
+                this.stockRolePing = storeConfig?.stock_discord_role_ping || storeConfig?.discord_role_ping;
+            }
+
+            if (storeConfig?.cookie_discord_channel || storeConfig?.discord_channel) {
+                const tempChannel = this.discordBot?.channels.cache.get(
+                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                    (storeConfig?.cookie_discord_channel || storeConfig?.discord_channel)!
+                );
+                if (((channel): channel is TextChannel => channel?.type === "text")(tempChannel)) {
+                    this.cookieChannel = tempChannel;
+                }
+            }
+            if (storeConfig?.cookie_discord_role_ping || storeConfig?.discord_role_ping) {
+                this.cookieRolePing = storeConfig?.cookie_discord_role_ping || storeConfig?.discord_role_ping;
+            }
+
+            if (storeConfig?.admin_discord_channel || storeConfig?.discord_channel) {
+                const tempChannel = this.discordBot?.channels.cache.get(
+                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                    (storeConfig?.admin_discord_channel || storeConfig?.discord_channel)!
+                );
+                if (((channel): channel is TextChannel => channel?.type === "text")(tempChannel)) {
+                    this.adminChannel = tempChannel;
+                }
+            }
+            if (storeConfig?.admin_discord_role_ping || storeConfig?.discord_role_ping) {
+                this.adminRolePing = storeConfig?.admin_discord_role_ping || storeConfig?.discord_role_ping;
+            }
+
+            this.noCookieEmoji = this.discordBot?.emojis.cache.find((emoji) => emoji.name == "nocookie");
+        });
+    }
+
     async notifyAdmin(message: string): Promise<void> {
-        if (this.adminWebhook) {
-            const decoratedMessage = this.decorateMessageWithRoles(message, this.adminWebhookRolePing);
+        if (this.adminChannel) {
+            const decoratedMessage = this.decorateMessageWithRoles(message, this.adminRolePing);
             try {
-                await this.adminWebhook.send({
-                    text: decoratedMessage,
-                    username: `Bender 🤖`,
-                });
+                await this.adminChannel.send(decoratedMessage);
             } catch (e) {
-                this.logger.error("Error sending webook, error code" + (e as IncomingWebhookHTTPError).code);
-                if (((e as IncomingWebhookHTTPError).original as AxiosError)?.response?.data) {
-                    this.logger.error("Discord error data, %O", ((e as IncomingWebhookHTTPError).original as AxiosError)?.response?.data);
-                }
-                if (((e as IncomingWebhookHTTPError).original as AxiosError)?.response?.headers) {
-                    this.logger.error(
-                        "HTTP error headers, %O",
-                        ((e as IncomingWebhookHTTPError).original as AxiosError)?.response?.headers
-                    );
-                }
+                this.logger.error("Error sending message, error: %O", e);
             }
         }
     }
 
     async notifyRateLimit(seconds: number): Promise<void> {
-        if (this.adminWebhook && seconds > 300) {
+        if (this.adminChannel && seconds > 300) {
             const message = this.decorateMessageWithRoles(
                 `💤 [${this.store.getName()}] Too many requests, we need to pause ${(seconds / 60).toFixed(2)} minutes... 😴`,
-                this.adminWebhookRolePing
+                this.adminRolePing
             );
             try {
-                await this.adminWebhook.send({
-                    text: message,
-                    username: `Stock Shock 💤`,
-                });
+                await this.adminChannel.send(message);
             } catch (e) {
-                this.logger.error("Error sending webook, error code" + (e as IncomingWebhookHTTPError).code);
-                if (((e as IncomingWebhookHTTPError).original as AxiosError)?.response?.data) {
-                    this.logger.error("Discord error data, %O", ((e as IncomingWebhookHTTPError).original as AxiosError)?.response?.data);
-                }
-                if (((e as IncomingWebhookHTTPError).original as AxiosError)?.response?.headers) {
-                    this.logger.error(
-                        "HTTP error headers, %O",
-                        ((e as IncomingWebhookHTTPError).original as AxiosError)?.response?.headers
-                    );
-                }
+                this.logger.error("Error sending message, error: %O", e);
             }
         }
     }
@@ -149,37 +159,54 @@ export class Notifier {
         if (this.announceCookies) {
             rawMessage += `:\n\`${cookies.map((cookie) => `${this.store.baseUrl}?cookie=${cookie}`).join("\n")}\`\n`;
         }
-        const message = this.decorateMessageWithRoles(rawMessage, this.cookieWebhookRolePing);
-        if (this.cookieWebhook) {
+        const message = this.decorateMessageWithRoles(rawMessage, this.cookieRolePing);
+        if (this.cookieChannel) {
             try {
-                await this.cookieWebhook.send({
-                    text: message,
-                    username: "Cookie Monster 🍪 (light)",
-                });
+                await this.cookieChannel.send(message);
             } catch (e) {
-                this.logger.error("Error sending webook, error code" + (e as IncomingWebhookHTTPError).code);
-                if (((e as IncomingWebhookHTTPError).original as AxiosError)?.response?.data) {
-                    this.logger.error("Discord error data, %O", ((e as IncomingWebhookHTTPError).original as AxiosError)?.response?.data);
-                }
-                if (((e as IncomingWebhookHTTPError).original as AxiosError)?.response?.headers) {
-                    this.logger.error(
-                        "HTTP error headers, %O",
-                        ((e as IncomingWebhookHTTPError).original as AxiosError)?.response?.headers
-                    );
-                }
+                this.logger.error("Error sending message, error: %O", e);
             }
         }
     }
-
     async notifyStock(item: Item): Promise<string> {
-        let message;
+        let plainMessage: string;
         const fullAlert = this.productHelper.isProductBuyable(item);
+        const message = new MessageEmbed().setTimestamp();
+        message.setImage(`https://assets.mmsrg.com/isr/166325/c1/-/${item.product.titleImageId}/mobile_200_200.png`);
+        message.setTitle(item?.product?.title);
+        message.setURL(`${this.store.baseUrl}${this.productHelper.getProductURL(item)}?magician=${item?.product?.id}`);
+
+        const hasCookie = this.cookieStore ? await this.cookieStore.hasCookies(item.product) : false;
+        message.addFields([
+            { name: "\u200B", value: "\u200B" },
+            {
+                name: "Price",
+                value: `${item?.price?.price ?? "0"} ${item?.price?.currency ?? "𑿠"}`,
+                inline: true,
+            },
+            {
+                name: "Cookies?",
+                value: hasCookie ? "🍪" : `${this.noCookieEmoji ?? "👎"}`,
+                inline: true,
+            },
+            {
+                name: "Store",
+                value: this.store.getName(),
+                inline: true,
+            },
+        ]);
+        if (this.stockRolePing) {
+            message.addField("Ping", `<@&${this.stockRolePing}>`);
+        }
         if (fullAlert) {
-            message = this.decorateMessageWithRoles(
+            message.setDescription("🟢 Item **available**");
+            message.setColor("#7ab05e");
+
+            plainMessage = this.decorateMessageWithRoles(
                 `🟢 Item **available**: ${item?.product?.id}, ${item?.product?.title} for ${item?.price?.price ?? "0"} ${
                     item?.price?.currency ?? "𑿠"
                 }! Go check it out: ${this.store.baseUrl}${this.productHelper.getProductURL(item)}?magician=${item?.product?.id}`,
-                this.stockWebhookRolePing
+                this.stockRolePing
             );
             if (this.wss) {
                 for (const client of this.wss.clients) {
@@ -195,19 +222,24 @@ export class Notifier {
                 }
             }
         } else if (this.productHelper.canProductBeAddedToBasket(item)) {
-            message = this.decorateMessageWithRoles(
+            message.setDescription("🛒 Item **can be added to basket**");
+            message.setColor("#60696f");
+            plainMessage = this.decorateMessageWithRoles(
                 `🛒 Item **can be added to basket**: ${item?.product?.id}, ${item?.product?.title} for ${item?.price?.price ?? "0"} ${
                     item?.price?.currency ?? "𑿠"
                 }! Go check it out: ${this.store.baseUrl}${this.productHelper.getProductURL(item)}?magician=${item?.product?.id}`,
-                this.stockWebhookRolePing
+                this.stockRolePing
             );
         } else {
-            message = this.decorateMessageWithRoles(
+            message.setDescription("🟡 Item for **basket parker**");
+            message.setColor("#fcca62");
+            plainMessage = this.decorateMessageWithRoles(
                 `🟡 Item for **basket parker**: ${item?.product?.id}, ${item?.product?.title} for ${item?.price?.price ?? "0"} ${
                     item?.price?.currency ?? "𑿠"
                 }! Go check it out: ${this.store.baseUrl}${this.productHelper.getProductURL(item)}`,
-                this.stockWebhookRolePing
+                this.stockRolePing
             );
+
             if (this.wss) {
                 for (const client of this.wss.clients) {
                     if (client.readyState === WebSocket.OPEN) {
@@ -222,41 +254,14 @@ export class Notifier {
                 }
             }
         }
-        if (this.stockWebhook) {
+        if (this.stockChannel) {
             try {
-                await this.stockWebhook.send({
-                    text: message,
-                    username: `Stock Shock ${fullAlert ? "🧚" : "⚡️"}`,
-                    attachments: [
-                        {
-                            title_link: `${this.store.baseUrl}${item.product.url}`,
-                            image_url: `https://assets.mmsrg.com/isr/166325/c1/-/${item.product.titleImageId}/mobile_200_200.png`,
-                        },
-                    ],
-                });
+                await this.stockChannel.send(message);
             } catch (e) {
-                this.logger.error("Error sending webook, error code" + (e as IncomingWebhookHTTPError).code);
-                if (((e as IncomingWebhookHTTPError).original as AxiosError)?.response?.data) {
-                    this.logger.error("Discord error data, %O", ((e as IncomingWebhookHTTPError).original as AxiosError)?.response?.data);
-                }
-                if (((e as IncomingWebhookHTTPError).original as AxiosError)?.response?.headers) {
-                    this.logger.error(
-                        "Discord error headers, %O",
-                        ((e as IncomingWebhookHTTPError).original as AxiosError)?.response?.headers
-                    );
-                }
+                this.logger.error("Error sending message, error: %O", e);
             }
         }
-        if (fullAlert) {
-            this.beep();
-            setTimeout(() => this.beep(), 250);
-            setTimeout(() => this.beep(), 500);
-        }
-        return message;
-    }
-
-    private beep() {
-        process.stdout.write("\x07");
+        return plainMessage;
     }
 
     private decorateMessageWithRoles(message: string, webhookRolePing: string | undefined) {
