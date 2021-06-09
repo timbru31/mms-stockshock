@@ -195,11 +195,8 @@ export class Notifier {
                 inline: true,
             },
         ]);
-        if (this.stockRolePing) {
-            message.addField("Ping", `<@&${this.stockRolePing}>`);
-        }
         if (fullAlert) {
-            message.setDescription("🟢 Item **available**");
+            message.setDescription(this.decorateMessageWithRoles("🟢 Item **available**", this.stockRolePing));
             message.setColor("#7ab05e");
 
             plainMessage = this.decorateMessageWithRoles(
@@ -222,7 +219,7 @@ export class Notifier {
                 }
             }
         } else if (this.productHelper.canProductBeAddedToBasket(item)) {
-            message.setDescription("🛒 Item **can be added to basket**");
+            message.setDescription(this.decorateMessageWithRoles("🛒 Item **can be added to basket**", this.stockRolePing));
             message.setColor("#60696f");
             plainMessage = this.decorateMessageWithRoles(
                 `🛒 Item **can be added to basket**: ${item?.product?.id}, ${item?.product?.title} for ${item?.price?.price ?? "0"} ${
@@ -231,7 +228,7 @@ export class Notifier {
                 this.stockRolePing
             );
         } else {
-            message.setDescription("🟡 Item for **basket parker**");
+            message.setDescription(this.decorateMessageWithRoles("🟡 Item for **basket parker**", this.stockRolePing));
             message.setColor("#fcca62");
             plainMessage = this.decorateMessageWithRoles(
                 `🟡 Item for **basket parker**: ${item?.product?.id}, ${item?.product?.title} for ${item?.price?.price ?? "0"} ${
