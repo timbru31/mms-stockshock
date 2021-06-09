@@ -32,6 +32,7 @@ export class Notifier {
         this.store = store;
         if (storeConfig?.discord_bot_token) {
             this.setupDiscordBot(storeConfig);
+            setTimeout(() => (this.discordBotReady = true), 10000);
         } else {
             this.discordBotReady = true;
         }
@@ -130,6 +131,10 @@ export class Notifier {
 
             this.noCookieEmoji = this.discordBot?.emojis.cache.find((emoji) => emoji.name == "nocookie");
         });
+
+        this.discordBot.on("rateLimit", (error) => this.logger.error("Discord API error, %O", error));
+        this.discordBot.on("error", (error) => this.logger.error("Discord API error, %O", error));
+        this.discordBot.on("shardError", (error) => this.logger.error("Discord API error, %O", error));
     }
 
     async notifyAdmin(message: string): Promise<void> {

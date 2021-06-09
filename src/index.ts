@@ -33,6 +33,7 @@ import { WishlistChecker } from "./wishlist-checker";
     const notifier = new Notifier(store, storeConfig, logger, cookieStore);
     if (storeConfig?.discord_bot_token) {
         while (!notifier.discordBotReady) {
+            logger.info("💤 Delaying start until Discord bot is ready");
             await sleep(500);
         }
     }
