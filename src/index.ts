@@ -31,6 +31,11 @@ import { WishlistChecker } from "./wishlist-checker";
         cookieStore = new DynamoDBCookieStore(store, storeConfig);
     }
     const notifier = new Notifier(store, storeConfig, logger, cookieStore);
+    if (storeConfig?.discord_bot_token) {
+        while (!notifier.discordBotReady) {
+            await sleep(500);
+        }
+    }
 
     process.on("unhandledRejection", async (reason, promise) => {
         logger.error("⚡️ Unhandled Rejection at: %O", promise);

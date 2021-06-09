@@ -12,6 +12,7 @@ import { Client, GuildEmoji, MessageEmbed, TextChannel } from "discord.js";
 import { DynamoDBCookieStore } from "./dynamodb-cookie-store";
 
 export class Notifier {
+    discordBotReady = false;
     private discordBot: Client | undefined;
     private stockChannel: TextChannel | undefined;
     private stockRolePing: string | undefined;
@@ -31,6 +32,8 @@ export class Notifier {
         this.store = store;
         if (storeConfig?.discord_bot_token) {
             this.setupDiscordBot(storeConfig);
+        } else {
+            this.discordBotReady = true;
         }
 
         this.announceCookies = storeConfig.announce_cookies ?? true;
@@ -81,6 +84,8 @@ export class Notifier {
         this.discordBot = new Client();
         await this.discordBot.login(storeConfig.discord_bot_token);
         this.discordBot.once("ready", async () => {
+            this.logger.info(`👌 Discord bot integration ready`);
+            this.discordBotReady = true;
             this.discordBot?.user?.setStatus("online");
             this.discordBot?.user?.setActivity({ name: "eating your cookies. 🍪", type: "PLAYING" });
 
@@ -196,7 +201,7 @@ export class Notifier {
             },
         ]);
         if (fullAlert) {
-            message.setDescription(this.decorateMessageWithRoles("🟢 Item **available**", this.stockRolePing));
+            message.setDescription("🟢 Item **available**");
             message.setColor("#7ab05e");
 
             plainMessage = this.decorateMessageWithRoles(
@@ -219,7 +224,7 @@ export class Notifier {
                 }
             }
         } else if (this.productHelper.canProductBeAddedToBasket(item)) {
-            message.setDescription(this.decorateMessageWithRoles("🛒 Item **can be added to basket**", this.stockRolePing));
+            message.setDescription("🛒 Item **can be added to basket**");
             message.setColor("#60696f");
             plainMessage = this.decorateMessageWithRoles(
                 `🛒 Item **can be added to basket**: ${item?.product?.id}, ${item?.product?.title} for ${item?.price?.price ?? "0"} ${
@@ -228,7 +233,7 @@ export class Notifier {
                 this.stockRolePing
             );
         } else {
-            message.setDescription(this.decorateMessageWithRoles("🟡 Item for **basket parker**", this.stockRolePing));
+            message.setDescription("🟡 Item for **basket parker**");
             message.setColor("#fcca62");
             plainMessage = this.decorateMessageWithRoles(
                 `🟡 Item for **basket parker**: ${item?.product?.id}, ${item?.product?.title} for ${item?.price?.price ?? "0"} ${
@@ -253,7 +258,7 @@ export class Notifier {
         }
         if (this.stockChannel) {
             try {
-                await this.stockChannel.send(message);
+                await this.stockChannel.send({ embed: message, content: this.stockRolePing ? `<@&${this.stockRolePing}>` : undefined });
             } catch (e) {
                 this.logger.error("Error sending message, error: %O", e);
             }
