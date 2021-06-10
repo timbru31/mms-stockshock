@@ -1,10 +1,11 @@
 import { Logger } from "winston";
-import { BrowserManager } from "./browser-manager";
 import { BasketAdder } from "./basket-adder";
+import { BrowserManager } from "./browser-manager";
 import { CategoryChecker } from "./category-checker";
 import { getStoreAndStoreConfig } from "./cli-helper";
 import { CooldownManager } from "./cooldown-manager";
 import { DynamoDBCookieStore } from "./dynamodb-cookie-store";
+import { CliArguments } from "./models/cli";
 import { Store } from "./models/stores/store";
 import { Notifier } from "./notifier";
 import { createLogger, loadConfig, sleep } from "./utils";
@@ -69,7 +70,7 @@ import { WishlistChecker } from "./wishlist-checker";
                 browserManager.reLoginRequired = true;
                 logger.info(`💌 Checking wishlist items for account ${email}`);
                 try {
-                    await reLoginIfRequired(browserManager, args.headless, email, password, notifier, store, logger);
+                    await reLoginIfRequired(browserManager, args, email, password, notifier, store, logger);
                 } catch (e) {
                     logger.info(`⚡️ Boop, I'm alive but checking whislist for ${email} errored`);
                     await notifier.notifyAdmin(`⚡️ [${store.getName()}] Boop, I'm alive but checking whislist for ${email} errored`);
@@ -107,7 +108,7 @@ import { WishlistChecker } from "./wishlist-checker";
 
 async function reLoginIfRequired(
     browserManager: BrowserManager,
-    headless: boolean,
+    args: CliArguments,
     email: string,
     password: string,
     notifier: Notifier,
@@ -115,10 +116,13 @@ async function reLoginIfRequired(
     logger: Logger
 ) {
     if (browserManager.reLoginRequired) {
+        if (browserManager.reLaunchRequired) {
+            await browserManager.launchPuppeteer(args.headless, args.sandbox);
+        }
         if (!(await browserManager.createIncognitoContext())) {
             throw new Error(`Incognito context could not be created!`);
         }
-        await browserManager.logIn(headless, email, password);
+        await browserManager.logIn(args.headless, email, password);
         await notifier.notifyAdmin(`🤖 [${store.getName()}] (Re-)Login succeeded, let's hunt`);
         logger.info("(Re-)Login succeeded, let's hunt!");
     }

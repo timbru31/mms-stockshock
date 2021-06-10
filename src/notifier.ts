@@ -227,6 +227,8 @@ export class Notifier {
                             })
                         );
                     }
+                    this.logger.info(`🏓 Sending stock ping to with ready state ${client.readyState}`);
+                    await this.notifyAdmin(`🏓 [${this.store.getName()}] Sending stock ping to with ready state ${client.readyState}`);
                 }
             }
         } else if (this.productHelper.canProductBeAddedToBasket(item)) {

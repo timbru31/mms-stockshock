@@ -15,6 +15,7 @@ import { GRAPHQL_CLIENT_VERSION, shuffle, sleep } from "./utils";
 
 export class BrowserManager {
     reLoginRequired = true;
+    reLaunchRequired = false;
     loggedIn = false;
     page: Page | undefined;
 
@@ -269,6 +270,7 @@ export class BrowserManager {
 
         if (res.status === 403 || res.status === 0) {
             this.reLoginRequired = true;
+            this.reLaunchRequired = true;
         }
     }
 
