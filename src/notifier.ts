@@ -266,7 +266,10 @@ export class Notifier {
             try {
                 await this.stockChannel.send({
                     embed: message,
-                    content: this.decorateMessageWithRoles(item.product.title, this.stockRolePing),
+                    content: this.decorateMessageWithRoles(
+                        `${item?.product?.id}, ${item?.product?.title} for ${item?.price?.price ?? "0"} ${item?.price?.currency ?? "𑿠"}`,
+                        this.stockRolePing
+                    ),
                 });
             } catch (e) {
                 this.logger.error("Error sending message, error: %O", e);
