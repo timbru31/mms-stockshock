@@ -6,8 +6,7 @@ export interface ConfigModel {
 
 export interface StoreConfiguration {
     // User data
-    email: string;
-    password: string;
+    accounts: string[][];
 
     // Categories to check
     categories?: string[];

@@ -1,6 +1,6 @@
 [saturn]
-email = ""
-password = ""
+# You can define multiple accounts. Make sure to use the first string for the e-mail the second for the password
+accounts = [["", ""]]
 start_url = ""
 
 categories = []
@@ -51,8 +51,8 @@ addProductSHA256 = ""
 getProductSHA256 = ""
 
 [mmde]
-email = ""
-password = ""
+# You can define multiple accounts. Make sure to use the first string for the e-mail the second for the password
+accounts = [["", ""]]
 start_url = ""
 
 categories = []
@@ -103,8 +103,8 @@ addProductSHA256 = ""
 getProductSHA256 = ""
 
 [mmat]
-email = ""
-password = ""
+# You can define multiple accounts. Make sure to use the first string for the e-mail the second for the password
+accounts = [["", ""]]
 start_url = ""
 
 categories = []

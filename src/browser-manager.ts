@@ -85,20 +85,9 @@ export class BrowserManager {
         } as unknown as PuppeteerNodeLaunchOptions);
     }
 
-    async logIn(headless = true): Promise<void> {
+    async logIn(headless = true, email: string, password: string): Promise<void> {
         if (!this.browser) {
             throw new Error("Puppeteer context not inialized!");
-        }
-
-        let contextCreated = false;
-        try {
-            contextCreated = await Promise.race([this.createIncognitoContext(), sleep(6000, false)]);
-        } catch (e) {
-            this.logger.error("Context creation failed, error %O", e);
-        }
-        if (!contextCreated) {
-            this.logger.error("Login did not succeed, Context could not be created");
-            throw new Error("Login did not succeed. Context could not be created");
         }
 
         let res: { status: number; body: LoginResponse | null; retryAfterHeader?: string | null };
@@ -164,8 +153,8 @@ export class BrowserManager {
                             // eslint-disable-next-line @typescript-eslint/no-unused-vars
                             .catch((_) => ({ status: -2, body: null })),
                     this.store as SerializableOrJSHandle,
-                    this.storeConfig.email,
-                    this.storeConfig.password,
+                    email,
+                    password,
                     v4(),
                     GRAPHQL_CLIENT_VERSION,
                     this.storeConfig.loginSHA256
@@ -201,6 +190,10 @@ export class BrowserManager {
     }
 
     async createIncognitoContext(): Promise<boolean> {
+        return Promise.race([this._createIncognitoContext(), sleep(6000, false)]);
+    }
+
+    private async _createIncognitoContext() {
         if (this.context) {
             await this.context.close();
             this.context = undefined;

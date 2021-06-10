@@ -44,9 +44,6 @@ export class CategoryChecker {
         if (categoryRegex) {
             categoryRegExp = new RegExp(categoryRegex, "i");
         }
-        if (!this.browserManager.loggedIn) {
-            throw new Error("Not logged in!");
-        }
         const basketProducts = new Map<string, Product>();
         const productIds: string[] = [];
 
