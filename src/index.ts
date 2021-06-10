@@ -99,7 +99,7 @@ async function reLoginIfRequired(browserManager: BrowserManager, args: CliArgume
     if (browserManager.reLoginRequired) {
         await browserManager.launchPuppeteer(args.headless, args.sandbox);
         await browserManager.logIn(args.headless);
-        await notifier.notifyAdmin(`🤖 [${store.getName()}] (Re-)Login required, but was OK!`);
+        await notifier.notifyAdmin(`🤖 [${store.getName()}] (Re-)Login succeeded, let's hunt`);
         logger.info("(Re-)Login succeeded, let's hunt!");
     }
 }

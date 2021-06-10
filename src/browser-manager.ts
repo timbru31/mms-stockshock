@@ -97,7 +97,7 @@ export class BrowserManager {
             this.logger.error("Context creation failed, error %O", e);
         }
         if (!contextCreated) {
-            this.logger.error(`Login did not succeed, please restart with '--no-headless' option. Context could not be created`);
+            this.logger.error("Login did not succeed, Context could not be created");
             throw new Error("Login did not succeed. Context could not be created");
         }
 
@@ -239,6 +239,7 @@ export class BrowserManager {
             });
         } catch (e) {
             this.logger.error("Unable to visit start page...");
+            this.rotateProxy();
             return false;
         }
 
