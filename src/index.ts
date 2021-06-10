@@ -87,8 +87,8 @@ import { WishlistChecker } from "./wishlist-checker";
             cooldownManager.cleanupCooldowns();
             await sleep(store.getSleepTime());
         } catch (e) {
-            logger.info("🤖 Boop, I'm alive but checking your stock errored: %O", e);
-            await notifier.notifyAdmin(`🤖 [${store.getName()}] Boop, I'm alive but checking your stock errored!`);
+            logger.info("⚡️ Boop, I'm alive but checking your stock errored: %O", e);
+            await notifier.notifyAdmin(`⚡️ [${store.getName()}] Boop, I'm alive but checking your stock errored!`);
             browserManager.reLoginRequired = true;
         }
     }
