@@ -136,7 +136,7 @@ export class WishlistChecker {
                     GRAPHQL_CLIENT_VERSION,
                     this.storeConfiguration.wishlistSHA256
                 ),
-                sleep(5000, {
+                sleep(10000, {
                     status: 0,
                     body: { errors: "Timeout" },
                 }),
