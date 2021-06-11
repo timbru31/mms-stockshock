@@ -21,6 +21,7 @@ export class Notifier {
     private adminChannel: TextChannel | undefined;
     private adminRolePing: string | undefined;
     private noCookieEmoji: GuildEmoji | undefined | null;
+    private heartBeatPing: NodeJS.Timeout | undefined;
     private readonly announceCookies: boolean = true;
     private readonly store: Store;
     private readonly logger: Logger;
@@ -74,10 +75,23 @@ export class Notifier {
         });
 
         server.listen(storeConfig.websocket_port ?? 8080);
+
+        this.heartBeatPing = setInterval(async () => {
+            for (const client of wss?.clients) {
+                if (client.readyState === WebSocket.OPEN) {
+                    client.ping();
+                    this.logger.info("💖 Sending heartbeat ping to client");
+                    await this.notifyAdmin(`💖 [${this.store.getName()}] Sending heartbeat ping to client`);
+                }
+            }
+        }, 30000);
         return wss;
     }
 
     closeWebSocketServer(): void {
+        if (this.heartBeatPing) {
+            clearInterval(this.heartBeatPing);
+        }
         this.wss?.close();
     }
 
