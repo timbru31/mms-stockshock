@@ -84,6 +84,7 @@ export class BrowserManager {
             defaultViewport: null,
             args,
         } as unknown as PuppeteerNodeLaunchOptions);
+        this.reLaunchRequired = false;
     }
 
     async logIn(headless = true, email: string, password: string): Promise<void> {
