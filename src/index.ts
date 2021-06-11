@@ -71,7 +71,7 @@ import { WishlistChecker } from "./wishlist-checker";
                 browserManager.reLoginRequired = true;
                 logger.info(`💌 Checking wishlist items for account ${email}`);
                 try {
-                    await Promise.race([reLoginIfRequired(browserManager, args, email, password, notifier, store, logger), sleep(10000)]);
+                    await Promise.race([reLoginIfRequired(browserManager, args, email, password, notifier, store, logger), sleep(30000)]);
                 } catch (e) {
                     logger.info(`⚡️ Boop, I'm alive but checking whislist for ${email} errored`);
                     await notifier.notifyAdmin(`⚡️ [${store.getName()}] Boop, I'm alive but checking whislist for ${email} errored`);
