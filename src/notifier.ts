@@ -224,7 +224,11 @@ export class Notifier {
                                 direct: true,
                                 title: item.product.title,
                                 id: item.product.id,
-                            })
+                            }),
+                            async (e) => {
+                                this.logger.info("😵‍💫 Error sending stock ping, %O", e);
+                                await this.notifyAdmin(`🏓 [${this.store.getName()}] Error sending stock ping to client`);
+                            }
                         );
                     }
                     this.logger.info(`🏓 Sending stock ping to with ready state ${client.readyState}`);
@@ -258,11 +262,15 @@ export class Notifier {
                                 direct: false,
                                 title: item.product.title,
                                 id: item.product.id,
-                            })
+                            }),
+                            async (e) => {
+                                this.logger.info("😵‍💫 Error sending stock ping, %O", e);
+                                await this.notifyAdmin(`😵‍💫 [${this.store.getName()}] Error sending stock ping to client`);
+                            }
                         );
                     }
-                    this.logger.info(`🏓 Sending stock ping to with ready state ${client.readyState}`);
-                    await this.notifyAdmin(`🏓 [${this.store.getName()}] Sending stock ping to with ready state ${client.readyState}`);
+                    this.logger.info(`😵‍💫 Sending stock ping to with ready state ${client.readyState}`);
+                    await this.notifyAdmin(`😵‍💫 [${this.store.getName()}] Sending stock ping to with ready state ${client.readyState}`);
                 }
             }
         }
