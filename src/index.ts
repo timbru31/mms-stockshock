@@ -68,7 +68,9 @@ import { WishlistChecker } from "./wishlist-checker";
             logger.info("🤖 Beep, I'm alive and well checking your stock");
 
             for (const [email, password] of storeConfig.accounts) {
-                browserManager.reLoginRequired = true;
+                if (storeConfig.accounts.length > 1) {
+                    browserManager.reLoginRequired = true;
+                }
                 logger.info(`💌 Checking wishlist items for account ${email}`);
                 try {
                     await Promise.race([reLoginIfRequired(browserManager, args, email, password, notifier, store, logger), sleep(30000)]);
@@ -82,8 +84,10 @@ import { WishlistChecker } from "./wishlist-checker";
             }
 
             if (storeConfig.categories?.length) {
-                if (!(await browserManager.createIncognitoContext())) {
-                    throw new Error(`Incognito context could not be created!`);
+                if (storeConfig.accounts.length > 1) {
+                    if (!(await browserManager.createIncognitoContext())) {
+                        throw new Error(`Incognito context could not be created!`);
+                    }
                 }
                 for (const categoryId of storeConfig.categories) {
                     logger.info(`📄 Checking category ${categoryId}`);
