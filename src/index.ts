@@ -77,7 +77,7 @@ import { WishlistChecker } from "./wishlist-checker";
                     await notifier.notifyAdmin(`⚡️ [${store.getName()}] Boop, I'm alive but checking whislist for ${email} errored`);
                     continue;
                 }
-                const basketProducts = await Promise.race([wishlistChecker.checkWishlist(), sleep(10000, new Map<string, Product>())]);
+                const basketProducts = await Promise.race([wishlistChecker.checkWishlist(), sleep(60000, new Map<string, Product>())]);
                 basketAdder.addNewProducts(basketProducts);
             }
 
