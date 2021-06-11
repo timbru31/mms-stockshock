@@ -87,15 +87,16 @@ export class BrowserManager {
     }
 
     async logIn(headless = true, email: string, password: string): Promise<void> {
-        if (!this.browser) {
+        if (!this.browser || !this.page) {
+            this.reLaunchRequired = true;
+            this.reLoginRequired = true;
             throw new Error("Puppeteer context not inialized!");
         }
 
         let res: { status: number; body: LoginResponse | null; retryAfterHeader?: string | null };
         try {
             res = await Promise.race([
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                this.page!.evaluate(
+                this.page.evaluate(
                     async (
                         store: Store,
                         email: string,

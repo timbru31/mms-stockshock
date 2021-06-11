@@ -5,6 +5,7 @@ import { CategoryChecker } from "./category-checker";
 import { getStoreAndStoreConfig } from "./cli-helper";
 import { CooldownManager } from "./cooldown-manager";
 import { DynamoDBCookieStore } from "./dynamodb-cookie-store";
+import { Product } from "./models/api/product";
 import { CliArguments } from "./models/cli";
 import { Store } from "./models/stores/store";
 import { Notifier } from "./notifier";
@@ -70,13 +71,13 @@ import { WishlistChecker } from "./wishlist-checker";
                 browserManager.reLoginRequired = true;
                 logger.info(`💌 Checking wishlist items for account ${email}`);
                 try {
-                    await reLoginIfRequired(browserManager, args, email, password, notifier, store, logger);
+                    await Promise.race([reLoginIfRequired(browserManager, args, email, password, notifier, store, logger), sleep(10000)]);
                 } catch (e) {
                     logger.info(`⚡️ Boop, I'm alive but checking whislist for ${email} errored`);
                     await notifier.notifyAdmin(`⚡️ [${store.getName()}] Boop, I'm alive but checking whislist for ${email} errored`);
                     continue;
                 }
-                const basketProducts = await wishlistChecker.checkWishlist();
+                const basketProducts = await Promise.race([wishlistChecker.checkWishlist(), sleep(10000, new Map<string, Product>())]);
                 basketAdder.addNewProducts(basketProducts);
             }
 
@@ -87,7 +88,10 @@ import { WishlistChecker } from "./wishlist-checker";
                 for (const categoryId of storeConfig.categories) {
                     logger.info(`📄 Checking category ${categoryId}`);
                     await sleep(store.getSleepTime());
-                    const basketProducts = await categoryChecker.checkCategory(categoryId, storeConfig.category_regex);
+                    const basketProducts = await Promise.race([
+                        categoryChecker.checkCategory(categoryId, storeConfig.category_regex),
+                        sleep(10000, new Map<string, Product>()),
+                    ]);
                     basketAdder.addNewProducts(basketProducts);
                 }
             }
