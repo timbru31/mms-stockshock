@@ -196,6 +196,7 @@ export class Notifier {
         let plainMessage: string;
         const fullAlert = this.productHelper.isProductBuyable(item);
         const message = new MessageEmbed().setTimestamp();
+        let emoji: string;
         message.setImage(`https://assets.mmsrg.com/isr/166325/c1/-/${item.product.titleImageId}/mobile_200_200.png`);
         message.setTitle(item?.product?.title);
         message.setURL(`${this.store.baseUrl}${this.productHelper.getProductURL(item)}`);
@@ -223,6 +224,7 @@ export class Notifier {
         if (fullAlert) {
             message.setDescription("🟢 Item **available**");
             message.setColor("#7ab05e");
+            emoji = "🟢";
 
             plainMessage = this.decorateMessageWithRoles(
                 `🟢 Item **available**: ${item?.product?.id}, ${item?.product?.title} for ${item?.price?.price ?? "0"} ${
@@ -252,6 +254,8 @@ export class Notifier {
         } else if (this.productHelper.canProductBeAddedToBasket(item)) {
             message.setDescription("🛒 Item **can be added to basket**");
             message.setColor("#60696f");
+            emoji = "🛒";
+
             plainMessage = this.decorateMessageWithRoles(
                 `🛒 Item **can be added to basket**: ${item?.product?.id}, ${item?.product?.title} for ${item?.price?.price ?? "0"} ${
                     item?.price?.currency ?? "𑿠"
@@ -261,6 +265,8 @@ export class Notifier {
         } else {
             message.setDescription("🟡 Item for **basket parker**");
             message.setColor("#fcca62");
+            emoji = "🟡";
+
             plainMessage = this.decorateMessageWithRoles(
                 `🟡 Item for **basket parker**: ${item?.product?.id}, ${item?.product?.title} for ${item?.price?.price ?? "0"} ${
                     item?.price?.currency ?? "𑿠"
@@ -293,7 +299,9 @@ export class Notifier {
                 await this.stockChannel.send({
                     embed: message,
                     content: this.decorateMessageWithRoles(
-                        `${item?.product?.id}, ${item?.product?.title} for ${item?.price?.price ?? "0"} ${item?.price?.currency ?? "𑿠"}`,
+                        `${emoji} ${item?.product?.id}, ${item?.product?.title} for ${item?.price?.price ?? "0"} ${
+                            item?.price?.currency ?? "𑿠"
+                        }`,
                         this.stockRolePing
                     ),
                 });
