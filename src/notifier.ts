@@ -299,7 +299,7 @@ export class Notifier {
                 await this.stockChannel.send({
                     embed: message,
                     content: this.decorateMessageWithRoles(
-                        `${emoji} ${item?.product?.id}, ${item?.product?.title} for ${item?.price?.price ?? "0"} ${
+                        `${emoji} ${item?.product?.title} [${item?.product?.id}] for ${item?.price?.price ?? "0"} ${
                             item?.price?.currency ?? "𑿠"
                         }`,
                         this.stockRolePing
