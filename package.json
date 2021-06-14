@@ -33,7 +33,7 @@
         "puppeteer-extra": "^3.1.18",
         "puppeteer-extra-plugin-stealth": "^2.7.8",
         "toml": "^3.0.0",
-        "user-agents": "^1.0.680",
+        "user-agents": "^1.0.683",
         "uuid": "^8.3.2",
         "winston": "^3.3.3",
         "ws": "^7.4.6",
