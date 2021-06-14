@@ -85,11 +85,10 @@ import { WishlistChecker } from "./wishlist-checker";
 
             if (storeConfig.categories?.length) {
                 if (storeConfig.accounts.length > 1) {
-                    if (!(await browserManager.createIncognitoContext())) {
-                        throw new Error(`Incognito context could not be created!`);
-                    }
+                    await reLaunchIfRequired(browserManager, args, true);
                 }
                 for (const categoryId of storeConfig.categories) {
+                    await reLaunchIfRequired(browserManager, args);
                     logger.info(`📄 Checking category ${categoryId}`);
                     await sleep(store.getSleepTime());
                     const basketProducts = await Promise.race([
@@ -128,10 +127,23 @@ async function reLoginIfRequired(
             await browserManager.launchPuppeteer(args.headless, args.sandbox);
         }
         if (!(await browserManager.createIncognitoContext())) {
-            throw new Error(`Incognito context could not be created!`);
+            throw new Error("Incognito context could not be created!");
         }
         await browserManager.logIn(args.headless, email, password);
         await notifier.notifyAdmin(`🤖 [${store.getName()}] (Re-)Login succeeded, let's hunt`);
         logger.info("(Re-)Login succeeded, let's hunt!");
+    }
+}
+
+async function reLaunchIfRequired(browserManager: BrowserManager, args: CliArguments, createNewContext?: boolean) {
+    let relaunched = false;
+    if (browserManager.reLaunchRequired) {
+        await browserManager.launchPuppeteer(args.headless, args.sandbox);
+        relaunched = true;
+    }
+    if (createNewContext || relaunched) {
+        if (!(await browserManager.createIncognitoContext())) {
+            throw new Error("Incognito context could not be created!");
+        }
     }
 }
