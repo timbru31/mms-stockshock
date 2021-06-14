@@ -242,8 +242,10 @@ export class Notifier {
                                 id: item.product.id,
                             }),
                             async (e) => {
-                                this.logger.info("😵‍💫 Error sending stock ping, %O", e);
-                                await this.notifyAdmin(`🏓 [${this.store.getName()}] Error sending stock ping to client`);
+                                if (e) {
+                                    this.logger.info("😵‍💫 Error sending stock ping, %O", e);
+                                    await this.notifyAdmin(`🏓 [${this.store.getName()}] Error sending stock ping to client`);
+                                }
                             }
                         );
                     }
@@ -284,8 +286,10 @@ export class Notifier {
                                 id: item.product.id,
                             }),
                             async (e) => {
-                                this.logger.info("😵‍💫 Error sending stock ping, %O", e);
-                                await this.notifyAdmin(`😵‍💫 [${this.store.getName()}] Error sending stock ping to client`);
+                                if (e) {
+                                    this.logger.info("😵‍💫 Error sending stock ping, %O", e);
+                                    await this.notifyAdmin(`😵‍💫 [${this.store.getName()}] Error sending stock ping to client`);
+                                }
                             }
                         );
                     }
