@@ -244,7 +244,7 @@ export class Notifier {
                             async (e) => {
                                 if (e) {
                                     this.logger.info("😵‍💫 Error sending stock ping, %O", e);
-                                    await this.notifyAdmin(`🏓 [${this.store.getName()}] Error sending stock ping to client`);
+                                    await this.notifyAdmin(`😵‍💫 [${this.store.getName()}] Error sending stock ping to client`);
                                 }
                             }
                         );
