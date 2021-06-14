@@ -232,27 +232,7 @@ export class Notifier {
                 }! Go check it out: ${this.store.baseUrl}${this.productHelper.getProductURL(item)}?magician=${item?.product?.id}`,
                 this.stockRolePing
             );
-            if (this.wss) {
-                for (const client of this.wss.clients) {
-                    if (client.readyState === WebSocket.OPEN) {
-                        client.send(
-                            JSON.stringify({
-                                direct: true,
-                                title: item.product.title,
-                                id: item.product.id,
-                            }),
-                            async (e) => {
-                                if (e) {
-                                    this.logger.info("😵‍💫 Error sending stock ping, %O", e);
-                                    await this.notifyAdmin(`😵‍💫 [${this.store.getName()}] Error sending stock ping to client`);
-                                }
-                            }
-                        );
-                    }
-                    this.logger.info(`🏓 Sending stock ping to with ready state ${client.readyState}`);
-                    await this.notifyAdmin(`🏓 [${this.store.getName()}] Sending stock ping to with ready state ${client.readyState}`);
-                }
-            }
+            await this.notifyWebSocketClients(item, true);
         } else if (this.productHelper.canProductBeAddedToBasket(item)) {
             message.setDescription("🛒 Item **can be added to basket**");
             message.setColor("#60696f");
@@ -275,28 +255,7 @@ export class Notifier {
                 }! Go check it out: ${this.store.baseUrl}${this.productHelper.getProductURL(item)}`,
                 this.stockRolePing
             );
-
-            if (this.wss) {
-                for (const client of this.wss.clients) {
-                    if (client.readyState === WebSocket.OPEN) {
-                        client.send(
-                            JSON.stringify({
-                                direct: false,
-                                title: item.product.title,
-                                id: item.product.id,
-                            }),
-                            async (e) => {
-                                if (e) {
-                                    this.logger.info("😵‍💫 Error sending stock ping, %O", e);
-                                    await this.notifyAdmin(`😵‍💫 [${this.store.getName()}] Error sending stock ping to client`);
-                                }
-                            }
-                        );
-                    }
-                    this.logger.info(`🏓 Sending stock ping to with ready state ${client.readyState}`);
-                    await this.notifyAdmin(`🏓 [${this.store.getName()}] Sending stock ping to with ready state ${client.readyState}`);
-                }
-            }
+            await this.notifyWebSocketClients(item, false);
         }
         if (this.stockChannel) {
             try {
@@ -314,6 +273,30 @@ export class Notifier {
             }
         }
         return plainMessage;
+    }
+
+    private async notifyWebSocketClients(item: Item, direct: boolean) {
+        if (this.wss) {
+            for (const client of this.wss.clients) {
+                if (client.readyState === WebSocket.OPEN) {
+                    client.send(
+                        JSON.stringify({
+                            direct,
+                            title: item.product.title,
+                            id: item.product.id,
+                        }),
+                        async (e) => {
+                            if (e) {
+                                this.logger.info("😵‍💫 Error sending stock ping, %O", e);
+                                await this.notifyAdmin(`😵‍💫 [${this.store.getName()}] Error sending stock ping to client`);
+                            }
+                        }
+                    );
+                }
+                this.logger.info(`🏓 Sending stock ping to with ready state ${client.readyState}`);
+                await this.notifyAdmin(`🏓 [${this.store.getName()}] Sending stock ping to with ready state ${client.readyState}`);
+            }
+        }
     }
 
     private decorateMessageWithRoles(message: string, webhookRolePing: string | undefined) {
