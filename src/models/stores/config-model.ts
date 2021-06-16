@@ -43,7 +43,7 @@ export interface StoreConfiguration {
 
     // WebSocket config
     use_websocket?: boolean;
-    websocket_password?: string;
+    websocket_passwords?: string[];
     websocket_port?: number;
     websocket_https?: boolean;
     websocket_cert_path?: string;

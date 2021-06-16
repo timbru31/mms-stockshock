@@ -37,7 +37,7 @@ dynamo_db_secret_access_key = ""
 
 # WebSocket config
 use_websocket = false
-websocket_password = ""
+websocket_passwords = [""]
 websocket_port = 8080
 websocket_https = false
 websocket_cert_path = ""
@@ -89,7 +89,7 @@ dynamo_db_secret_access_key = ""
 
 # WebSocket config
 use_websocket = false
-websocket_password = ""
+websocket_passwords = [""]
 websocket_port = 8080
 websocket_https = false
 websocket_cert_path = ""
@@ -141,7 +141,7 @@ dynamo_db_secret_access_key = ""
 
 # WebSocket config
 use_websocket = false
-websocket_password = ""
+websocket_passwords = [""]
 websocket_port = 8080
 websocket_https = false
 websocket_cert_path = ""
