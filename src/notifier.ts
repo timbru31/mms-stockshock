@@ -1,15 +1,16 @@
+import { Client, GuildEmoji, MessageEmbed, TextChannel } from "discord.js";
+import { readFileSync } from "fs";
+import http from "http";
+import https from "https";
 import { Logger } from "winston";
+import WebSocket from "ws";
+import { version } from "../package.json";
+import { DynamoDBCookieStore } from "./dynamodb-cookie-store";
 import { Item } from "./models/api/item";
 import { Product } from "./models/api/product";
 import { StoreConfiguration } from "./models/stores/config-model";
 import { Store } from "./models/stores/store";
 import { ProductHelper } from "./product-helper";
-import WebSocket from "ws";
-import http from "http";
-import https from "https";
-import { readFileSync } from "fs";
-import { Client, GuildEmoji, MessageEmbed, TextChannel } from "discord.js";
-import { DynamoDBCookieStore } from "./dynamodb-cookie-store";
 
 export class Notifier {
     discordBotReady = false;
@@ -200,6 +201,7 @@ export class Notifier {
         message.setImage(`https://assets.mmsrg.com/isr/166325/c1/-/${item.product.titleImageId}/mobile_200_200.png`);
         message.setTitle(item?.product?.title);
         message.setURL(`${this.store.baseUrl}${this.productHelper.getProductURL(item)}`);
+        message.setFooter(`Stockshock v${version} - If you have paid for this, you have been scammed`);
 
         const hasCookie = this.cookieStore ? await this.cookieStore.hasCookies(item.product) : false;
         message.addFields([
