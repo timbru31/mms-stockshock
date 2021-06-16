@@ -201,7 +201,7 @@ export class Notifier {
         message.setImage(`https://assets.mmsrg.com/isr/166325/c1/-/${item.product.titleImageId}/mobile_200_200.png`);
         message.setTitle(item?.product?.title);
         message.setURL(`${this.store.baseUrl}${this.productHelper.getProductURL(item)}`);
-        message.setFooter(`Stockshock v${version} - If you have paid for this, you have been scammed`);
+        message.setFooter(`Stockshock v${version} • If you have paid for this, you have been scammed`);
 
         const hasCookie = this.cookieStore ? await this.cookieStore.hasCookies(item.product) : false;
         message.addFields([
