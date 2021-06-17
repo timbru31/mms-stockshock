@@ -66,6 +66,9 @@ export class WishlistChecker {
                     const res = await this.performWishlistQuery(newOffset);
                     if (res.status !== 200 || !res.body || res.body?.errors) {
                         await this.browserManager.handleResponseError("WishlistItems", res);
+                        if (this.browserManager.reLoginRequired || this.browserManager.reLaunchRequired) {
+                            break;
+                        }
                     } else {
                         items = await this.checkItems(res.body?.data?.wishlistItems?.items);
                         basketProducts = new Map([...basketProducts, ...items]);
