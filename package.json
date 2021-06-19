@@ -40,7 +40,7 @@
         "yargs": "^17.0.1"
     },
     "devDependencies": {
-        "@types/inquirer": "^7.3.1",
+        "@types/inquirer": "^7.3.2",
         "@types/user-agents": "^1.0.1",
         "@types/ws": "^7.4.5",
         "@types/yargs": "^17.0.0",
