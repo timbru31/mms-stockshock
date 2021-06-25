@@ -82,7 +82,6 @@ export class Notifier {
                 if (client.readyState === WebSocket.OPEN) {
                     client.ping();
                     this.logger.info("💖 Sending heartbeat ping to client");
-                    await this.notifyAdmin(`💖 [${this.store.getName()}] Sending heartbeat ping to client`);
                 }
             }
         }, 30000);
