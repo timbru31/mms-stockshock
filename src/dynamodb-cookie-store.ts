@@ -55,7 +55,7 @@ export class DynamoDBCookieStore {
         await this.client.send(command);
     }
 
-    async hasCookies(product: Product): Promise<boolean> {
+    async getCookiesAmount(product: Product): Promise<number> {
         const params: GetItemCommandInput = {
             TableName: this.storeConfiguration.dynamo_db_table_name,
             Key: {
@@ -66,12 +66,9 @@ export class DynamoDBCookieStore {
         const command = new GetItemCommand(params);
         try {
             const response = await this.client.send(command);
-            if (response.Item?.cookies.L?.length) {
-                return true;
-            }
-            return false;
+            return response.Item?.cookies.L?.length ?? 0;
         } catch (e) {
-            return false;
+            return 0;
         }
     }
 }

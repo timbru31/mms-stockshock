@@ -202,7 +202,7 @@ export class Notifier {
         message.setURL(`${this.store.baseUrl}${this.productHelper.getProductURL(item)}`);
         message.setFooter(`Stockshock v${version} • If you have paid for this, you have been scammed`);
 
-        const hasCookie = this.cookieStore ? await this.cookieStore.hasCookies(item.product) : false;
+        const cookiesAmount = this.cookieStore ? await this.cookieStore.getCookiesAmount(item.product) : 0;
         message.addFields([
             { name: "Magician", value: `${this.store.baseUrl}${this.productHelper.getProductURL(item)}?magician=${item?.product?.id}` },
             { name: "ProductID", value: item.product.id },
@@ -213,7 +213,7 @@ export class Notifier {
             },
             {
                 name: "Cookies?",
-                value: hasCookie ? "🍪" : `${this.noCookieEmoji ?? "👎"}`,
+                value: cookiesAmount ? `${cookiesAmount} 🍪` : `${this.noCookieEmoji ?? "👎"}`,
                 inline: true,
             },
             {
