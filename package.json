@@ -33,10 +33,10 @@
         "puppeteer-extra": "^3.1.18",
         "puppeteer-extra-plugin-stealth": "^2.7.8",
         "toml": "^3.0.0",
-        "user-agents": "^1.0.700",
+        "user-agents": "^1.0.704",
         "uuid": "^8.3.2",
         "winston": "^3.3.3",
-        "ws": "^7.5.1",
+        "ws": "^7.5.2",
         "yargs": "^17.0.1"
     },
     "devDependencies": {
