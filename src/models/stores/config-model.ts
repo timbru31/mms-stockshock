@@ -22,10 +22,13 @@ export interface StoreConfiguration {
     discord_bot_token?: string;
     discord_channel?: string;
     stock_discord_channel?: string;
+    stock_discord_regex_channel?: string[][];
     cookie_discord_channel?: string;
     admin_discord_channel?: string;
+
     discord_role_ping?: string;
     stock_discord_role_ping?: string;
+    stock_discord_regex_role_ping?: string[][];
     cookie_discord_role_ping?: string;
     admin_discord_role_ping?: string;
 

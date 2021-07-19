@@ -16,7 +16,9 @@ export class Notifier {
     discordBotReady = false;
     private discordBot: Client | undefined;
     private stockChannel: TextChannel | undefined;
+    private stockRegexChannel = new Map<RegExp, TextChannel>();
     private stockRolePing: string | undefined;
+    private stockRegexRolePing = new Map<RegExp, string>();
     private cookieChannel: TextChannel | undefined;
     private cookieRolePing: string | undefined;
     private adminChannel: TextChannel | undefined;
@@ -113,8 +115,28 @@ export class Notifier {
                     this.stockChannel = tempChannel;
                 }
             }
+            if (storeConfig?.stock_discord_regex_channel) {
+                storeConfig?.stock_discord_regex_channel.map((pair) => {
+                    const regexpStr = pair[0];
+                    const channelId = pair[1];
+                    const tempChannel = this.discordBot?.channels.cache.get(channelId);
+                    if (((channel): channel is TextChannel => channel?.type === "text")(tempChannel)) {
+                        const regexp = new RegExp(regexpStr, "i");
+                        this.stockRegexChannel.set(regexp, tempChannel);
+                    }
+                });
+            }
+
             if (storeConfig?.stock_discord_role_ping || storeConfig?.discord_role_ping) {
                 this.stockRolePing = storeConfig?.stock_discord_role_ping || storeConfig?.discord_role_ping;
+            }
+            if (storeConfig?.stock_discord_regex_role_ping) {
+                storeConfig?.stock_discord_regex_role_ping.map((pair) => {
+                    const regexpStr = pair[0];
+                    const roleId = pair[1];
+                    const regexp = new RegExp(regexpStr, "i");
+                    this.stockRegexRolePing.set(regexp, roleId);
+                });
             }
 
             if (storeConfig?.cookie_discord_channel || storeConfig?.discord_channel) {
@@ -231,7 +253,7 @@ export class Notifier {
                 `🟢 Item **available**: ${item?.product?.id}, ${item?.product?.title} for ${item?.price?.price ?? "0"} ${
                     item?.price?.currency ?? "𑿠"
                 }! Go check it out: ${this.store.baseUrl}${this.productHelper.getProductURL(item)}?magician=${item?.product?.id}`,
-                this.stockRolePing
+                this.getRolePingsForTitle(item.product.title)
             );
             await this.notifyWebSocketClients(item, true);
         } else if (this.productHelper.canProductBeAddedToBasket(item)) {
@@ -243,7 +265,7 @@ export class Notifier {
                 `🛒 Item **can be added to basket**: ${item?.product?.id}, ${item?.product?.title} for ${item?.price?.price ?? "0"} ${
                     item?.price?.currency ?? "𑿠"
                 }! Go check it out: ${this.store.baseUrl}${this.productHelper.getProductURL(item)}?magician=${item?.product?.id}`,
-                this.stockRolePing
+                this.getRolePingsForTitle(item.product.title)
             );
         } else {
             message.setDescription("🟡 Item for **basket parker**");
@@ -254,19 +276,21 @@ export class Notifier {
                 `🟡 Item for **basket parker**: ${item?.product?.id}, ${item?.product?.title} for ${item?.price?.price ?? "0"} ${
                     item?.price?.currency ?? "𑿠"
                 }! Go check it out: ${this.store.baseUrl}${this.productHelper.getProductURL(item)}`,
-                this.stockRolePing
+                this.getRolePingsForTitle(item.product.title)
             );
             await this.notifyWebSocketClients(item, false);
         }
-        if (this.stockChannel) {
+
+        const stockChannelForItem = this.getChannelForTitle(item.product.title);
+        if (stockChannelForItem) {
             try {
-                await this.stockChannel.send({
+                await stockChannelForItem.send({
                     embed: message,
                     content: this.decorateMessageWithRoles(
                         `${emoji} ${item?.product?.title} [${item?.product?.id}] for ${item?.price?.price ?? "0"} ${
                             item?.price?.currency ?? "𑿠"
                         }`,
-                        this.stockRolePing
+                        this.getRolePingsForTitle(item.product.title)
                     ),
                 });
             } catch (e) {
@@ -300,11 +324,42 @@ export class Notifier {
         }
     }
 
-    private decorateMessageWithRoles(message: string, webhookRolePing: string | undefined) {
-        if (!webhookRolePing) {
+    private getRolePingsForTitle(title: string) {
+        if (this.stockRegexRolePing?.size) {
+            const rolePings = [];
+            for (const [regexp, id] of this.stockRegexRolePing.entries()) {
+                if (regexp.test(title)) {
+                    rolePings.push(id);
+                }
+            }
+            if (!rolePings?.length) {
+                return this.stockRolePing;
+            }
+            return rolePings;
+        }
+        return this.stockRolePing;
+    }
+
+    private getChannelForTitle(title: string) {
+        if (this.stockRegexChannel?.size) {
+            for (const [regexp, channel] of this.stockRegexChannel.entries()) {
+                if (regexp.test(title)) {
+                    return channel;
+                }
+            }
+        }
+        return this.stockChannel;
+    }
+
+    private decorateMessageWithRoles(message: string, webhookRolePings: string[] | string | undefined) {
+        if (!webhookRolePings) {
             return message;
         }
 
-        return `${message} <@&${webhookRolePing}>`;
+        if (Array.isArray(webhookRolePings) && webhookRolePings.length) {
+            return `${message} ${webhookRolePings.map((webhookRolePing) => `<@&${webhookRolePing}>`).join(" ")}`;
+        } else {
+            return `${message} <@&${webhookRolePings}>`;
+        }
     }
 }
