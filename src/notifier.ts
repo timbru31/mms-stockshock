@@ -334,12 +334,12 @@ export class Notifier {
             let threshold = 1;
             const rolePings: string[] = [];
             for (const [regexp, ids] of this.stockRegexRolePing.entries()) {
-                // In case we have the wildcard role active, increase the threshold for the fallback
-                if (regexp.toString() === "/.*/i") {
-                    threshold++;
-                }
                 if (regexp.test(title)) {
                     for (const id of ids) {
+                        // In case we have the wildcard role active, increase the threshold for the fallback
+                        if (regexp.toString() === "/.*/i") {
+                            threshold++;
+                        }
                         rolePings.push(id);
                     }
                 }
