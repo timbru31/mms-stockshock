@@ -18,7 +18,7 @@ export class Notifier {
     private stockChannel: TextChannel | undefined;
     private stockRegexChannel = new Map<RegExp, TextChannel>();
     private stockRolePing: string | undefined;
-    private stockRegexRolePing = new Map<RegExp, string>();
+    private stockRegexRolePing = new Map<RegExp, string[]>();
     private cookieChannel: TextChannel | undefined;
     private cookieRolePing: string | undefined;
     private adminChannel: TextChannel | undefined;
@@ -135,7 +135,7 @@ export class Notifier {
             if (storeConfig?.stock_discord_regex_role_ping) {
                 storeConfig?.stock_discord_regex_role_ping.map((pair) => {
                     const regexpStr = pair[0];
-                    const roleId = pair[1];
+                    const roleId = pair[1].split(",");
                     const regexp = new RegExp(regexpStr, "i");
                     this.stockRegexRolePing.set(regexp, roleId);
                 });
@@ -331,10 +331,12 @@ export class Notifier {
 
     private getRolePingsForTitle(title: string) {
         if (this.stockRegexRolePing?.size) {
-            const rolePings = [];
-            for (const [regexp, id] of this.stockRegexRolePing.entries()) {
+            const rolePings: string[] = [];
+            for (const [regexp, ids] of this.stockRegexRolePing.entries()) {
                 if (regexp.test(title)) {
-                    rolePings.push(id);
+                    for (const id of ids) {
+                        rolePings.push(id);
+                    }
                 }
             }
             if (!rolePings?.length) {
