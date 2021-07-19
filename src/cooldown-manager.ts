@@ -47,7 +47,6 @@ export class CooldownManager {
         });
         this.basketCooldowns.set(product?.id, {
             id: product?.id,
-            isProductBuyable: null,
             endTime,
         });
     }
