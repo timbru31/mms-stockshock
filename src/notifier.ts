@@ -345,7 +345,7 @@ export class Notifier {
                 }
             }
             if (rolePings?.length < threshold) {
-                return this.stockRolePing?.split(",");
+                return [...rolePings, ...(this.stockRolePing?.split(",") ?? [])];
             }
             return rolePings;
         }
