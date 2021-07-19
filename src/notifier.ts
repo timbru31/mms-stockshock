@@ -331,20 +331,25 @@ export class Notifier {
 
     private getRolePingsForTitle(title: string) {
         if (this.stockRegexRolePing?.size) {
+            let threshold = 1;
             const rolePings: string[] = [];
             for (const [regexp, ids] of this.stockRegexRolePing.entries()) {
+                // In case we have the wildcard role active, increase the threshold for the fallback
+                if (regexp.toString() === "/.*/i") {
+                    threshold++;
+                }
                 if (regexp.test(title)) {
                     for (const id of ids) {
                         rolePings.push(id);
                     }
                 }
             }
-            if (!rolePings?.length) {
-                return this.stockRolePing;
+            if (rolePings?.length < threshold) {
+                return this.stockRolePing?.split(",");
             }
             return rolePings;
         }
-        return this.stockRolePing;
+        return this.stockRolePing?.split(",");
     }
 
     private getChannelForTitle(title: string) {
