@@ -26,6 +26,7 @@ export class Notifier {
     private noCookieEmoji: GuildEmoji | undefined | null;
     private heartBeatPing: NodeJS.Timeout | undefined;
     private readonly announceCookies: boolean = true;
+    private readonly shoppingCartAlerts: boolean = true;
     private readonly store: Store;
     private readonly logger: Logger;
     private readonly productHelper = new ProductHelper();
@@ -42,6 +43,7 @@ export class Notifier {
         }
 
         this.announceCookies = storeConfig.announce_cookies ?? true;
+        this.shoppingCartAlerts = storeConfig.shopping_cart_alerts ?? true;
 
         this.logger = logger;
         this.cookieStore = cookieStore;
@@ -214,7 +216,7 @@ export class Notifier {
             }
         }
     }
-    async notifyStock(item: Item): Promise<string> {
+    async notifyStock(item: Item): Promise<string | undefined> {
         let plainMessage: string;
         const fullAlert = this.productHelper.isProductBuyable(item);
         const message = new MessageEmbed().setTimestamp();
@@ -257,6 +259,9 @@ export class Notifier {
             );
             await this.notifyWebSocketClients(item, true);
         } else if (this.productHelper.canProductBeAddedToBasket(item)) {
+            if (this.shoppingCartAlerts) {
+                return;
+            }
             message.setDescription("🛒 Item **can be added to basket**");
             message.setColor("#60696f");
             emoji = "🛒";

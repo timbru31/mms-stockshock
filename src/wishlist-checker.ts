@@ -173,7 +173,9 @@ export class WishlistChecker {
 
                     if (!this.cooldownManager.hasCooldown(itemId)) {
                         const message = await this.notifier.notifyStock(item);
-                        this.logger.info(message);
+                        if (message) {
+                            this.logger.info(message);
+                        }
                         this.cooldownManager.addToCooldownMap(isProductBuyable, item);
                     }
 

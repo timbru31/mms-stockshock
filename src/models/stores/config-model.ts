@@ -17,6 +17,7 @@ export interface StoreConfiguration {
     ignore_sleep?: boolean;
     cookies?: number;
     announce_cookies: boolean;
+    shopping_cart_alerts: boolean;
 
     // Discord channels for notifications
     discord_bot_token?: string;
