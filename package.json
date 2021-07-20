@@ -42,7 +42,7 @@
     "devDependencies": {
         "@types/inquirer": "^7.3.3",
         "@types/user-agents": "^1.0.2",
-        "@types/ws": "^7.4.6",
+        "@types/ws": "^7.4.7",
         "@types/yargs": "^17.0.2",
         "@typescript-eslint/eslint-plugin": "^4.28.3",
         "@typescript-eslint/parser": "^4.28.3",
