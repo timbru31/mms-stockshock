@@ -259,7 +259,7 @@ export class Notifier {
             );
             await this.notifyWebSocketClients(item, true);
         } else if (this.productHelper.canProductBeAddedToBasket(item)) {
-            if (this.shoppingCartAlerts) {
+            if (!this.shoppingCartAlerts) {
                 return;
             }
             message.setDescription("🛒 Item **can be added to basket**");
