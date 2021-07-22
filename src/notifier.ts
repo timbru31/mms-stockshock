@@ -323,8 +323,8 @@ export class Notifier {
                         }
                     );
                 }
-                this.logger.info(`🏓 Sending stock ping to with ready state ${client.readyState}`);
-                await this.notifyAdmin(`🏓 [${this.store.getName()}] Sending stock ping to with ready state ${client.readyState}`);
+                this.logger.info(`🏓 Sending stock ping to client with ready state ${client.readyState}`);
+                await this.notifyAdmin(`🏓 [${this.store.getName()}] Sending stock ping to client with ready state ${client.readyState}`);
             }
         }
     }
