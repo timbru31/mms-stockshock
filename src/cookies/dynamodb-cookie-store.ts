@@ -7,9 +7,9 @@ import {
     UpdateItemCommandInput,
 } from "@aws-sdk/client-dynamodb";
 
-import { Product } from "./models/api/product";
-import { StoreConfiguration } from "./models/stores/config-model";
-import { Store } from "./models/stores/store";
+import { Product } from "../models/api/product";
+import { StoreConfiguration } from "../models/stores/config-model";
+import { Store } from "../models/stores/store";
 
 export class DynamoDBCookieStore {
     private readonly store: Store;

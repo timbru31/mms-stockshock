@@ -1,17 +1,17 @@
 import { SerializableOrJSHandle } from "puppeteer";
 import { v4 } from "uuid";
 import { Logger } from "winston";
-import { BrowserManager } from "./browser-manager";
-import { CooldownManager } from "./cooldown-manager";
+import { BrowserManager } from "../core/browser-manager";
+import { CooldownManager } from "../core/cooldown-manager";
 
-import { Item } from "./models/api/item";
-import { WishlistReponse } from "./models/api/wishlist-response";
-import { ProductHelper } from "./product-helper";
-import { Store } from "./models/stores/store";
-import { Notifier } from "./notifier";
-import { GRAPHQL_CLIENT_VERSION, sleep } from "./utils";
-import { Product } from "./models/api/product";
-import { StoreConfiguration } from "./models/stores/config-model";
+import { Item } from "../models/api/item";
+import { WishlistReponse } from "../models/api/wishlist-response";
+import { ProductHelper } from "../utils/product-helper";
+import { Store } from "../models/stores/store";
+import { GRAPHQL_CLIENT_VERSION, sleep } from "../utils/utils";
+import { Product } from "../models/api/product";
+import { StoreConfiguration } from "../models/stores/config-model";
+import { Notifier } from "../models/notifier";
 
 export class WishlistChecker {
     // This is set by MM/S and a fixed constant
@@ -20,7 +20,7 @@ export class WishlistChecker {
     private readonly store: Store;
     private readonly storeConfiguration: StoreConfiguration;
     private readonly logger: Logger;
-    private readonly notifier: Notifier;
+    private readonly notifiers: Notifier[] = [];
     private readonly browserManager: BrowserManager;
     private readonly cooldownManager: CooldownManager;
     private readonly productHelper = new ProductHelper();
@@ -31,14 +31,14 @@ export class WishlistChecker {
         logger: Logger,
         browserManager: BrowserManager,
         cooldownManager: CooldownManager,
-        notifier: Notifier
+        notifiers: Notifier[]
     ) {
         this.store = store;
         this.storeConfiguration = storeConfiguration;
         this.logger = logger;
         this.browserManager = browserManager;
         this.cooldownManager = cooldownManager;
-        this.notifier = notifier;
+        this.notifiers = notifiers;
     }
 
     async checkWishlist(): Promise<Map<string, Product>> {
@@ -172,9 +172,11 @@ export class WishlistChecker {
                     }
 
                     if (!this.cooldownManager.hasCooldown(itemId)) {
-                        const message = await this.notifier.notifyStock(item);
-                        if (message) {
-                            this.logger.info(message);
+                        for (const notifier of this.notifiers) {
+                            const message = await notifier.notifyStock(item);
+                            if (message) {
+                                this.logger.info(message);
+                            }
                         }
                         this.cooldownManager.addToCooldownMap(isProductBuyable, item);
                     }

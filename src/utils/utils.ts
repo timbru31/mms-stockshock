@@ -2,7 +2,7 @@ import colors from "colors/safe";
 import { readFile } from "fs/promises";
 import { parse } from "toml";
 import { createLogger as createWinstonLogger, format, Logger, transports } from "winston";
-import { ConfigModel } from "./models/stores/config-model";
+import { ConfigModel } from "../models/stores/config-model";
 
 export const GRAPHQL_CLIENT_VERSION = "7.23.1";
 

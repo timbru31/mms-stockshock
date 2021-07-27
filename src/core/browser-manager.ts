@@ -6,12 +6,12 @@ import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import UserAgent from "user-agents";
 import { v4 } from "uuid";
 import { Logger } from "winston";
-import { LoginResponse } from "./models/api/login-response";
-import { Response } from "./models/api/response";
-import { StoreConfiguration } from "./models/stores/config-model";
-import { Store } from "./models/stores/store";
-import { Notifier } from "./notifier";
-import { GRAPHQL_CLIENT_VERSION, shuffle, sleep } from "./utils";
+import { LoginResponse } from "../models/api/login-response";
+import { Response } from "../models/api/response";
+import { Notifier } from "../models/notifier";
+import { StoreConfiguration } from "../models/stores/config-model";
+import { Store } from "../models/stores/store";
+import { GRAPHQL_CLIENT_VERSION, shuffle, sleep } from "../utils/utils";
 
 export class BrowserManager {
     reLoginRequired = true;
@@ -24,16 +24,16 @@ export class BrowserManager {
     private readonly store: Store;
     private readonly storeConfig: StoreConfiguration;
     private readonly logger: Logger;
-    private readonly notifier: Notifier;
+    private readonly notifiers: Notifier[] = [];
     private readonly proxies: string[] = [];
     private proxyIndex = 0;
     private proxyServer: Server | undefined;
 
-    constructor(store: Store, storeConfig: StoreConfiguration, logger: Logger, notifier: Notifier) {
+    constructor(store: Store, storeConfig: StoreConfiguration, logger: Logger, notifiers: Notifier[]) {
         this.logger = logger;
         this.store = store;
         this.storeConfig = storeConfig;
-        this.notifier = notifier;
+        this.notifiers = notifiers;
 
         if (this.storeConfig.proxy_urls?.length) {
             this.proxies = shuffle(this.storeConfig.proxy_urls);
@@ -180,7 +180,9 @@ export class BrowserManager {
                 if (res.retryAfterHeader) {
                     this.logger.error("Retry after: %O", res.retryAfterHeader);
                 }
-                await this.notifier.notifyAdmin(`😵 [${this.store.getName()}] Login did not succeed. Status ${res.status}`);
+                for (const notifier of this.notifiers) {
+                    await notifier.notifyAdmin(`😵 [${this.store.getName()}] Login did not succeed. Status ${res.status}`);
+                }
                 throw new Error(`Login did not succeed. Status ${res.status}`);
             }
             await prompt({
@@ -261,7 +263,9 @@ export class BrowserManager {
             if (!this.storeConfig.ignore_sleep) {
                 let cooldown = Number(res.retryAfterHeader);
                 this.logger.error(`Too many requests, we need to cooldown and sleep ${cooldown} seconds`);
-                await this.notifier.notifyRateLimit(cooldown);
+                for (const notifier of this.notifiers) {
+                    await notifier.notifyRateLimit(cooldown);
+                }
                 if (cooldown > 300) {
                     this.reLoginRequired = true;
                     cooldown = 320;

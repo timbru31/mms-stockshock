@@ -1,16 +1,14 @@
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
-import { ConfigModel, StoreConfiguration } from "./models/stores/config-model";
-import { Saturn } from "./models/stores/saturn";
-import { Store } from "./models/stores/store";
+import { ConfigModel, StoreConfiguration } from "../models/stores/config-model";
+import { Saturn } from "../models/stores/saturn";
+import { Store } from "../models/stores/store";
 import { prompt } from "inquirer";
-import { MediaMarktGermany } from "./models/stores/media-markt-germany";
-import { MediaMarktAustria } from "./models/stores/media-markt-austria";
-import { CliArguments } from "./models/cli";
+import { MediaMarktGermany } from "../models/stores/media-markt-germany";
+import { MediaMarktAustria } from "../models/stores/media-markt-austria";
+import { CliArguments } from "../models/cli";
 
-export async function getStoreAndStoreConfig(
-    config: ConfigModel
-): Promise<{
+export async function getStoreAndStoreConfig(config: ConfigModel): Promise<{
     store: Store;
     storeConfig: StoreConfiguration;
     args: CliArguments;

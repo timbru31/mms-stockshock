@@ -4,15 +4,16 @@ import http from "http";
 import https from "https";
 import { Logger } from "winston";
 import WebSocket from "ws";
-import { version } from "../package.json";
-import { DynamoDBCookieStore } from "./dynamodb-cookie-store";
-import { Item } from "./models/api/item";
-import { Product } from "./models/api/product";
-import { StoreConfiguration } from "./models/stores/config-model";
-import { Store } from "./models/stores/store";
-import { ProductHelper } from "./product-helper";
+import { version } from "../../package.json";
+import { DynamoDBCookieStore } from "../cookies/dynamodb-cookie-store";
+import { Item } from "../models/api/item";
+import { Product } from "../models/api/product";
+import { Notifier } from "../models/notifier";
+import { StoreConfiguration } from "../models/stores/config-model";
+import { Store } from "../models/stores/store";
+import { ProductHelper } from "../utils/product-helper";
 
-export class Notifier {
+export class DiscordNotifier implements Notifier {
     discordBotReady = false;
     private discordBot: Client | undefined;
     private stockChannel: TextChannel | undefined;

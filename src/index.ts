@@ -1,16 +1,17 @@
 import { Logger } from "winston";
-import { BasketAdder } from "./basket-adder";
-import { BrowserManager } from "./browser-manager";
-import { CategoryChecker } from "./category-checker";
-import { getStoreAndStoreConfig } from "./cli-helper";
-import { CooldownManager } from "./cooldown-manager";
-import { DynamoDBCookieStore } from "./dynamodb-cookie-store";
+import { BasketAdder } from "./cookies/basket-adder";
+import { BrowserManager } from "./core/browser-manager";
+import { CategoryChecker } from "./stock-checkers/category-checker";
+import { getStoreAndStoreConfig } from "./utils/cli-helper";
+import { CooldownManager } from "./core/cooldown-manager";
+import { DynamoDBCookieStore } from "./cookies/dynamodb-cookie-store";
 import { Product } from "./models/api/product";
 import { CliArguments } from "./models/cli";
 import { Store } from "./models/stores/store";
-import { Notifier } from "./notifier";
-import { createLogger, loadConfig, sleep } from "./utils";
-import { WishlistChecker } from "./wishlist-checker";
+import { createLogger, loadConfig, sleep } from "./utils/utils";
+import { WishlistChecker } from "./stock-checkers/wishlist-checker";
+import { Notifier } from "./models/notifier";
+import { DiscordNotifier } from "./notifiers/discord-notifier";
 
 (async function () {
     const logger = createLogger();
@@ -31,9 +32,13 @@ import { WishlistChecker } from "./wishlist-checker";
     if (storeConfig.dynamo_db_region && storeConfig.dynamo_db_table_name) {
         cookieStore = new DynamoDBCookieStore(store, storeConfig);
     }
-    const notifier = new Notifier(store, storeConfig, logger, cookieStore);
+
+    const notifiers: Notifier[] = [];
+    const discordNotifier = new DiscordNotifier(store, storeConfig, logger, cookieStore);
+    notifiers.push(discordNotifier);
+
     if (storeConfig?.discord_bot_token) {
-        while (!notifier.discordBotReady) {
+        while (!discordNotifier.discordBotReady) {
             logger.info("💤 Delaying start until Discord bot is ready");
             await sleep(500);
         }
@@ -42,7 +47,9 @@ import { WishlistChecker } from "./wishlist-checker";
     process.on("unhandledRejection", async (reason, promise) => {
         logger.error("⚡️ Unhandled Rejection at: %O", promise);
         logger.error("⚡️ Unhandled Rejection reason: %O", reason);
-        await notifier.notifyAdmin(`🤖 [${store.getName()}] Unhandled Promise rejection!`);
+        for (const notifier of notifiers) {
+            await notifier.notifyAdmin(`🤖 [${store.getName()}] Unhandled Promise rejection!`);
+        }
     });
 
     let shouldRun = true;
@@ -51,16 +58,16 @@ import { WishlistChecker } from "./wishlist-checker";
         process.on(evt, () => {
             console.log("👋 Shutting down...");
             shouldRun = false;
-            notifier.closeWebSocketServer();
+            discordNotifier.closeWebSocketServer();
             cooldownManager.saveCooldowns();
             browserManager.shutdown();
         });
     });
 
-    const browserManager = new BrowserManager(store, storeConfig, logger, notifier);
-    const wishlistChecker = new WishlistChecker(store, storeConfig, logger, browserManager, cooldownManager, notifier);
-    const categoryChecker = new CategoryChecker(store, storeConfig, logger, browserManager, cooldownManager, notifier);
-    const basketAdder = new BasketAdder(store, storeConfig, logger, browserManager, cooldownManager, notifier, cookieStore);
+    const browserManager = new BrowserManager(store, storeConfig, logger, notifiers);
+    const wishlistChecker = new WishlistChecker(store, storeConfig, logger, browserManager, cooldownManager, notifiers);
+    const categoryChecker = new CategoryChecker(store, storeConfig, logger, browserManager, cooldownManager, notifiers);
+    const basketAdder = new BasketAdder(store, storeConfig, logger, browserManager, cooldownManager, notifiers, cookieStore);
     await browserManager.launchPuppeteer(args.headless, args.sandbox);
 
     while (shouldRun) {
@@ -73,10 +80,12 @@ import { WishlistChecker } from "./wishlist-checker";
                 }
                 logger.info(`💌 Checking wishlist items for account ${email}`);
                 try {
-                    await Promise.race([reLoginIfRequired(browserManager, args, email, password, notifier, store, logger), sleep(30000)]);
+                    await Promise.race([reLoginIfRequired(browserManager, args, email, password, notifiers, store, logger), sleep(30000)]);
                 } catch (e) {
                     logger.info(`⚡️ Boop, I'm alive but checking whislist for ${email} errored`);
-                    await notifier.notifyAdmin(`⚡️ [${store.getName()}] Boop, I'm alive but checking whislist for ${email} errored`);
+                    for (const notifier of notifiers) {
+                        await notifier.notifyAdmin(`⚡️ [${store.getName()}] Boop, I'm alive but checking whislist for ${email} errored`);
+                    }
                     continue;
                 }
                 const basketProducts = await Promise.race([wishlistChecker.checkWishlist(), sleep(60000, new Map<string, Product>())]);
@@ -106,7 +115,9 @@ import { WishlistChecker } from "./wishlist-checker";
             await sleep(store.getSleepTime());
         } catch (e) {
             logger.info("⚡️ Boop, I'm alive but checking your stock errored: %O", e);
-            await notifier.notifyAdmin(`⚡️ [${store.getName()}] Boop, I'm alive but checking your stock errored!`);
+            for (const notifier of notifiers) {
+                await notifier.notifyAdmin(`⚡️ [${store.getName()}] Boop, I'm alive but checking your stock errored!`);
+            }
             browserManager.reLoginRequired = true;
         }
     }
@@ -118,7 +129,7 @@ async function reLoginIfRequired(
     args: CliArguments,
     email: string,
     password: string,
-    notifier: Notifier,
+    notifiers: Notifier[],
     store: Store,
     logger: Logger
 ) {
@@ -130,7 +141,9 @@ async function reLoginIfRequired(
             throw new Error("Incognito context could not be created!");
         }
         await browserManager.logIn(args.headless, email, password);
-        await notifier.notifyAdmin(`🤖 [${store.getName()}] (Re-)Login succeeded, let's hunt`);
+        for (const notifier of notifiers) {
+            await notifier.notifyAdmin(`🤖 [${store.getName()}] (Re-)Login succeeded, let's hunt`);
+        }
         logger.info("(Re-)Login succeeded, let's hunt!");
     }
 }

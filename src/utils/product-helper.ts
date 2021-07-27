@@ -1,4 +1,4 @@
-import { Item } from "./models/api/item";
+import { Item } from "../models/api/item";
 
 export class ProductHelper {
     /*

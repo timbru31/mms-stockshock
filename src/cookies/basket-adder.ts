@@ -1,22 +1,22 @@
 import { SerializableOrJSHandle } from "puppeteer";
 import { v4 } from "uuid";
 import { Logger } from "winston";
-import { BrowserManager } from "./browser-manager";
-import { CooldownManager } from "./cooldown-manager";
+import { BrowserManager } from "../core/browser-manager";
+import { CooldownManager } from "../core/cooldown-manager";
 import { DynamoDBCookieStore } from "./dynamodb-cookie-store";
-import { AddProductResponse } from "./models/api/add-product-response";
-import { Product } from "./models/api/product";
-import { StoreConfiguration } from "./models/stores/config-model";
-import { Store } from "./models/stores/store";
-import { Notifier } from "./notifier";
-import { GRAPHQL_CLIENT_VERSION, sleep } from "./utils";
+import { AddProductResponse } from "../models/api/add-product-response";
+import { Product } from "../models/api/product";
+import { StoreConfiguration } from "../models/stores/config-model";
+import { Store } from "../models/stores/store";
+import { GRAPHQL_CLIENT_VERSION, sleep } from "../utils/utils";
+import { Notifier } from "../models/notifier";
 
 export class BasketAdder {
     private basketProducts = new Map<string, Product>();
     private readonly store: Store;
     private readonly storeConfiguration: StoreConfiguration;
     private readonly logger: Logger;
-    private readonly notifier: Notifier;
+    private readonly notifiers: Notifier[] = [];
     private readonly browserManager: BrowserManager;
     private readonly cooldownManager: CooldownManager;
     private readonly cookieStore: DynamoDBCookieStore | undefined;
@@ -27,7 +27,7 @@ export class BasketAdder {
         logger: Logger,
         browserManager: BrowserManager,
         cooldownManager: CooldownManager,
-        notifier: Notifier,
+        notifiers: Notifier[],
         cookieStore: DynamoDBCookieStore | undefined
     ) {
         this.store = store;
@@ -35,7 +35,7 @@ export class BasketAdder {
         this.logger = logger;
         this.browserManager = browserManager;
         this.cooldownManager = cooldownManager;
-        this.notifier = notifier;
+        this.notifiers = notifiers;
         this.cookieStore = cookieStore;
     }
 
@@ -172,7 +172,9 @@ export class BasketAdder {
                     await sleep(this.store.getSleepTime());
                 }
                 if (cookies?.length) {
-                    await this.notifier.notifyCookies(product, cookies);
+                    for (const notifier of this.notifiers) {
+                        await notifier.notifyCookies(product, cookies);
+                    }
                     this.cooldownManager.addToBasketCooldownMap(product);
                     if (this.cookieStore) {
                         this.cookieStore.storeCookies(product, cookies);
