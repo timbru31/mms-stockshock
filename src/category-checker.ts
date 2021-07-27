@@ -133,6 +133,7 @@ export class CategoryChecker {
                             },
                             referrer: `${store.baseUrl}/`,
                             method: "POST",
+                            mode: "cors",
                             body: JSON.stringify({
                                 operationName: "CategoryV4",
                                 variables: {
@@ -149,7 +150,6 @@ export class CategoryChecker {
                                     },
                                 },
                             }),
-                            mode: "cors",
                         })
                             .then((res) =>
                                 res
@@ -205,6 +205,7 @@ export class CategoryChecker {
                             },
                             referrer: `${store.baseUrl}/`,
                             method: "POST",
+                            mode: "cors",
                             body: JSON.stringify({
                                 operationName: "GetSelectProduct",
                                 variables: {
@@ -219,7 +220,6 @@ export class CategoryChecker {
                                     },
                                 },
                             }),
-                            mode: "cors",
                         })
                             .then((res) =>
                                 res

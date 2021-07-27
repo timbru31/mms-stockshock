@@ -122,6 +122,8 @@ export class BrowserManager {
                                 "Cache-Control": "no-cache",
                             },
                             referrer: `${store.baseUrl}/`,
+                            method: "POST",
+                            mode: "cors",
                             body: JSON.stringify({
                                 operationName: "LoginProfileUser",
                                 variables: { email, password },
@@ -133,8 +135,6 @@ export class BrowserManager {
                                     },
                                 },
                             }),
-                            method: "POST",
-                            mode: "cors",
                         })
                             .then((res) =>
                                 res.status === 200

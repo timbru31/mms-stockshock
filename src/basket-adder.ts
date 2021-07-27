@@ -91,6 +91,8 @@ export class BasketAdder {
                                             "Cache-Control": "no-cache",
                                         },
                                         referrer: `${store.baseUrl}/`,
+                                        method: "POST",
+                                        mode: "cors",
                                         body: JSON.stringify({
                                             operationName: "AddProduct",
                                             variables: {
@@ -116,8 +118,6 @@ export class BasketAdder {
                                                 },
                                             },
                                         }),
-                                        method: "POST",
-                                        mode: "cors",
                                     })
                                         .then((res) =>
                                             res

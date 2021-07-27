@@ -106,6 +106,7 @@ export class WishlistChecker {
                             },
                             referrer: `${store.baseUrl}/`,
                             method: "POST",
+                            mode: "cors",
                             body: JSON.stringify({
                                 operationName: "WishlistItems",
                                 variables: {
@@ -122,7 +123,6 @@ export class WishlistChecker {
                                     },
                                 },
                             }),
-                            mode: "cors",
                         })
                             .then((res) =>
                                 res
