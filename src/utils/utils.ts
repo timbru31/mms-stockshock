@@ -4,7 +4,7 @@ import { parse } from "toml";
 import { createLogger as createWinstonLogger, format, Logger, transports } from "winston";
 import { ConfigModel } from "../models/stores/config-model";
 
-export const GRAPHQL_CLIENT_VERSION = "7.24.1";
+export const GRAPHQL_CLIENT_VERSION = "7.24.2";
 
 export async function sleep<T>(sleepTime: number, returnValue?: T): Promise<T> {
     return new Promise<T>((resolve) => setTimeout(() => resolve(returnValue || ({} as T)), sleepTime));
@@ -75,6 +75,9 @@ export function shuffle<T>(array: T[]): T[] {
 
     return array;
 }
+
+// eslint-disable-next-line @typescript-eslint/no-empty-function
+export function noop(): void {}
 
 function getEmojiForLevel(level: string) {
     switch (colors.stripColors(level)) {
