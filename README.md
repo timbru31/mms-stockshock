@@ -8,7 +8,7 @@ Sadly, I can't offer any support to help you get the bot up and running.
 You need to figure the things out on your own.  
 **However**, if you believe you found an actual bug, please open an issue.
 
-## Prerequisities
+## Prerequisites
 
 You need to put items on your wishlist in order to have this bot working.
 
@@ -65,7 +65,7 @@ Do **not** close the browser window. You can minimize it though.
 
 ### Pass in a store via CLI
 
-You can launch the bot directly with a store by suppyling the store as an argument
+You can launch the bot directly with a store by supplying the store as an argument
 
 ```sh
 npm start -- --store <mmde|mmat|saturn>

@@ -19,6 +19,7 @@
         "modernizr",
         "networkidle",
         "nocookie",
+        "timbru",
         "userid"
     ]
 }
