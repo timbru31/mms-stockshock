@@ -52,12 +52,16 @@ export class BrowserManager {
         await this.proxyServer?.close(true);
     }
 
-    async launchPuppeteer(headless = true, sandbox = true): Promise<void> {
+    async launchPuppeteer(headless = true, sandbox = true, shmUsage = true): Promise<void> {
         await this.cleanOldReferences();
 
         const args = [];
         if (!sandbox) {
             args.push("--no-sandbox");
+        }
+
+        if (!shmUsage) {
+            args.push("--disable-dev-shm-usage");
         }
 
         if (this.storeConfig.proxy_urls?.length) {
@@ -91,7 +95,7 @@ export class BrowserManager {
         if (!this.browser || !this.page) {
             this.reLaunchRequired = true;
             this.reLoginRequired = true;
-            throw new Error("Puppeteer context not initialized!");
+            throw new Error(`Puppeteer context not initialized! ${!this.page ? "Page" : "Browser"} is undefined.`);
         }
 
         let res: { status: number; body: LoginResponse | null; retryAfterHeader?: string | null };
@@ -308,16 +312,31 @@ export class BrowserManager {
 
     private async cleanOldReferences() {
         if (this.page) {
-            await this.page.close();
-            this.page = undefined;
+            try {
+                await this.page.close();
+            } catch (e) {
+                this.logger.error("Unable to close page, %O", e);
+            } finally {
+                this.page = undefined;
+            }
         }
         if (this.context) {
-            await this.context.close();
-            this.context = undefined;
+            try {
+                await this.context.close();
+            } catch (e) {
+                this.logger.error("Unable to close context, %O", e);
+            } finally {
+                this.context = undefined;
+            }
         }
         if (this.browser) {
-            await this.browser.close();
-            this.browser = undefined;
+            try {
+                await this.browser.close();
+            } catch (e) {
+                this.logger.error("Unable to close browser, %O", e);
+            } finally {
+                this.browser = undefined;
+            }
         }
     }
 }

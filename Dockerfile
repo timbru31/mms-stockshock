@@ -17,4 +17,4 @@ WORKDIR /opt/mms-stockshock
 
 RUN npm install
 EXPOSE 8080
-CMD ["sh", "-c", "node --unhandled-rejections=strict dist/src/index.js --store ${STORE} --sandbox false"]
+CMD ["sh", "-c", "node --unhandled-rejections=strict dist/src/index.js --store ${STORE} --sandbox false --shmUsage false"]

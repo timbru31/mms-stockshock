@@ -16,6 +16,7 @@ export async function getStoreAndStoreConfig(config: ConfigModel): Promise<{
     const args = yargs(hideBin(process.argv)).options({
         headless: { type: "boolean", default: true },
         sandbox: { type: "boolean", default: true },
+        shmUsage: { type: "boolean", default: true },
         store: { type: "string", default: "" },
     }).argv as CliArguments;
     let storeConfig: StoreConfiguration;

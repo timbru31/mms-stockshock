@@ -68,7 +68,7 @@ import { DiscordNotifier } from "./notifiers/discord-notifier";
     const wishlistChecker = new WishlistChecker(store, storeConfig, logger, browserManager, cooldownManager, notifiers);
     const categoryChecker = new CategoryChecker(store, storeConfig, logger, browserManager, cooldownManager, notifiers);
     const basketAdder = new BasketAdder(store, storeConfig, logger, browserManager, cooldownManager, notifiers, cookieStore);
-    await browserManager.launchPuppeteer(args.headless, args.sandbox);
+    await browserManager.launchPuppeteer(args.headless, args.sandbox, args.shmUsage);
 
     while (shouldRun) {
         try {
@@ -136,7 +136,7 @@ async function reLoginIfRequired(
 ) {
     if (browserManager.reLoginRequired) {
         if (browserManager.reLaunchRequired) {
-            await browserManager.launchPuppeteer(args.headless, args.sandbox);
+            await browserManager.launchPuppeteer(args.headless, args.sandbox, args.shmUsage);
         }
         if (!(await browserManager.createIncognitoContext())) {
             throw new Error("Incognito context could not be created!");
@@ -152,7 +152,7 @@ async function reLoginIfRequired(
 async function reLaunchIfRequired(browserManager: BrowserManager, args: CliArguments, createNewContext?: boolean) {
     let relaunched = false;
     if (browserManager.reLaunchRequired) {
-        await browserManager.launchPuppeteer(args.headless, args.sandbox);
+        await browserManager.launchPuppeteer(args.headless, args.sandbox, args.shmUsage);
         relaunched = true;
     }
     if (createNewContext || relaunched) {
