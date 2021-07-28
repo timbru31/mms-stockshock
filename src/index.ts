@@ -12,6 +12,7 @@ import { createLogger, loadConfig, sleep } from "./utils/utils";
 import { WishlistChecker } from "./stock-checkers/wishlist-checker";
 import { Notifier } from "./models/notifier";
 import { DiscordNotifier } from "./notifiers/discord-notifier";
+import { TwitterNotifier } from "./notifiers/twitter-notifier";
 
 (async function () {
     const logger = createLogger();
@@ -42,6 +43,11 @@ import { DiscordNotifier } from "./notifiers/discord-notifier";
             logger.info("💤 Delaying start until Discord bot is ready");
             await sleep(500);
         }
+    }
+
+    if (storeConfig?.twitter_bearer_token) {
+        const twitterNotifier = new TwitterNotifier(store, storeConfig, logger);
+        notifiers.push(twitterNotifier);
     }
 
     ["unhandledRejection", "uncaughtException"].forEach((evt) => {
