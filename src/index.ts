@@ -44,12 +44,16 @@ import { DiscordNotifier } from "./notifiers/discord-notifier";
         }
     }
 
-    process.on("unhandledRejection", async (reason, promise) => {
-        logger.error("⚡️ Unhandled Rejection at: %O", promise);
-        logger.error("⚡️ Unhandled Rejection reason: %O", reason);
-        for (const notifier of notifiers) {
-            await notifier.notifyAdmin(`🤖 [${store.getName()}] Unhandled Promise rejection!`);
-        }
+    ["unhandledRejection", "uncaughtException"].forEach((evt) => {
+        process.on(evt, async (reason, promise) => {
+            logger.error("⚡️ Unhandled Rejection at: %O", promise);
+            logger.error("⚡️ Unhandled Rejection reason: %O", reason);
+            for (const notifier of notifiers) {
+                await notifier.notifyAdmin(`🤖 [${store.getName()}] Unhandled Promise rejection!`);
+            }
+            browserManager.reLaunchRequired = true;
+            browserManager.reLoginRequired = true;
+        });
     });
 
     let shouldRun = true;
