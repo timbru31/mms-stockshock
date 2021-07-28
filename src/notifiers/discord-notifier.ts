@@ -96,12 +96,12 @@ export class DiscordNotifier implements Notifier {
         let emoji: string;
         message.setImage(`https://assets.mmsrg.com/isr/166325/c1/-/${item.product.titleImageId}/mobile_200_200.png`);
         message.setTitle(item?.product?.title);
-        message.setURL(`${this.store.baseUrl}${this.productHelper.getProductURL(item)}`);
+        message.setURL(`${this.productHelper.getProductURL(item, this.store)}`);
         message.setFooter(`Stockshock v${version} • If you have paid for this, you have been scammed`);
 
         const cookiesAmount = this.cookieStore ? await this.cookieStore.getCookiesAmount(item.product) : 0;
         message.addFields([
-            { name: "Magician", value: `${this.store.baseUrl}${this.productHelper.getProductURL(item)}?magician=${item?.product?.id}` },
+            { name: "Magician", value: `${this.productHelper.getProductURL(item, this.store)}?magician=${item?.product?.id}` },
             { name: "ProductID", value: item.product.id },
             {
                 name: "Price",
@@ -127,7 +127,7 @@ export class DiscordNotifier implements Notifier {
             plainMessage = this.decorateMessageWithRoles(
                 `🟢 Item **available**: ${item?.product?.id}, ${item?.product?.title} for ${item?.price?.price ?? "0"} ${
                     item?.price?.currency ?? "𑿠"
-                }! Go check it out: ${this.store.baseUrl}${this.productHelper.getProductURL(item)}?magician=${item?.product?.id}`,
+                }! Go check it out: ${this.productHelper.getProductURL(item, this.store)}?magician=${item?.product?.id}`,
                 this.getRolePingsForTitle(item.product.title)
             );
             await this.notifyWebSocketClients(item, true);
@@ -142,7 +142,7 @@ export class DiscordNotifier implements Notifier {
             plainMessage = this.decorateMessageWithRoles(
                 `🛒 Item **can be added to basket**: ${item?.product?.id}, ${item?.product?.title} for ${item?.price?.price ?? "0"} ${
                     item?.price?.currency ?? "𑿠"
-                }! Go check it out: ${this.store.baseUrl}${this.productHelper.getProductURL(item)}?magician=${item?.product?.id}`,
+                }! Go check it out: ${this.productHelper.getProductURL(item, this.store)}?magician=${item?.product?.id}`,
                 this.getRolePingsForTitle(item.product.title)
             );
         } else {
@@ -153,7 +153,7 @@ export class DiscordNotifier implements Notifier {
             plainMessage = this.decorateMessageWithRoles(
                 `🟡 Item for **basket parker**: ${item?.product?.id}, ${item?.product?.title} for ${item?.price?.price ?? "0"} ${
                     item?.price?.currency ?? "𑿠"
-                }! Go check it out: ${this.store.baseUrl}${this.productHelper.getProductURL(item)}`,
+                }! Go check it out: ${this.productHelper.getProductURL(item, this.store)}`,
                 this.getRolePingsForTitle(item.product.title)
             );
             await this.notifyWebSocketClients(item, false);

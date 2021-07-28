@@ -35,7 +35,10 @@ export interface StoreConfiguration {
     admin_discord_role_ping?: string;
 
     // Twitter notification settings
-    twitter_bearer_token?: string;
+    twitter_api_key?: string;
+    twitter_api_key_secret?: string;
+    twitter_access_token?: string;
+    twitter_access_token_secret?: string;
     twitter_tags?: string[];
 
     // Proxies

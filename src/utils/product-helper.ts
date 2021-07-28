@@ -1,4 +1,5 @@
 import { Item } from "../models/api/item";
+import { Store } from "../models/stores/store";
 
 export class ProductHelper {
     /*
@@ -40,11 +41,12 @@ export class ProductHelper {
         return item?.product?.onlineStatus;
     }
 
-    getProductURL(item: Item, replacements?: Map<string, string>): string {
+    getProductURL(item: Item, store: Store, replacements?: Map<string, string>): string {
         const replacement = replacements?.get(item.product.id);
         if (replacement) {
             return replacement;
         }
-        return item?.product?.url || `/de/product/-${item.product.id}.html`;
+
+        return store.baseUrl + (item?.product?.url || `/de/product/-${item.product.id}.html`);
     }
 }

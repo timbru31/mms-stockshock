@@ -45,7 +45,12 @@ import { TwitterNotifier } from "./notifiers/twitter-notifier";
         }
     }
 
-    if (storeConfig?.twitter_bearer_token) {
+    if (
+        storeConfig?.twitter_api_key &&
+        storeConfig?.twitter_api_key_secret &&
+        storeConfig?.twitter_access_token &&
+        storeConfig?.twitter_access_token_secret
+    ) {
         const twitterNotifier = new TwitterNotifier(store, storeConfig, logger);
         notifiers.push(twitterNotifier);
     }
