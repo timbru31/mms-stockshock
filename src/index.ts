@@ -82,9 +82,9 @@ import { DiscordNotifier } from "./notifiers/discord-notifier";
                 try {
                     await Promise.race([reLoginIfRequired(browserManager, args, email, password, notifiers, store, logger), sleep(30000)]);
                 } catch (e) {
-                    logger.info(`⚡️ Boop, I'm alive but checking whislist for ${email} errored, %O`, e);
+                    logger.info(`⚡️ Boop, I'm alive but checking wishlist for ${email} errored, %O`, e);
                     for (const notifier of notifiers) {
-                        await notifier.notifyAdmin(`⚡️ [${store.getName()}] Boop, I'm alive but checking whislist for ${email} errored`);
+                        await notifier.notifyAdmin(`⚡️ [${store.getName()}] Boop, I'm alive but checking wishlist for ${email} errored`);
                     }
                     continue;
                 }

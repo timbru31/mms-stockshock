@@ -1,7 +1,7 @@
 import { Item } from "./item";
 import { Response } from "./response";
 
-export interface WishlistReponse extends Response {
+export interface WishlistResponse extends Response {
     data?: {
         wishlistItems: {
             total: number;

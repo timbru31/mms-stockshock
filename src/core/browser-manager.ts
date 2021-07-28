@@ -91,7 +91,7 @@ export class BrowserManager {
         if (!this.browser || !this.page) {
             this.reLaunchRequired = true;
             this.reLoginRequired = true;
-            throw new Error("Puppeteer context not inialized!");
+            throw new Error("Puppeteer context not initialized!");
         }
 
         let res: { status: number; body: LoginResponse | null; retryAfterHeader?: string | null };

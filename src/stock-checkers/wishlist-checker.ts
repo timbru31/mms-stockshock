@@ -5,7 +5,7 @@ import { BrowserManager } from "../core/browser-manager";
 import { CooldownManager } from "../core/cooldown-manager";
 
 import { Item } from "../models/api/item";
-import { WishlistReponse } from "../models/api/wishlist-response";
+import { WishlistResponse } from "../models/api/wishlist-response";
 import { ProductHelper } from "../utils/product-helper";
 import { Store } from "../models/stores/store";
 import { GRAPHQL_CLIENT_VERSION, sleep } from "../utils/utils";
@@ -81,7 +81,7 @@ export class WishlistChecker {
 
     private performWishlistQuery(offset = 0): Promise<{
         status: number;
-        body: WishlistReponse | null;
+        body: WishlistResponse | null;
         retryAfterHeader?: string | null;
     }> {
         if (!this.browserManager.page) {
