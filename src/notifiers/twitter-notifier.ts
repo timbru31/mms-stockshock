@@ -67,24 +67,24 @@ export class TwitterNotifier implements Notifier {
         const fullAlert = this.productHelper.isProductBuyable(item);
         if (fullAlert) {
             message = this.decorateMessageWithTags(
-                `\uD83D\uDFE2 Item available: ${item?.product?.title} for ${item?.price?.price ?? "0"} ${
+                `\uD83D\uDFE2 Produkt verfügbar: ${item?.product?.title} für ${item?.price?.price ?? "0"} ${
                     item?.price?.currency ?? "𑿠"
-                }! Go check it out: ${this.productHelper.getProductURL(item, this.store, this.replacements)}`
+                }! Jetzt kaufen: ${this.productHelper.getProductURL(item, this.store, this.replacements)}`
             );
         } else if (this.productHelper.canProductBeAddedToBasket(item)) {
             if (!this.shoppingCartAlerts) {
                 return;
             }
             message = this.decorateMessageWithTags(
-                `\uD83D\uDED2 Item can be added to basket: ${item?.product?.title} for ${item?.price?.price ?? "0"} ${
+                `\uD83D\uDED2 Produkt kann zum Warenkorb hinzugefügt werden: ${item?.product?.title} für ${item?.price?.price ?? "0"} ${
                     item?.price?.currency ?? "𑿠"
-                }! Go check it out: ${this.productHelper.getProductURL(item, this.store, this.replacements)}`
+                }! Jetzt anschauen: ${this.productHelper.getProductURL(item, this.store, this.replacements)}`
             );
         } else {
             message = this.decorateMessageWithTags(
-                `\uD83D\uDFE1 Item for basket parker: ${item?.product?.title} for ${item?.price?.price ?? "0"} ${
+                `\uD83D\uDFE1 Produkt für Warenkorb-Parker: ${item?.product?.title} für ${item?.price?.price ?? "0"} ${
                     item?.price?.currency ?? "𑿠"
-                }! Go check it out: ${this.productHelper.getProductURL(item, this.store, this.replacements)}`
+                }! Jetzt anschauen: ${this.productHelper.getProductURL(item, this.store, this.replacements)}`
             );
         }
 
