@@ -119,6 +119,7 @@ import { DiscordNotifier } from "./notifiers/discord-notifier";
                 await notifier.notifyAdmin(`⚡️ [${store.getName()}] Boop, I'm alive but checking your stock errored!`);
             }
             browserManager.reLoginRequired = true;
+            browserManager.reLaunchRequired = true;
         }
     }
     await browserManager.shutdown();
