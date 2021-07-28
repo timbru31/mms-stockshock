@@ -14,9 +14,10 @@ You need to put items on your wishlist in order to have this bot working.
 
 ### Supported stores
 
--   Saturn
--   MediaMarkt Germany
 -   MediaMarkt Austria
+-   MediaMarkt Germany
+-   MediaMarkt Spain
+-   Saturn
 
 ## Installation
 
@@ -68,7 +69,7 @@ Do **not** close the browser window. You can minimize it though.
 You can launch the bot directly with a store by supplying the store as an argument
 
 ```sh
-npm start -- --store <mmde|mmat|saturn>
+npm start -- --store <mmat|mmde|mmes|saturn>
 ```
 
 ### Docker

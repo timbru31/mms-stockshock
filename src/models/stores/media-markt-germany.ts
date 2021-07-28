@@ -4,6 +4,7 @@ import { Store } from "./store";
 export class MediaMarktGermany extends CommonStore implements Store {
     readonly baseUrl = "https://www.mediamarkt.de";
     readonly countryCode = "DE";
+    readonly languageCode = "de";
     readonly salesLine = "Media";
     readonly shortCode = "mmde";
 

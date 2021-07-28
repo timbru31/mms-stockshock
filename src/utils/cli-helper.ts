@@ -7,6 +7,7 @@ import { prompt } from "inquirer";
 import { MediaMarktGermany } from "../models/stores/media-markt-germany";
 import { MediaMarktAustria } from "../models/stores/media-markt-austria";
 import { CliArguments } from "../models/cli";
+import { MediaMarktSpain } from "../models/stores/media-markt-spain";
 
 export async function getStoreAndStoreConfig(config: ConfigModel): Promise<{
     store: Store;
@@ -39,6 +40,10 @@ export async function getStoreAndStoreConfig(config: ConfigModel): Promise<{
                     name: "MediaMarkt Austria",
                     value: "mediamarkt austria",
                 },
+                {
+                    name: "MediaMarkt Spain",
+                    value: "mediamarkt spain",
+                },
             ],
         });
         storeArgument = storePrompt.store;
@@ -62,6 +67,12 @@ export async function getStoreAndStoreConfig(config: ConfigModel): Promise<{
         case "mediamarkt austria":
             store = new MediaMarktAustria();
             storeConfig = config.mmat;
+            break;
+        case "mmes":
+        case "mediamarktspain":
+        case "mediamarkt spain":
+            store = new MediaMarktSpain();
+            storeConfig = config.mmes;
             break;
         default:
             throw new Error("Invalid store chosen!");

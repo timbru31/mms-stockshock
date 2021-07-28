@@ -2,6 +2,7 @@ export interface ConfigModel {
     saturn: StoreConfiguration;
     mmde: StoreConfiguration;
     mmat: StoreConfiguration;
+    mmes: StoreConfiguration;
 }
 
 export interface StoreConfiguration {

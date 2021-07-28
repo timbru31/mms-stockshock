@@ -132,7 +132,7 @@ export class CategoryChecker {
                                 "apollographql-client-version": graphQLClientVersion,
                                 "x-operation": "CategoryV4",
                                 "x-cacheable": "false",
-                                "X-MMS-Language": "de",
+                                "X-MMS-Language": store.languageCode,
                                 "X-MMS-Country": store.countryCode,
                                 "X-MMS-Salesline": store.salesLine,
                                 "x-flow-id": flowId,
@@ -151,7 +151,12 @@ export class CategoryChecker {
                                     page,
                                 },
                                 extensions: {
-                                    pwa: { salesLine: store.salesLine, country: store.countryCode, language: "de", contentful: true },
+                                    pwa: {
+                                        salesLine: store.salesLine,
+                                        country: store.countryCode,
+                                        language: store.languageCode,
+                                        contentful: true,
+                                    },
                                     persistedQuery: {
                                         version: 1,
                                         sha256Hash: categorySHA256,
@@ -207,7 +212,7 @@ export class CategoryChecker {
                                 "apollographql-client-version": graphQLClientVersion,
                                 "x-operation": "GetSelectProduct",
                                 "x-cacheable": "false",
-                                "X-MMS-Language": "de",
+                                "X-MMS-Language": store.languageCode,
                                 "X-MMS-Country": store.countryCode,
                                 "X-MMS-Salesline": store.salesLine,
                                 "x-flow-id": flowId,
@@ -224,7 +229,12 @@ export class CategoryChecker {
                                     id: productId,
                                 },
                                 extensions: {
-                                    pwa: { salesLine: store.salesLine, country: store.countryCode, language: "de", contentful: true },
+                                    pwa: {
+                                        salesLine: store.salesLine,
+                                        country: store.countryCode,
+                                        language: store.languageCode,
+                                        contentful: true,
+                                    },
                                     persistedQuery: {
                                         version: 1,
                                         sha256Hash: getProductSHA256,

@@ -118,7 +118,7 @@ export class BrowserManager {
                                 "apollographql-client-version": graphQLClientVersion,
                                 "x-operation": "LoginProfileUser",
                                 "x-cacheable": "false",
-                                "X-MMS-Language": "de",
+                                "X-MMS-Language": store.languageCode,
                                 "X-MMS-Country": store.countryCode,
                                 "X-MMS-Salesline": store.salesLine,
                                 "x-flow-id": flowId,
@@ -132,7 +132,7 @@ export class BrowserManager {
                                 operationName: "LoginProfileUser",
                                 variables: { email, password },
                                 extensions: {
-                                    pwa: { salesLine: store.salesLine, country: store.countryCode, language: "de" },
+                                    pwa: { salesLine: store.salesLine, country: store.countryCode, language: store.languageCode },
                                     persistedQuery: {
                                         version: 1,
                                         sha256Hash: loginSHA256,

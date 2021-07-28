@@ -86,7 +86,7 @@ export class BasketAdder {
                                             "apollographql-client-version": graphQLClientVersion,
                                             "x-operation": "AddProduct",
                                             "x-cacheable": "false",
-                                            "X-MMS-Language": "de",
+                                            "X-MMS-Language": store.languageCode,
                                             "X-MMS-Country": store.countryCode,
                                             "X-MMS-Salesline": store.salesLine,
                                             "x-flow-id": flowId,
@@ -113,7 +113,7 @@ export class BasketAdder {
                                                 pwa: {
                                                     salesLine: store.salesLine,
                                                     country: store.countryCode,
-                                                    language: "de",
+                                                    language: store.languageCode,
                                                 },
                                                 persistedQuery: {
                                                     version: 1,

@@ -88,8 +88,8 @@ import { TwitterNotifier } from "./notifiers/twitter-notifier";
         try {
             logger.info("🤖 Beep, I'm alive and well checking your stock");
 
-            for (const [email, password] of storeConfig.accounts) {
-                if (storeConfig.accounts.length > 1) {
+            for (const [email, password] of storeConfig.accounts || []) {
+                if (storeConfig?.accounts?.length > 1) {
                     browserManager.reLoginRequired = true;
                 }
                 logger.info(`💌 Checking wishlist items for account ${email}`);
@@ -107,7 +107,7 @@ import { TwitterNotifier } from "./notifiers/twitter-notifier";
             }
 
             if (storeConfig.categories?.length) {
-                if (storeConfig.accounts.length > 1) {
+                if (storeConfig?.accounts?.length > 1) {
                     await reLaunchIfRequired(browserManager, args, true);
                 }
                 for (const categoryId of storeConfig.categories) {

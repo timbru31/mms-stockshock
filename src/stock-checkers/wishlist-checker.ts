@@ -100,7 +100,7 @@ export class WishlistChecker {
                                 "apollographql-client-version": graphQLClientVersion,
                                 "x-operation": "GetUser",
                                 "x-cacheable": "false",
-                                "X-MMS-Language": "de",
+                                "X-MMS-Language": store.languageCode,
                                 "X-MMS-Country": store.countryCode,
                                 "X-MMS-Salesline": store.salesLine,
                                 "x-flow-id": flowId,
@@ -119,7 +119,7 @@ export class WishlistChecker {
                                     offset,
                                 },
                                 extensions: {
-                                    pwa: { salesLine: store.salesLine, country: store.countryCode, language: "de" },
+                                    pwa: { salesLine: store.salesLine, country: store.countryCode, language: store.languageCode },
                                     persistedQuery: {
                                         version: 1,
                                         sha256Hash: wishlistSHA256,
