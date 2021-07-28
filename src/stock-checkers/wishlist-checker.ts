@@ -90,7 +90,7 @@ export class WishlistChecker {
         }
         try {
             return Promise.race([
-                this.browserManager.page!.evaluate(
+                this.browserManager.page.evaluate(
                     async (store: Store, offset: number, flowId: string, graphQLClientVersion: string, wishlistSHA256: string) =>
                         await fetch(`${store.baseUrl}/api/v1/graphql?anti-cache=${new Date().getTime()}`, {
                             credentials: "include",

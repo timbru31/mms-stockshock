@@ -67,6 +67,9 @@ export class CategoryChecker {
                     const res = await this.performCategoryQuery(category, additionalQueryCalls);
                     if (res.status !== 200 || !res.body || res.body?.errors) {
                         await this.browserManager.handleResponseError("CategoryV4", res);
+                        if (this.browserManager.reLoginRequired || this.browserManager.reLaunchRequired) {
+                            break;
+                        }
                     } else {
                         if (res?.body?.data?.categoryV4?.products) {
                             for (const product of res.body.data.categoryV4.products) {
@@ -84,6 +87,9 @@ export class CategoryChecker {
                 const res = await this.performProductDetailsQuery(productId);
                 if (res.status !== 200 || !res.body || res.body?.errors) {
                     await this.browserManager.handleResponseError("GetSelectProduct", res);
+                    if (this.browserManager.reLoginRequired || this.browserManager.reLaunchRequired) {
+                        break;
+                    }
                 } else {
                     if (res?.body?.data) {
                         await this.checkItem(res.body.data, basketProducts);
@@ -186,7 +192,7 @@ export class CategoryChecker {
         retryAfterHeader?: string | null;
     }> {
         if (!this.browserManager.page) {
-            this.logger.error("Unable to perform category query: page is undefined!");
+            this.logger.error("Unable to perform get product: page is undefined!");
             return Promise.resolve({ status: 0, body: null });
         }
         try {
@@ -247,7 +253,7 @@ export class CategoryChecker {
                 }),
             ]);
         } catch (error) {
-            this.logger.error("Unable to perform category query: %O", error);
+            this.logger.error("Unable to perform get product: %O", error);
             return Promise.resolve({ status: 0, body: null });
         }
     }
