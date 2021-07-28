@@ -8,6 +8,7 @@ export interface Store {
     getSleepTime(): number;
 
     getName(): string;
+    getShortName(): string;
 
     [key: string]: string | number | undefined | (() => number) | (() => string);
 }

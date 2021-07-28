@@ -67,24 +67,32 @@ export class TwitterNotifier implements Notifier {
         const fullAlert = this.productHelper.isProductBuyable(item);
         if (fullAlert) {
             message = this.decorateMessageWithTags(
-                `\uD83D\uDFE2 Produkt verfügbar: ${item?.product?.title} für ${item?.price?.price ?? "0"} ${
-                    item?.price?.currency ?? "𑿠"
-                }! Jetzt kaufen: ${this.productHelper.getProductURL(item, this.store, this.replacements)}`
+                `\uD83D\uDFE2 Produkt bei ${this.store.getShortName()} verfügbar: ${item?.product?.title} für ${
+                    item?.price?.price ?? "0"
+                } ${item?.price?.currency ?? "𑿠"}! Jetzt kaufen: ${this.productHelper.getProductURL(item, this.store, this.replacements)}`
             );
         } else if (this.productHelper.canProductBeAddedToBasket(item)) {
             if (!this.shoppingCartAlerts) {
                 return;
             }
             message = this.decorateMessageWithTags(
-                `\uD83D\uDED2 Produkt kann zum Warenkorb hinzugefügt werden: ${item?.product?.title} für ${item?.price?.price ?? "0"} ${
-                    item?.price?.currency ?? "𑿠"
-                }! Jetzt anschauen: ${this.productHelper.getProductURL(item, this.store, this.replacements)}`
+                `\uD83D\uDED2 Produkt bei ${this.store.getShortName()} kann zum Warenkorb hinzugefügt werden: ${item?.product?.title} für ${
+                    item?.price?.price ?? "0"
+                } ${item?.price?.currency ?? "𑿠"}! Jetzt anschauen: ${this.productHelper.getProductURL(
+                    item,
+                    this.store,
+                    this.replacements
+                )}`
             );
         } else {
             message = this.decorateMessageWithTags(
-                `\uD83D\uDFE1 Produkt für Warenkorb-Parker: ${item?.product?.title} für ${item?.price?.price ?? "0"} ${
-                    item?.price?.currency ?? "𑿠"
-                }! Jetzt anschauen: ${this.productHelper.getProductURL(item, this.store, this.replacements)}`
+                `\uD83D\uDFE1 Produkt bei ${this.store.getShortName()} für Warenkorb-Parker: ${item?.product?.title} für ${
+                    item?.price?.price ?? "0"
+                } ${item?.price?.currency ?? "𑿠"}! Jetzt anschauen: ${this.productHelper.getProductURL(
+                    item,
+                    this.store,
+                    this.replacements
+                )}`
             );
         }
 

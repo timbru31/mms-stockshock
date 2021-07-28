@@ -11,4 +11,8 @@ export class MediaMarktAustria extends CommonStore implements Store {
     getName(): string {
         return "MediaMarkt Austria";
     }
+
+    getShortName(): string {
+        return "MediaMarkt";
+    }
 }

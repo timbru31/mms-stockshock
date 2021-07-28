@@ -10,4 +10,8 @@ export class Saturn extends CommonStore implements Store {
     getName(): string {
         return "Saturn";
     }
+
+    getShortName(): string {
+        return "Saturn";
+    }
 }

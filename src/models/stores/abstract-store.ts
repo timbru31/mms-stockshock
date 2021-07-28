@@ -10,6 +10,7 @@ export abstract class CommonStore implements Store {
     abstract shortCode: string;
 
     abstract getName(): string;
+    abstract getShortName(): string;
 
     getSleepTime(): number {
         return Math.random() * (this.MAX_SLEEP_TIME - this.MIN_SLEEP_TIME) + this.MIN_SLEEP_TIME;
