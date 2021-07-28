@@ -61,7 +61,6 @@ export class CategoryChecker {
                 }
             }
 
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             if (totalPages && !Number.isNaN(totalPages) && totalPages > 1) {
                 for (let additionalQueryCalls = 2; additionalQueryCalls <= totalPages; additionalQueryCalls += 1) {
                     await sleep(this.store.getSleepTime());
@@ -104,10 +103,13 @@ export class CategoryChecker {
         body: CategoryResponse | null;
         retryAfterHeader?: string | null;
     }> {
+        if (!this.browserManager.page) {
+            this.logger.error("Unable to perform category query: page is undefined!");
+            return Promise.resolve({ status: 0, body: null });
+        }
         try {
             return Promise.race([
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                this.browserManager.page!.evaluate(
+                this.browserManager.page.evaluate(
                     async (
                         store: Store,
                         page: number,
@@ -173,7 +175,7 @@ export class CategoryChecker {
                 }),
             ]);
         } catch (error) {
-            this.logger.error("Unable to perform wishlist query: %O", error);
+            this.logger.error("Unable to perform category query: %O", error);
             return Promise.resolve({ status: 0, body: null });
         }
     }
@@ -183,10 +185,13 @@ export class CategoryChecker {
         body: SelectedProductResponse | null;
         retryAfterHeader?: string | null;
     }> {
+        if (!this.browserManager.page) {
+            this.logger.error("Unable to perform category query: page is undefined!");
+            return Promise.resolve({ status: 0, body: null });
+        }
         try {
             return Promise.race([
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                this.browserManager.page!.evaluate(
+                this.browserManager.page.evaluate(
                     async (store: Store, productId: string, flowId: string, graphQLClientVersion: string, getProductSHA256: string) =>
                         await fetch(`${store.baseUrl}/api/v1/graphql?anti-cache=${new Date().getTime()}`, {
                             credentials: "include",
@@ -242,7 +247,7 @@ export class CategoryChecker {
                 }),
             ]);
         } catch (error) {
-            this.logger.error("Unable to perform wishlist query: %O", error);
+            this.logger.error("Unable to perform category query: %O", error);
             return Promise.resolve({ status: 0, body: null });
         }
     }

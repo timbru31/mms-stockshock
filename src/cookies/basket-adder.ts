@@ -48,11 +48,15 @@ export class BasketAdder {
     }
 
     async createBasketCookies(cookieAmount = 10, newSession = true): Promise<void> {
+        if (!this.browserManager.page) {
+            this.logger.error("Unable to to creat cookies: page is undefined!");
+            return;
+        }
+
         if (this.basketProducts.size) {
             if (!newSession) {
                 cookieAmount = 1;
             }
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             for (const [id, product] of this.basketProducts.entries()) {
                 const cookies: string[] = [];
                 for (let i = 0; i < cookieAmount; i++) {
@@ -72,8 +76,7 @@ export class BasketAdder {
                     let res: { status: number; success: boolean; body: AddProductResponse | null; retryAfterHeader?: string | null };
                     try {
                         res = await Promise.race([
-                            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                            this.browserManager.page!.evaluate(
+                            this.browserManager.page.evaluate(
                                 async (store: Store, productId: string, flowId: string, graphQLClientVersion, addProductSHA256: string) =>
                                     await fetch(`${store.baseUrl}/api/v1/graphql?anti-cache=${new Date().getTime()}`, {
                                         credentials: "include",

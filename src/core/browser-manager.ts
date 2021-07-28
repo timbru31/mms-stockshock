@@ -199,21 +199,24 @@ export class BrowserManager {
     }
 
     private async _createIncognitoContext() {
+        if (!this.browser) {
+            this.logger.error("Unable to create incognit context, browser is undefined!");
+            return false;
+        }
+
         if (this.context) {
             await this.context.close();
             this.context = undefined;
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        this.context = await this.browser!.createIncognitoBrowserContext();
+        this.context = await this.browser.createIncognitoBrowserContext();
         puppeteer.use(StealthPlugin());
 
         if (this.page) {
             await this.page.close();
             this.page = undefined;
         }
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        this.page = await this.browser!.newPage();
+        this.page = await this.browser.newPage();
         await this.page.setUserAgent(new UserAgent().toString());
         await this.patchHairlineDetection();
 

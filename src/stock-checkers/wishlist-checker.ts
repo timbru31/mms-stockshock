@@ -84,9 +84,12 @@ export class WishlistChecker {
         body: WishlistReponse | null;
         retryAfterHeader?: string | null;
     }> {
+        if (!this.browserManager.page) {
+            this.logger.error("Unable to perform wishlist query: page is undefined!");
+            return Promise.resolve({ status: 0, body: null });
+        }
         try {
             return Promise.race([
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 this.browserManager.page!.evaluate(
                     async (store: Store, offset: number, flowId: string, graphQLClientVersion: string, wishlistSHA256: string) =>
                         await fetch(`${store.baseUrl}/api/v1/graphql?anti-cache=${new Date().getTime()}`, {

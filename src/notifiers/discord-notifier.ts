@@ -51,129 +51,11 @@ export class DiscordNotifier implements Notifier {
         this.wss = this.setupWebSocketServer(storeConfig);
     }
 
-    setupWebSocketServer(storeConfig: StoreConfiguration): WebSocket.Server | null {
-        if (!storeConfig.use_websocket) {
-            return null;
-        }
-
-        let server: http.Server | https.Server;
-        if (storeConfig.websocket_https) {
-            server = https.createServer({
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                cert: readFileSync(storeConfig.websocket_cert_path!),
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                key: readFileSync(storeConfig.websocket_key_path!),
-            });
-        } else {
-            server = http.createServer();
-        }
-        const wss = new WebSocket.Server({ noServer: true });
-
-        server.on("upgrade", (request, socket, head) => {
-            if (!storeConfig.websocket_passwords?.includes(request.headers["sec-websocket-protocol"])) {
-                socket.write("HTTP/1.1 401 Unauthorized\r\n\r\n");
-                socket.destroy();
-                this.logger.info(`😵‍💫 WebSocket connection from client from ${socket?.remoteAddress} was denied!`);
-                return;
-            }
-            this.logger.info(`👌 WebSocket client from ${socket?.remoteAddress} connected successfully`);
-            wss.handleUpgrade(request, socket, head, (ws) => wss.emit("connection", ws, request));
-        });
-
-        server.listen(storeConfig.websocket_port ?? 8080);
-
-        this.heartBeatPing = setInterval(async () => {
-            for (const client of wss?.clients) {
-                if (client.readyState === WebSocket.OPEN) {
-                    client.ping();
-                    this.logger.info("💖 Sending heartbeat ping to client");
-                }
-            }
-        }, 30000);
-        return wss;
-    }
-
     closeWebSocketServer(): void {
         if (this.heartBeatPing) {
             clearInterval(this.heartBeatPing);
         }
         this.wss?.close();
-    }
-
-    private async setupDiscordBot(storeConfig: StoreConfiguration) {
-        this.discordBot = new Client();
-        await this.discordBot.login(storeConfig.discord_bot_token);
-        this.discordBot.once("ready", async () => {
-            this.logger.info(`👌 Discord bot integration ready`);
-            this.discordBotReady = true;
-            this.discordBot?.user?.setStatus("online");
-            this.discordBot?.user?.setActivity({ name: "eating your cookies. 🍪", type: "PLAYING" });
-
-            if (storeConfig?.stock_discord_channel || storeConfig?.discord_channel) {
-                const tempChannel = this.discordBot?.channels.cache.get(
-                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                    (storeConfig?.stock_discord_channel || storeConfig?.discord_channel)!
-                );
-                if (((channel): channel is TextChannel => channel?.type === "text")(tempChannel)) {
-                    this.stockChannel = tempChannel;
-                }
-            }
-            if (storeConfig?.stock_discord_regex_channel) {
-                storeConfig?.stock_discord_regex_channel.map((pair) => {
-                    const regexpStr = pair[0];
-                    const channelId = pair[1];
-                    const tempChannel = this.discordBot?.channels.cache.get(channelId);
-                    if (((channel): channel is TextChannel => channel?.type === "text")(tempChannel)) {
-                        const regexp = new RegExp(regexpStr, "i");
-                        this.stockRegexChannel.set(regexp, tempChannel);
-                    }
-                });
-            }
-
-            if (storeConfig?.stock_discord_role_ping || storeConfig?.discord_role_ping) {
-                this.stockRolePing = storeConfig?.stock_discord_role_ping || storeConfig?.discord_role_ping;
-            }
-            if (storeConfig?.stock_discord_regex_role_ping) {
-                storeConfig?.stock_discord_regex_role_ping.map((pair) => {
-                    const regexpStr = pair[0];
-                    const roleId = pair[1].split(",");
-                    const regexp = new RegExp(regexpStr, "i");
-                    this.stockRegexRolePing.set(regexp, roleId);
-                });
-            }
-
-            if (storeConfig?.cookie_discord_channel || storeConfig?.discord_channel) {
-                const tempChannel = this.discordBot?.channels.cache.get(
-                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                    (storeConfig?.cookie_discord_channel || storeConfig?.discord_channel)!
-                );
-                if (((channel): channel is TextChannel => channel?.type === "text")(tempChannel)) {
-                    this.cookieChannel = tempChannel;
-                }
-            }
-            if (storeConfig?.cookie_discord_role_ping || storeConfig?.discord_role_ping) {
-                this.cookieRolePing = storeConfig?.cookie_discord_role_ping || storeConfig?.discord_role_ping;
-            }
-
-            if (storeConfig?.admin_discord_channel || storeConfig?.discord_channel) {
-                const tempChannel = this.discordBot?.channels.cache.get(
-                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                    (storeConfig?.admin_discord_channel || storeConfig?.discord_channel)!
-                );
-                if (((channel): channel is TextChannel => channel?.type === "text")(tempChannel)) {
-                    this.adminChannel = tempChannel;
-                }
-            }
-            if (storeConfig?.admin_discord_role_ping || storeConfig?.discord_role_ping) {
-                this.adminRolePing = storeConfig?.admin_discord_role_ping || storeConfig?.discord_role_ping;
-            }
-
-            this.noCookieEmoji = this.discordBot?.emojis.cache.find((emoji) => emoji.name == "nocookie");
-        });
-
-        this.discordBot.on("rateLimit", (error) => this.logger.error("Discord API error, %O", error));
-        this.discordBot.on("error", (error) => this.logger.error("Discord API error, %O", error));
-        this.discordBot.on("shardError", (error) => this.logger.error("Discord API error, %O", error));
     }
 
     async notifyAdmin(message: string): Promise<void> {
@@ -217,6 +99,7 @@ export class DiscordNotifier implements Notifier {
             }
         }
     }
+
     async notifyStock(item: Item): Promise<string | undefined> {
         let plainMessage: string;
         const fullAlert = this.productHelper.isProductBuyable(item);
@@ -304,6 +187,124 @@ export class DiscordNotifier implements Notifier {
             }
         }
         return plainMessage;
+    }
+
+    private async setupDiscordBot(storeConfig: StoreConfiguration) {
+        this.discordBot = new Client();
+        await this.discordBot.login(storeConfig.discord_bot_token);
+        this.discordBot.once("ready", async () => {
+            this.logger.info(`👌 Discord bot integration ready`);
+            this.discordBotReady = true;
+            this.discordBot?.user?.setStatus("online");
+            this.discordBot?.user?.setActivity({ name: "eating your cookies. 🍪", type: "PLAYING" });
+
+            if (storeConfig?.stock_discord_channel || storeConfig?.discord_channel) {
+                const tempChannel = this.discordBot?.channels.cache.get(
+                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                    (storeConfig?.stock_discord_channel || storeConfig?.discord_channel)!
+                );
+                if (((channel): channel is TextChannel => channel?.type === "text")(tempChannel)) {
+                    this.stockChannel = tempChannel;
+                }
+            }
+            if (storeConfig?.stock_discord_regex_channel) {
+                storeConfig?.stock_discord_regex_channel.map((pair) => {
+                    const regexpStr = pair[0];
+                    const channelId = pair[1];
+                    const tempChannel = this.discordBot?.channels.cache.get(channelId);
+                    if (((channel): channel is TextChannel => channel?.type === "text")(tempChannel)) {
+                        const regexp = new RegExp(regexpStr, "i");
+                        this.stockRegexChannel.set(regexp, tempChannel);
+                    }
+                });
+            }
+
+            if (storeConfig?.stock_discord_role_ping || storeConfig?.discord_role_ping) {
+                this.stockRolePing = storeConfig?.stock_discord_role_ping || storeConfig?.discord_role_ping;
+            }
+            if (storeConfig?.stock_discord_regex_role_ping) {
+                storeConfig?.stock_discord_regex_role_ping.map((pair) => {
+                    const regexpStr = pair[0];
+                    const roleId = pair[1].split(",");
+                    const regexp = new RegExp(regexpStr, "i");
+                    this.stockRegexRolePing.set(regexp, roleId);
+                });
+            }
+
+            if (storeConfig?.cookie_discord_channel || storeConfig?.discord_channel) {
+                const tempChannel = this.discordBot?.channels.cache.get(
+                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                    (storeConfig?.cookie_discord_channel || storeConfig?.discord_channel)!
+                );
+                if (((channel): channel is TextChannel => channel?.type === "text")(tempChannel)) {
+                    this.cookieChannel = tempChannel;
+                }
+            }
+            if (storeConfig?.cookie_discord_role_ping || storeConfig?.discord_role_ping) {
+                this.cookieRolePing = storeConfig?.cookie_discord_role_ping || storeConfig?.discord_role_ping;
+            }
+
+            if (storeConfig?.admin_discord_channel || storeConfig?.discord_channel) {
+                const tempChannel = this.discordBot?.channels.cache.get(
+                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                    (storeConfig?.admin_discord_channel || storeConfig?.discord_channel)!
+                );
+                if (((channel): channel is TextChannel => channel?.type === "text")(tempChannel)) {
+                    this.adminChannel = tempChannel;
+                }
+            }
+            if (storeConfig?.admin_discord_role_ping || storeConfig?.discord_role_ping) {
+                this.adminRolePing = storeConfig?.admin_discord_role_ping || storeConfig?.discord_role_ping;
+            }
+
+            this.noCookieEmoji = this.discordBot?.emojis.cache.find((emoji) => emoji.name == "nocookie");
+        });
+
+        this.discordBot.on("rateLimit", (error) => this.logger.error("Discord API error, %O", error));
+        this.discordBot.on("error", (error) => this.logger.error("Discord API error, %O", error));
+        this.discordBot.on("shardError", (error) => this.logger.error("Discord API error, %O", error));
+    }
+
+    private setupWebSocketServer(storeConfig: StoreConfiguration): WebSocket.Server | null {
+        if (!storeConfig.use_websocket) {
+            return null;
+        }
+
+        let server: http.Server | https.Server;
+        if (storeConfig.websocket_https) {
+            server = https.createServer({
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                cert: readFileSync(storeConfig.websocket_cert_path!),
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                key: readFileSync(storeConfig.websocket_key_path!),
+            });
+        } else {
+            server = http.createServer();
+        }
+        const wss = new WebSocket.Server({ noServer: true });
+
+        server.on("upgrade", (request, socket, head) => {
+            if (!storeConfig.websocket_passwords?.includes(request.headers["sec-websocket-protocol"])) {
+                socket.write("HTTP/1.1 401 Unauthorized\r\n\r\n");
+                socket.destroy();
+                this.logger.info(`😵‍💫 WebSocket connection from client from ${socket?.remoteAddress} was denied!`);
+                return;
+            }
+            this.logger.info(`👌 WebSocket client from ${socket?.remoteAddress} connected successfully`);
+            wss.handleUpgrade(request, socket, head, (ws) => wss.emit("connection", ws, request));
+        });
+
+        server.listen(storeConfig.websocket_port ?? 8080);
+
+        this.heartBeatPing = setInterval(async () => {
+            for (const client of wss?.clients) {
+                if (client.readyState === WebSocket.OPEN) {
+                    client.ping();
+                    this.logger.info("💖 Sending heartbeat ping to client");
+                }
+            }
+        }, 30000);
+        return wss;
     }
 
     private async notifyWebSocketClients(item: Item, direct: boolean) {
