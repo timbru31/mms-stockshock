@@ -49,7 +49,7 @@ export class BasketAdder {
 
     async createBasketCookies(cookieAmount = 10, newSession = true): Promise<void> {
         if (!this.browserManager.page) {
-            this.logger.error("Unable to to creat cookies: page is undefined!");
+            this.logger.error("Unable to to create cookies: page is undefined!");
             return;
         }
 

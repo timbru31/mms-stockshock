@@ -200,7 +200,7 @@ export class BrowserManager {
 
     private async _createIncognitoContext() {
         if (!this.browser) {
-            this.logger.error("Unable to create incognit context, browser is undefined!");
+            this.logger.error("Unable to create incognito context, browser is undefined!");
             return false;
         }
 
