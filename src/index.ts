@@ -34,10 +34,10 @@ import { DiscordNotifier } from "./notifiers/discord-notifier";
     }
 
     const notifiers: Notifier[] = [];
-    const discordNotifier = new DiscordNotifier(store, storeConfig, logger, cookieStore);
-    notifiers.push(discordNotifier);
-
     if (storeConfig?.discord_bot_token) {
+        const discordNotifier = new DiscordNotifier(store, storeConfig, logger, cookieStore);
+        notifiers.push(discordNotifier);
+
         while (!discordNotifier.discordBotReady) {
             logger.info("💤 Delaying start until Discord bot is ready");
             await sleep(500);
@@ -59,7 +59,9 @@ import { DiscordNotifier } from "./notifiers/discord-notifier";
         process.on(evt, () => {
             console.log("👋 Shutting down...");
             shouldRun = false;
-            discordNotifier.closeWebSocketServer();
+            for (const notifier of notifiers) {
+                notifier.shutdown();
+            }
             cooldownManager.saveCooldowns();
             browserManager.shutdown();
         });

@@ -36,12 +36,8 @@ export class DiscordNotifier implements Notifier {
 
     constructor(store: Store, storeConfig: StoreConfiguration, logger: Logger, cookieStore: DynamoDBCookieStore | undefined) {
         this.store = store;
-        if (storeConfig?.discord_bot_token) {
-            this.setupDiscordBot(storeConfig);
-            setTimeout(() => (this.discordBotReady = true), 10000);
-        } else {
-            this.discordBotReady = true;
-        }
+        this.setupDiscordBot(storeConfig);
+        setTimeout(() => (this.discordBotReady = true), 10000);
 
         this.announceCookies = storeConfig.announce_cookies ?? true;
         this.shoppingCartAlerts = storeConfig.shopping_cart_alerts ?? true;
@@ -49,13 +45,6 @@ export class DiscordNotifier implements Notifier {
         this.logger = logger;
         this.cookieStore = cookieStore;
         this.wss = this.setupWebSocketServer(storeConfig);
-    }
-
-    closeWebSocketServer(): void {
-        if (this.heartBeatPing) {
-            clearInterval(this.heartBeatPing);
-        }
-        this.wss?.close();
     }
 
     async notifyAdmin(message: string): Promise<void> {
@@ -187,6 +176,10 @@ export class DiscordNotifier implements Notifier {
             }
         }
         return plainMessage;
+    }
+
+    shutdown(): void {
+        this.closeWebSocketServer();
     }
 
     private async setupDiscordBot(storeConfig: StoreConfiguration) {
@@ -375,5 +368,12 @@ export class DiscordNotifier implements Notifier {
         } else {
             return `${message} <@&${webhookRolePings}>`;
         }
+    }
+
+    private closeWebSocketServer() {
+        if (this.heartBeatPing) {
+            clearInterval(this.heartBeatPing);
+        }
+        this.wss?.close();
     }
 }

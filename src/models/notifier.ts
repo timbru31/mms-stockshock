@@ -6,4 +6,5 @@ export interface Notifier {
     notifyRateLimit(seconds: number): Promise<void>;
     notifyCookies(product: Product, cookies: string[]): Promise<void>;
     notifyStock(item: Item): Promise<string | undefined>;
+    shutdown(): void;
 }

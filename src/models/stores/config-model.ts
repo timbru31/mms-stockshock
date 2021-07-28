@@ -18,6 +18,7 @@ export interface StoreConfiguration {
     cookies?: number;
     announce_cookies: boolean;
     shopping_cart_alerts: boolean;
+    id_replacements?: string[][];
 
     // Discord channels for notifications
     discord_bot_token?: string;
@@ -32,6 +33,10 @@ export interface StoreConfiguration {
     stock_discord_regex_role_ping?: string[][];
     cookie_discord_role_ping?: string;
     admin_discord_role_ping?: string;
+
+    // Twitter notification settings
+    twitter_bearer_token?: string;
+    twitter_tags?: string[];
 
     // Proxies
     proxy_url?: string;

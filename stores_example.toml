@@ -6,11 +6,13 @@ start_url = ""
 categories = []
 category_regex = ""
 ignore_sleep = false
+id_replacements = []
 
 # Beware that >10 can cause issues with Discord's 2000 characters limit!
 cookies = 10
 announce_cookies = true
 
+# Discord integration (optional)
 # You can set the same channel or role for all the types or a dedicated one for each type
 discord_bot_token = ""
 discord_channel = ""
@@ -23,6 +25,10 @@ stock_discord_role_ping = ""
 stock_discord_regex_role_ping = []
 cookie_discord_role_ping = ""
 admin_discord_role_ping = ""
+
+# Twitter integration (optional)
+twitter_bearer_token = ""
+twitter_tags = []
 
 # Important!
 # If you use multiple proxies, use the basic auth format: http://user:pass@foo.bar:8080
@@ -60,11 +66,13 @@ start_url = ""
 categories = []
 category_regex = ""
 ignore_sleep = false
+id_replacements = []
 
 # Beware that >10 can cause issues with Discord's 2000 characters limit!
 cookies = 10
 announce_cookies = true
 
+# Discord integration (optional)
 # You can set the same channel or role for all the types or a dedicated one for each type
 discord_bot_token = ""
 discord_channel = ""
@@ -77,6 +85,10 @@ stock_discord_role_ping = ""
 stock_discord_regex_role_ping = []
 cookie_discord_role_ping = ""
 admin_discord_role_ping = ""
+
+# Twitter integration (optional)
+twitter_bearer_token = ""
+twitter_tags = []
 
 # Important!
 # If you use multiple proxies, use the basic auth format: http://user:pass@foo.bar:8080
@@ -114,11 +126,13 @@ start_url = ""
 categories = []
 category_regex = ""
 ignore_sleep = false
+id_replacements = []
 
 # Beware that >10 can cause issues with Discord's 2000 characters limit!
 cookies = 10
 announce_cookies = true
 
+# Discord integration (optional)
 # You can set the same channel or role for all the types or a dedicated one for each type
 discord_bot_token = ""
 discord_channel = ""
@@ -131,6 +145,10 @@ stock_discord_role_ping = ""
 stock_discord_regex_role_ping = []
 cookie_discord_role_ping = ""
 admin_discord_role_ping = ""
+
+# Twitter integration (optional)
+twitter_bearer_token = ""
+twitter_tags = []
 
 # Important!
 # If you use multiple proxies, use the basic auth format: http://user:pass@foo.bar:8080
