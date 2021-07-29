@@ -36,7 +36,7 @@ export class WebSocketNotifier implements Notifier {
         const fullAlert = this.productHelper.isProductBuyable(item);
         if (fullAlert) {
             await this.notifyWebSocketClients(item, true);
-        } else if (this.productHelper.canProductBeAddedToBasket(item)) {
+        } else if (!this.productHelper.canProductBeAddedToBasket(item)) {
             await this.notifyWebSocketClients(item, false);
         }
         return undefined;
