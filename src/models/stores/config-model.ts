@@ -16,6 +16,8 @@ export interface StoreConfiguration {
 
     // Misc config settings
     ignore_sleep?: boolean;
+    min_sleep_time?: number;
+    max_sleep_time?: number;
     cookies?: number;
     announce_cookies: boolean;
     shopping_cart_alerts: boolean;

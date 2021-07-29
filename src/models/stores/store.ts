@@ -7,9 +7,16 @@ export interface Store {
     loginSleepTime?: number;
 
     getSleepTime(): number;
+    setSleepTimes(minSleepTime: undefined | number, maxSleepTime: undefined | number): void;
 
     getName(): string;
     getShortName(): string;
 
-    [key: string]: string | number | undefined | (() => number) | (() => string);
+    [key: string]:
+        | string
+        | number
+        | undefined
+        | (() => number)
+        | (() => string)
+        | ((minSleepTime: undefined | number, maxSleepTime: undefined | number) => void);
 }

@@ -55,24 +55,28 @@ export async function getStoreAndStoreConfig(config: ConfigModel): Promise<{
         case "saturn":
             store = new Saturn();
             storeConfig = config.saturn;
+            store.setSleepTimes(storeConfig.min_sleep_time, storeConfig.max_sleep_time);
             break;
         case "mmde":
         case "mediamarktgermany":
         case "mediamarkt germany":
             store = new MediaMarktGermany();
             storeConfig = config.mmde;
+            store.setSleepTimes(storeConfig.min_sleep_time, storeConfig.max_sleep_time);
             break;
         case "mmat":
         case "mediamarktaustria":
         case "mediamarkt austria":
             store = new MediaMarktAustria();
             storeConfig = config.mmat;
+            store.setSleepTimes(storeConfig.min_sleep_time, storeConfig.max_sleep_time);
             break;
         case "mmes":
         case "mediamarktspain":
         case "mediamarkt spain":
             store = new MediaMarktSpain();
             storeConfig = config.mmes;
+            store.setSleepTimes(storeConfig.min_sleep_time, storeConfig.max_sleep_time);
             break;
         default:
             throw new Error("Invalid store chosen!");
