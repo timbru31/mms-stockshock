@@ -1,9 +1,5 @@
 import { Client, GuildEmoji, MessageEmbed, TextChannel } from "discord.js";
-import { readFileSync } from "fs";
-import http from "http";
-import https from "https";
 import { Logger } from "winston";
-import WebSocket from "ws";
 import { version } from "../../package.json";
 import { DynamoDBCookieStore } from "../cookies/dynamodb-cookie-store";
 import { Item } from "../models/api/item";
@@ -12,6 +8,7 @@ import { Notifier } from "../models/notifier";
 import { StoreConfiguration } from "../models/stores/config-model";
 import { Store } from "../models/stores/store";
 import { ProductHelper } from "../utils/product-helper";
+import { noop } from "../utils/utils";
 
 export class DiscordNotifier implements Notifier {
     discordBotReady = false;
@@ -25,13 +22,11 @@ export class DiscordNotifier implements Notifier {
     private adminChannel: TextChannel | undefined;
     private adminRolePing: string | undefined;
     private noCookieEmoji: GuildEmoji | undefined | null;
-    private heartBeatPing: NodeJS.Timeout | undefined;
     private readonly announceCookies: boolean = true;
     private readonly shoppingCartAlerts: boolean = true;
     private readonly store: Store;
     private readonly logger: Logger;
     private readonly productHelper = new ProductHelper();
-    private readonly wss: WebSocket.Server | null;
     private readonly cookieStore: DynamoDBCookieStore | undefined;
 
     constructor(store: Store, storeConfig: StoreConfiguration, logger: Logger, cookieStore: DynamoDBCookieStore | undefined) {
@@ -44,7 +39,6 @@ export class DiscordNotifier implements Notifier {
 
         this.logger = logger;
         this.cookieStore = cookieStore;
-        this.wss = this.setupWebSocketServer(storeConfig);
     }
 
     async notifyAdmin(message: string): Promise<void> {
@@ -130,7 +124,6 @@ export class DiscordNotifier implements Notifier {
                 }! Go check it out: ${this.productHelper.getProductURL(item, this.store)}?magician=${item?.product?.id}`,
                 this.getRolePingsForTitle(item.product.title)
             );
-            await this.notifyWebSocketClients(item, true);
         } else if (this.productHelper.canProductBeAddedToBasket(item)) {
             if (!this.shoppingCartAlerts) {
                 return;
@@ -156,7 +149,6 @@ export class DiscordNotifier implements Notifier {
                 }! Go check it out: ${this.productHelper.getProductURL(item, this.store)}`,
                 this.getRolePingsForTitle(item.product.title)
             );
-            await this.notifyWebSocketClients(item, false);
         }
 
         const stockChannelForItem = this.getChannelForTitle(item.product.title);
@@ -179,7 +171,7 @@ export class DiscordNotifier implements Notifier {
     }
 
     shutdown(): void {
-        this.closeWebSocketServer();
+        return noop();
     }
 
     private async setupDiscordBot(storeConfig: StoreConfiguration) {
@@ -253,75 +245,9 @@ export class DiscordNotifier implements Notifier {
             this.noCookieEmoji = this.discordBot?.emojis.cache.find((emoji) => emoji.name == "nocookie");
         });
 
-        this.discordBot.on("rateLimit", (error) => this.logger.error("Discord API error, %O", error));
-        this.discordBot.on("error", (error) => this.logger.error("Discord API error, %O", error));
-        this.discordBot.on("shardError", (error) => this.logger.error("Discord API error, %O", error));
-    }
-
-    private setupWebSocketServer(storeConfig: StoreConfiguration): WebSocket.Server | null {
-        if (!storeConfig.use_websocket) {
-            return null;
-        }
-
-        let server: http.Server | https.Server;
-        if (storeConfig.websocket_https) {
-            server = https.createServer({
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                cert: readFileSync(storeConfig.websocket_cert_path!),
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                key: readFileSync(storeConfig.websocket_key_path!),
-            });
-        } else {
-            server = http.createServer();
-        }
-        const wss = new WebSocket.Server({ noServer: true });
-
-        server.on("upgrade", (request, socket, head) => {
-            if (!storeConfig.websocket_passwords?.includes(request.headers["sec-websocket-protocol"])) {
-                socket.write("HTTP/1.1 401 Unauthorized\r\n\r\n");
-                socket.destroy();
-                this.logger.info(`😵‍💫 WebSocket connection from client from ${socket?.remoteAddress} was denied!`);
-                return;
-            }
-            this.logger.info(`👌 WebSocket client from ${socket?.remoteAddress} connected successfully`);
-            wss.handleUpgrade(request, socket, head, (ws) => wss.emit("connection", ws, request));
-        });
-
-        server.listen(storeConfig.websocket_port ?? 8080);
-
-        this.heartBeatPing = setInterval(async () => {
-            for (const client of wss?.clients) {
-                if (client.readyState === WebSocket.OPEN) {
-                    client.ping();
-                    this.logger.info("💖 Sending heartbeat ping to client");
-                }
-            }
-        }, 30000);
-        return wss;
-    }
-
-    private async notifyWebSocketClients(item: Item, direct: boolean) {
-        if (this.wss) {
-            for (const client of this.wss.clients) {
-                if (client.readyState === WebSocket.OPEN) {
-                    client.send(
-                        JSON.stringify({
-                            direct,
-                            title: item.product.title,
-                            id: item.product.id,
-                        }),
-                        async (e) => {
-                            if (e) {
-                                this.logger.info("😵‍💫 Error sending stock ping, %O", e);
-                                await this.notifyAdmin(`😵‍💫 [${this.store.getName()}] Error sending stock ping to client`);
-                            }
-                        }
-                    );
-                }
-                this.logger.info(`🏓 Sending stock ping to client with ready state ${client.readyState}`);
-                await this.notifyAdmin(`🏓 [${this.store.getName()}] Sending stock ping to client with ready state ${client.readyState}`);
-            }
-        }
+        this.discordBot.on("rateLimit", (error) => this.logger.error("Discord API error (rateLimit), %O", error));
+        this.discordBot.on("error", (error) => this.logger.error("Discord API error (error), %O", error));
+        this.discordBot.on("shardError", (error) => this.logger.error("Discord API error (shardError), %O", error));
     }
 
     private getRolePingsForTitle(title: string) {
@@ -368,12 +294,5 @@ export class DiscordNotifier implements Notifier {
         } else {
             return `${message} <@&${webhookRolePings}>`;
         }
-    }
-
-    private closeWebSocketServer() {
-        if (this.heartBeatPing) {
-            clearInterval(this.heartBeatPing);
-        }
-        this.wss?.close();
     }
 }

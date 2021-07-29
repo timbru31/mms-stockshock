@@ -11,8 +11,7 @@ import { Store } from "./models/stores/store";
 import { createLogger, loadConfig, sleep } from "./utils/utils";
 import { WishlistChecker } from "./stock-checkers/wishlist-checker";
 import { Notifier } from "./models/notifier";
-import { DiscordNotifier } from "./notifiers/discord-notifier";
-import { TwitterNotifier } from "./notifiers/twitter-notifier";
+import { DiscordNotifier, TwitterNotifier, WebSocketNotifier } from "./notifiers";
 
 (async function () {
     const logger = createLogger();
@@ -45,6 +44,10 @@ import { TwitterNotifier } from "./notifiers/twitter-notifier";
         }
     }
 
+    if (storeConfig?.use_websocket) {
+        const webSocketNotifier = new WebSocketNotifier(storeConfig, logger);
+        notifiers.push(webSocketNotifier);
+    }
     if (
         storeConfig?.twitter_api_key &&
         storeConfig?.twitter_api_key_secret &&

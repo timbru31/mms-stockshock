@@ -1,8 +1,6 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import TwitterApi, { TwitterApiReadWrite } from "twitter-api-v2";
 import { Logger } from "winston";
 import { Item } from "../models/api/item";
-import { Product } from "../models/api/product";
 import { Notifier } from "../models/notifier";
 import { StoreConfiguration } from "../models/stores/config-model";
 import { Store } from "../models/stores/store";
@@ -46,15 +44,15 @@ export class TwitterNotifier implements Notifier {
         }
     }
 
-    async notifyAdmin(_: string): Promise<void> {
+    async notifyAdmin(): Promise<void> {
         return noop();
     }
 
-    async notifyRateLimit(_: number): Promise<void> {
+    async notifyRateLimit(): Promise<void> {
         return noop();
     }
 
-    async notifyCookies(_: Product, __: string[]): Promise<void> {
+    async notifyCookies(): Promise<void> {
         return noop();
     }
 
