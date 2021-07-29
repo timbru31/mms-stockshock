@@ -1,3 +1,4 @@
+import { format } from "date-fns";
 import TwitterApi, { TwitterApiReadWrite } from "twitter-api-v2";
 import { Logger } from "winston";
 import { Item } from "../models/api/item";
@@ -64,33 +65,43 @@ export class TwitterNotifier implements Notifier {
         let message: string;
         const fullAlert = this.productHelper.isProductBuyable(item);
         if (fullAlert) {
-            message = this.decorateMessageWithTags(
-                `\uD83D\uDFE2 Produkt bei ${this.store.getShortName()} verfügbar: ${item?.product?.title} für ${
-                    item?.price?.price ?? "0"
-                } ${item?.price?.currency ?? "𑿠"}! Jetzt kaufen: ${this.productHelper.getProductURL(item, this.store, this.replacements)}`
+            message = this.addTimestamp(
+                this.decorateMessageWithTags(
+                    `\uD83D\uDFE2 Produkt bei ${this.store.getShortName()} verfügbar: ${item?.product?.title} für ${
+                        item?.price?.price ?? "0"
+                    } ${item?.price?.currency ?? "𑿠"}! Jetzt kaufen: ${this.productHelper.getProductURL(
+                        item,
+                        this.store,
+                        this.replacements
+                    )}`
+                )
             );
         } else if (this.productHelper.canProductBeAddedToBasket(item)) {
             if (!this.shoppingCartAlerts) {
                 return;
             }
-            message = this.decorateMessageWithTags(
-                `\uD83D\uDED2 Produkt bei ${this.store.getShortName()} kann zum Warenkorb hinzugefügt werden: ${item?.product?.title} für ${
-                    item?.price?.price ?? "0"
-                } ${item?.price?.currency ?? "𑿠"}! Jetzt anschauen: ${this.productHelper.getProductURL(
-                    item,
-                    this.store,
-                    this.replacements
-                )}`
+            message = this.addTimestamp(
+                this.decorateMessageWithTags(
+                    `\uD83D\uDED2 Produkt bei ${this.store.getShortName()} kann zum Warenkorb hinzugefügt werden: ${
+                        item?.product?.title
+                    } für ${item?.price?.price ?? "0"} ${item?.price?.currency ?? "𑿠"}! Jetzt anschauen: ${this.productHelper.getProductURL(
+                        item,
+                        this.store,
+                        this.replacements
+                    )}`
+                )
             );
         } else {
-            message = this.decorateMessageWithTags(
-                `\uD83D\uDFE1 Produkt bei ${this.store.getShortName()} für Warenkorb-Parker: ${item?.product?.title} für ${
-                    item?.price?.price ?? "0"
-                } ${item?.price?.currency ?? "𑿠"}! Jetzt anschauen: ${this.productHelper.getProductURL(
-                    item,
-                    this.store,
-                    this.replacements
-                )}`
+            message = this.addTimestamp(
+                this.decorateMessageWithTags(
+                    `\uD83D\uDFE1 Produkt bei ${this.store.getShortName()} für Warenkorb-Parker: ${item?.product?.title} für ${
+                        item?.price?.price ?? "0"
+                    } ${item?.price?.currency ?? "𑿠"}! Jetzt anschauen: ${this.productHelper.getProductURL(
+                        item,
+                        this.store,
+                        this.replacements
+                    )}`
+                )
             );
         }
 
@@ -124,5 +135,9 @@ export class TwitterNotifier implements Notifier {
             return message + "\n" + this.tags.join(" ");
         }
         return message;
+    }
+
+    private addTimestamp(message: string) {
+        return message + format(new Date(), " [dd.MM.yyyy HH:mm:ss]");
     }
 }
