@@ -27,6 +27,7 @@ import { DiscordNotifier, TwitterNotifier, WebSocketNotifier } from "./notifiers
     }
 
     const cooldownManager = new CooldownManager();
+    cooldownManager.cleanupCooldowns();
 
     let cookieStore: DynamoDBCookieStore | undefined;
     if (storeConfig.dynamo_db_region && storeConfig.dynamo_db_table_name) {
