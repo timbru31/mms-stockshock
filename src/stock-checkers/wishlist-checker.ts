@@ -179,13 +179,13 @@ export class WishlistChecker {
                     }
 
                     if (!this.cooldownManager.hasCooldown(itemId)) {
+                        const cookiesAmount = this.cookieStore ? await this.cookieStore.getCookiesAmount(item.product) : 0;
                         for (const notifier of this.notifiers) {
-                            const message = await notifier.notifyStock(item);
+                            const message = await notifier.notifyStock(item, cookiesAmount);
                             if (message) {
                                 this.logger.info(message);
                             }
                         }
-                        const cookiesAmount = this.cookieStore ? await this.cookieStore.getCookiesAmount(item.product) : 0;
                         this.cooldownManager.addToCooldownMap(isProductBuyable, item, Boolean(cookiesAmount));
                     }
 
