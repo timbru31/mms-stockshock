@@ -95,6 +95,7 @@ export class WebSocketNotifier implements Notifier {
                             direct,
                             title: item.product.title,
                             id: item.product.id,
+                            price: item?.price?.price || 0,
                         }),
                         async (e) => {
                             if (e) {
