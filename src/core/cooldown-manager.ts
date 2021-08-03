@@ -28,12 +28,23 @@ export class CooldownManager {
         }
     }
 
-    addToCooldownMap(isProductBuyable: boolean, item: Item): void {
+    addToCooldownMap(isProductBuyable: boolean, item: Item, hasCookies?: boolean): void {
         const canBeAddedToBasket = this.productHelper.canProductBeAddedToBasket(item);
-        const endTime = add(new Date(), {
-            minutes: isProductBuyable ? 5 : canBeAddedToBasket ? 0 : 30,
-            hours: isProductBuyable ? 0 : canBeAddedToBasket ? 4 : 0,
-        });
+        let cooldownTime: Duration;
+        if (isProductBuyable) {
+            cooldownTime = {
+                minutes: 5,
+            };
+        } else if (canBeAddedToBasket) {
+            cooldownTime = {
+                hours: 12,
+            };
+        } else {
+            cooldownTime = {
+                hours: hasCookies ? 2 : 24,
+            };
+        }
+        const endTime = add(new Date(), cooldownTime);
         this.cooldowns.set(item?.product?.id, {
             id: item?.product?.id,
             isProductBuyable,

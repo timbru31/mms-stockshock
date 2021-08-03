@@ -1,7 +1,6 @@
 import { Client, GuildEmoji, MessageEmbed, TextChannel } from "discord.js";
 import { Logger } from "winston";
 import { version } from "../../package.json";
-import { DynamoDBCookieStore } from "../cookies/dynamodb-cookie-store";
 import { Item } from "../models/api/item";
 import { Product } from "../models/api/product";
 import { Notifier } from "../models/notifier";
@@ -27,9 +26,8 @@ export class DiscordNotifier implements Notifier {
     private readonly store: Store;
     private readonly logger: Logger;
     private readonly productHelper = new ProductHelper();
-    private readonly cookieStore: DynamoDBCookieStore | undefined;
 
-    constructor(store: Store, storeConfig: StoreConfiguration, logger: Logger, cookieStore: DynamoDBCookieStore | undefined) {
+    constructor(store: Store, storeConfig: StoreConfiguration, logger: Logger) {
         this.store = store;
         this.setupDiscordBot(storeConfig);
         setTimeout(() => (this.discordBotReady = true), 10000);
@@ -38,7 +36,6 @@ export class DiscordNotifier implements Notifier {
         this.shoppingCartAlerts = storeConfig.shopping_cart_alerts ?? true;
 
         this.logger = logger;
-        this.cookieStore = cookieStore;
     }
 
     async notifyAdmin(message: string): Promise<void> {
@@ -83,7 +80,7 @@ export class DiscordNotifier implements Notifier {
         }
     }
 
-    async notifyStock(item: Item): Promise<string | undefined> {
+    async notifyStock(item: Item, cookiesAmount?: number): Promise<string | undefined> {
         let plainMessage: string;
         const fullAlert = this.productHelper.isProductBuyable(item);
         const message = new MessageEmbed().setTimestamp();
@@ -93,7 +90,6 @@ export class DiscordNotifier implements Notifier {
         message.setURL(`${this.productHelper.getProductURL(item, this.store)}`);
         message.setFooter(`Stockshock v${version} • If you have paid for this, you have been scammed`);
 
-        const cookiesAmount = this.cookieStore ? await this.cookieStore.getCookiesAmount(item.product) : 0;
         message.addFields([
             { name: "Magician", value: `${this.productHelper.getProductURL(item, this.store)}?magician=${item?.product?.id}` },
             { name: "ProductID", value: item.product.id },

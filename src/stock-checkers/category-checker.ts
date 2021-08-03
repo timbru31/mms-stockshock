@@ -13,6 +13,7 @@ import { Product } from "../models/api/product";
 import { SelectedProductResponse } from "../models/api/selected-product-response";
 import { StoreConfiguration } from "../models/stores/config-model";
 import { Notifier } from "../models/notifier";
+import { DynamoDBCookieStore } from "../cookies/dynamodb-cookie-store";
 
 export class CategoryChecker {
     private readonly store: Store;
@@ -22,6 +23,7 @@ export class CategoryChecker {
     private readonly browserManager: BrowserManager;
     private readonly cooldownManager: CooldownManager;
     private readonly productHelper = new ProductHelper();
+    private readonly cookieStore: DynamoDBCookieStore | undefined;
 
     constructor(
         store: Store,
@@ -29,7 +31,8 @@ export class CategoryChecker {
         logger: Logger,
         browserManager: BrowserManager,
         cooldownManager: CooldownManager,
-        notifiers: Notifier[]
+        notifiers: Notifier[],
+        cookieStore?: DynamoDBCookieStore
     ) {
         this.store = store;
         this.storeConfiguration = storeConfiguration;
@@ -37,6 +40,7 @@ export class CategoryChecker {
         this.browserManager = browserManager;
         this.cooldownManager = cooldownManager;
         this.notifiers = notifiers;
+        this.cookieStore = cookieStore;
     }
 
     async checkCategory(category: string, categoryRegex?: string): Promise<Map<string, Product>> {
@@ -292,7 +296,8 @@ export class CategoryChecker {
                         this.logger.info(message);
                     }
                 }
-                this.cooldownManager.addToCooldownMap(isProductBuyable, item);
+                const cookiesAmount = this.cookieStore ? await this.cookieStore.getCookiesAmount(item.product) : 0;
+                this.cooldownManager.addToCooldownMap(isProductBuyable, item, Boolean(cookiesAmount));
             }
 
             if (this.productHelper.canProductBeAddedToBasket(item) && !this.cooldownManager.hasBasketCooldown(itemId)) {

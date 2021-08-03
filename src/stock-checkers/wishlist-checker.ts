@@ -12,6 +12,7 @@ import { GRAPHQL_CLIENT_VERSION, sleep } from "../utils/utils";
 import { Product } from "../models/api/product";
 import { StoreConfiguration } from "../models/stores/config-model";
 import { Notifier } from "../models/notifier";
+import { DynamoDBCookieStore } from "../cookies/dynamodb-cookie-store";
 
 export class WishlistChecker {
     // This is set by MM/S and a fixed constant
@@ -24,6 +25,7 @@ export class WishlistChecker {
     private readonly browserManager: BrowserManager;
     private readonly cooldownManager: CooldownManager;
     private readonly productHelper = new ProductHelper();
+    private readonly cookieStore: DynamoDBCookieStore | undefined;
 
     constructor(
         store: Store,
@@ -31,7 +33,8 @@ export class WishlistChecker {
         logger: Logger,
         browserManager: BrowserManager,
         cooldownManager: CooldownManager,
-        notifiers: Notifier[]
+        notifiers: Notifier[],
+        cookieStore?: DynamoDBCookieStore
     ) {
         this.store = store;
         this.storeConfiguration = storeConfiguration;
@@ -39,6 +42,7 @@ export class WishlistChecker {
         this.browserManager = browserManager;
         this.cooldownManager = cooldownManager;
         this.notifiers = notifiers;
+        this.cookieStore = cookieStore;
     }
 
     async checkWishlist(): Promise<Map<string, Product>> {
@@ -181,7 +185,8 @@ export class WishlistChecker {
                                 this.logger.info(message);
                             }
                         }
-                        this.cooldownManager.addToCooldownMap(isProductBuyable, item);
+                        const cookiesAmount = this.cookieStore ? await this.cookieStore.getCookiesAmount(item.product) : 0;
+                        this.cooldownManager.addToCooldownMap(isProductBuyable, item, Boolean(cookiesAmount));
                     }
 
                     if (this.productHelper.canProductBeAddedToBasket(item) && !this.cooldownManager.hasBasketCooldown(itemId)) {

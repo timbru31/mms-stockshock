@@ -36,7 +36,7 @@ import { DiscordNotifier, TwitterNotifier, WebSocketNotifier } from "./notifiers
 
     const notifiers: Notifier[] = [];
     if (storeConfig?.discord_bot_token) {
-        const discordNotifier = new DiscordNotifier(store, storeConfig, logger, cookieStore);
+        const discordNotifier = new DiscordNotifier(store, storeConfig, logger);
         notifiers.push(discordNotifier);
 
         while (!discordNotifier.discordBotReady) {
@@ -83,8 +83,8 @@ import { DiscordNotifier, TwitterNotifier, WebSocketNotifier } from "./notifiers
     });
 
     const browserManager = new BrowserManager(store, storeConfig, logger, notifiers);
-    const wishlistChecker = new WishlistChecker(store, storeConfig, logger, browserManager, cooldownManager, notifiers);
-    const categoryChecker = new CategoryChecker(store, storeConfig, logger, browserManager, cooldownManager, notifiers);
+    const wishlistChecker = new WishlistChecker(store, storeConfig, logger, browserManager, cooldownManager, notifiers, cookieStore);
+    const categoryChecker = new CategoryChecker(store, storeConfig, logger, browserManager, cooldownManager, notifiers, cookieStore);
     const basketAdder = new BasketAdder(store, storeConfig, logger, browserManager, cooldownManager, notifiers, cookieStore);
     await browserManager.launchPuppeteer(args.headless, args.sandbox, args.shmUsage);
 
