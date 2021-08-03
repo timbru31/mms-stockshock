@@ -113,6 +113,10 @@ export class TwitterNotifier implements Notifier {
         return message;
     }
 
+    async notifyPriceChange(): Promise<void> {
+        return noop();
+    }
+
     shutdown(): void {
         return noop();
     }

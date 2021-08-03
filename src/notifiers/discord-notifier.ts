@@ -20,6 +20,8 @@ export class DiscordNotifier implements Notifier {
     private cookieRolePing: string | undefined;
     private adminChannel: TextChannel | undefined;
     private adminRolePing: string | undefined;
+    private priceChangeChannel: TextChannel | undefined;
+    private priceChangeRolePing: string | undefined;
     private noCookieEmoji: GuildEmoji | undefined | null;
     private readonly announceCookies: boolean = true;
     private readonly shoppingCartAlerts: boolean = true;
@@ -83,14 +85,10 @@ export class DiscordNotifier implements Notifier {
     async notifyStock(item: Item, cookiesAmount?: number): Promise<string | undefined> {
         let plainMessage: string;
         const fullAlert = this.productHelper.isProductBuyable(item);
-        const message = new MessageEmbed().setTimestamp();
         let emoji: string;
-        message.setImage(`https://assets.mmsrg.com/isr/166325/c1/-/${item.product.titleImageId}/mobile_200_200.png`);
-        message.setTitle(item?.product?.title);
-        message.setURL(`${this.productHelper.getProductURL(item, this.store)}`);
-        message.setFooter(`Stockshock v${version} • If you have paid for this, you have been scammed`);
+        const embed = this.createEmbed(item);
 
-        message.addFields([
+        embed.addFields([
             { name: "Magician", value: `${this.productHelper.getProductURL(item, this.store)}?magician=${item?.product?.id}` },
             { name: "ProductID", value: item.product.id },
             {
@@ -110,8 +108,8 @@ export class DiscordNotifier implements Notifier {
             },
         ]);
         if (fullAlert) {
-            message.setDescription("🟢 Item **available**");
-            message.setColor("#7ab05e");
+            embed.setDescription("🟢 Item **available**");
+            embed.setColor("#7ab05e");
             emoji = "🟢";
 
             plainMessage = this.decorateMessageWithRoles(
@@ -124,8 +122,8 @@ export class DiscordNotifier implements Notifier {
             if (!this.shoppingCartAlerts) {
                 return;
             }
-            message.setDescription("🛒 Item **can be added to basket**");
-            message.setColor("#60696f");
+            embed.setDescription("🛒 Item **can be added to basket**");
+            embed.setColor("#60696f");
             emoji = "🛒";
 
             plainMessage = this.decorateMessageWithRoles(
@@ -135,8 +133,8 @@ export class DiscordNotifier implements Notifier {
                 this.getRolePingsForTitle(item.product.title)
             );
         } else {
-            message.setDescription("🟡 Item for **basket parker**");
-            message.setColor("#fcca62");
+            embed.setDescription("🟡 Item for **basket parker**");
+            embed.setColor("#fcca62");
             emoji = "🟡";
 
             plainMessage = this.decorateMessageWithRoles(
@@ -151,7 +149,7 @@ export class DiscordNotifier implements Notifier {
         if (stockChannelForItem) {
             try {
                 await stockChannelForItem.send({
-                    embed: message,
+                    embed,
                     content: this.decorateMessageWithRoles(
                         `${emoji} ${item?.product?.title} [${item?.product?.id}] for ${item?.price?.price ?? "0"} ${
                             item?.price?.currency ?? "𑿠"
@@ -164,6 +162,57 @@ export class DiscordNotifier implements Notifier {
             }
         }
         return plainMessage;
+    }
+
+    async notifyPriceChange(item: Item, oldPrice: number): Promise<void> {
+        const embed = this.createEmbed(item);
+        const newPrice = item?.price?.price ?? 0;
+        const delta = newPrice - oldPrice;
+        const deltaPercentage = ((newPrice - oldPrice) / oldPrice) * 100;
+
+        embed.addFields([
+            { name: "ProductID", value: item.product.id },
+            {
+                name: "New Price",
+                value: `${newPrice} ${item?.price?.currency ?? "𑿠"}`,
+                inline: true,
+            },
+            {
+                name: "Old Price",
+                value: `${oldPrice} ${item?.price?.currency ?? "𑿠"}`,
+                inline: true,
+            },
+            {
+                name: "Delta",
+                value: `${delta} ${item?.price?.currency ?? "𑿠"} (${deltaPercentage}%)`,
+                inline: true,
+            },
+            {
+                name: "Store",
+                value: this.store.getName(),
+                inline: true,
+            },
+        ]);
+
+        const emoji = delta > 0 ? "⏫" : "⏬";
+        embed.setDescription(`${emoji} Price change`);
+        embed.setColor(delta > 0 ? "#c31515" : "#7ab05e");
+
+        if (this.priceChangeChannel) {
+            try {
+                await this.priceChangeChannel.send({
+                    embed,
+                    content: this.decorateMessageWithRoles(
+                        `${emoji} ${item?.product?.title} [${item?.product?.id}] changed the price to ${item?.price?.price ?? "0"} ${
+                            item?.price?.currency ?? "𑿠"
+                        }`,
+                        this.priceChangeRolePing
+                    ),
+                });
+            } catch (e) {
+                this.logger.error("Error sending message, error: %O", e);
+            }
+        }
     }
 
     shutdown(): void {
@@ -238,6 +287,19 @@ export class DiscordNotifier implements Notifier {
                 this.adminRolePing = storeConfig?.admin_discord_role_ping || storeConfig?.discord_role_ping;
             }
 
+            if (storeConfig?.price_change_discord_channel || storeConfig?.discord_channel) {
+                const tempChannel = this.discordBot?.channels.cache.get(
+                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                    (storeConfig?.price_change_discord_channel || storeConfig?.discord_channel)!
+                );
+                if (((channel): channel is TextChannel => channel?.type === "text")(tempChannel)) {
+                    this.priceChangeChannel = tempChannel;
+                }
+            }
+            if (storeConfig?.price_change_discord_role_ping || storeConfig?.discord_role_ping) {
+                this.priceChangeRolePing = storeConfig?.price_change_discord_role_ping || storeConfig?.discord_role_ping;
+            }
+
             this.noCookieEmoji = this.discordBot?.emojis.cache.find((emoji) => emoji.name == "nocookie");
         });
 
@@ -290,5 +352,14 @@ export class DiscordNotifier implements Notifier {
         } else {
             return `${message} <@&${webhookRolePings}>`;
         }
+    }
+
+    private createEmbed(item: Item) {
+        const embed = new MessageEmbed().setTimestamp();
+        embed.setImage(`https://assets.mmsrg.com/isr/166325/c1/-/${item.product.titleImageId}/mobile_200_200.png`);
+        embed.setTitle(item?.product?.title);
+        embed.setURL(`${this.productHelper.getProductURL(item, this.store)}`);
+        embed.setFooter(`Stockshock v${version} • If you have paid for this, you have been scammed`);
+        return embed;
     }
 }

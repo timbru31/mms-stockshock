@@ -30,12 +30,14 @@ export interface StoreConfiguration {
     stock_discord_regex_channel?: string[][];
     cookie_discord_channel?: string;
     admin_discord_channel?: string;
+    price_change_discord_channel?: string;
 
     discord_role_ping?: string;
     stock_discord_role_ping?: string;
     stock_discord_regex_role_ping?: string[][];
     cookie_discord_role_ping?: string;
     admin_discord_role_ping?: string;
+    price_change_discord_role_ping?: string;
 
     // Twitter notification settings
     twitter_api_key?: string;

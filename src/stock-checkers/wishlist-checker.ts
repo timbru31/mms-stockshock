@@ -3,16 +3,15 @@ import { v4 } from "uuid";
 import { Logger } from "winston";
 import { BrowserManager } from "../core/browser-manager";
 import { CooldownManager } from "../core/cooldown-manager";
-
+import { DatabaseConnection } from "../databases/database-connection";
 import { Item } from "../models/api/item";
-import { WishlistResponse } from "../models/api/wishlist-response";
-import { ProductHelper } from "../utils/product-helper";
-import { Store } from "../models/stores/store";
-import { GRAPHQL_CLIENT_VERSION, sleep } from "../utils/utils";
 import { Product } from "../models/api/product";
-import { StoreConfiguration } from "../models/stores/config-model";
+import { WishlistResponse } from "../models/api/wishlist-response";
 import { Notifier } from "../models/notifier";
-import { DynamoDBCookieStore } from "../cookies/dynamodb-cookie-store";
+import { StoreConfiguration } from "../models/stores/config-model";
+import { Store } from "../models/stores/store";
+import { ProductHelper } from "../utils/product-helper";
+import { GRAPHQL_CLIENT_VERSION, sleep } from "../utils/utils";
 
 export class WishlistChecker {
     // This is set by MM/S and a fixed constant
@@ -25,7 +24,7 @@ export class WishlistChecker {
     private readonly browserManager: BrowserManager;
     private readonly cooldownManager: CooldownManager;
     private readonly productHelper = new ProductHelper();
-    private readonly cookieStore: DynamoDBCookieStore | undefined;
+    private readonly database: DatabaseConnection | undefined;
 
     constructor(
         store: Store,
@@ -34,7 +33,7 @@ export class WishlistChecker {
         browserManager: BrowserManager,
         cooldownManager: CooldownManager,
         notifiers: Notifier[],
-        cookieStore?: DynamoDBCookieStore
+        database?: DatabaseConnection
     ) {
         this.store = store;
         this.storeConfiguration = storeConfiguration;
@@ -42,7 +41,7 @@ export class WishlistChecker {
         this.browserManager = browserManager;
         this.cooldownManager = cooldownManager;
         this.notifiers = notifiers;
-        this.cookieStore = cookieStore;
+        this.database = database;
     }
 
     async checkWishlist(): Promise<Map<string, Product>> {
@@ -179,12 +178,20 @@ export class WishlistChecker {
                     }
 
                     if (!this.cooldownManager.hasCooldown(itemId)) {
-                        const cookiesAmount = this.cookieStore ? await this.cookieStore.getCookiesAmount(item.product) : 0;
+                        const cookiesAmount = this.database ? await this.database.getCookiesAmount(item.product) : 0;
+                        const lastKnownPrice = this.database ? await this.database.getLastKnownPrice(item.product) : NaN;
+                        const price = item.price?.price ?? NaN;
                         for (const notifier of this.notifiers) {
                             const message = await notifier.notifyStock(item, cookiesAmount);
                             if (message) {
                                 this.logger.info(message);
                             }
+                            if (price && lastKnownPrice && price !== lastKnownPrice) {
+                                await notifier.notifyPriceChange(item, price);
+                            }
+                        }
+                        if (price && price !== lastKnownPrice) {
+                            await this.database?.storePrice(item.product, price);
                         }
                         this.cooldownManager.addToCooldownMap(isProductBuyable, item, Boolean(cookiesAmount));
                     }

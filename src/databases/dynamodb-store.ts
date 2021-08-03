@@ -1,17 +1,17 @@
 import {
     DynamoDBClient,
     DynamoDBClientConfig,
-    GetItemCommandInput,
     GetItemCommand,
+    GetItemCommandInput,
     UpdateItemCommand,
     UpdateItemCommandInput,
 } from "@aws-sdk/client-dynamodb";
-
 import { Product } from "../models/api/product";
 import { StoreConfiguration } from "../models/stores/config-model";
 import { Store } from "../models/stores/store";
+import { DatabaseConnection } from "./database-connection";
 
-export class DynamoDBCookieStore {
+export class DynamoDBStore implements DatabaseConnection {
     private readonly store: Store;
     private readonly storeConfiguration: StoreConfiguration;
     private readonly client: DynamoDBClient;
@@ -55,6 +55,27 @@ export class DynamoDBCookieStore {
         await this.client.send(command);
     }
 
+    async storePrice(product: Product, price: number): Promise<void> {
+        const params: UpdateItemCommandInput = {
+            TableName: this.storeConfiguration.dynamo_db_table_name,
+            Key: {
+                store: { S: this.store.shortCode },
+                productId: { S: product.id },
+            },
+            UpdateExpression: "SET price = :price, title = :title",
+            ExpressionAttributeValues: {
+                ":price": {
+                    N: price.toString(),
+                },
+                ":title": {
+                    S: product.title,
+                },
+            },
+        };
+        const command = new UpdateItemCommand(params);
+        await this.client.send(command);
+    }
+
     async getCookiesAmount(product: Product): Promise<number> {
         const params: GetItemCommandInput = {
             TableName: this.storeConfiguration.dynamo_db_table_name,
@@ -69,6 +90,24 @@ export class DynamoDBCookieStore {
             return response.Item?.cookies.L?.length ?? 0;
         } catch (e) {
             return 0;
+        }
+    }
+
+    async getLastKnownPrice(product: Product): Promise<number> {
+        const params: GetItemCommandInput = {
+            TableName: this.storeConfiguration.dynamo_db_table_name,
+            Key: {
+                store: { S: this.store.shortCode },
+                productId: { S: product.id },
+            },
+        };
+        const command = new GetItemCommand(params);
+        try {
+            const response = await this.client.send(command);
+            const priceString = response.Item?.price.N;
+            return priceString ? parseFloat(priceString) : NaN;
+        } catch (e) {
+            return NaN;
         }
     }
 }

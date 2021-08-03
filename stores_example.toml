@@ -20,11 +20,13 @@ stock_discord_channel = ""
 stock_discord_regex_channel = []
 cookie_discord_channel = ""
 admin_discord_channel = ""
+price_change_discord_channel = ""
 discord_role_ping = ""
 stock_discord_role_ping = ""
 stock_discord_regex_role_ping = []
 cookie_discord_role_ping = ""
 admin_discord_role_ping = ""
+price_change_discord_role_ping = ""
 
 # Twitter integration (optional)
 twitter_bearer_token = ""
@@ -80,11 +82,13 @@ stock_discord_channel = ""
 stock_discord_regex_channel = []
 cookie_discord_channel = ""
 admin_discord_channel = ""
+price_change_discord_channel = ""
 discord_role_ping = ""
 stock_discord_role_ping = ""
 stock_discord_regex_role_ping = []
 cookie_discord_role_ping = ""
 admin_discord_role_ping = ""
+price_change_discord_role_ping = ""
 
 # Twitter integration (optional)
 twitter_bearer_token = ""
@@ -140,11 +144,13 @@ stock_discord_channel = ""
 stock_discord_regex_channel = []
 cookie_discord_channel = ""
 admin_discord_channel = ""
+price_change_discord_channel = ""
 discord_role_ping = ""
 stock_discord_role_ping = ""
 stock_discord_regex_role_ping = []
 cookie_discord_role_ping = ""
 admin_discord_role_ping = ""
+price_change_discord_role_ping = ""
 
 # Twitter integration (optional)
 twitter_bearer_token = ""

@@ -42,6 +42,10 @@ export class WebSocketNotifier implements Notifier {
         return undefined;
     }
 
+    async notifyPriceChange(): Promise<void> {
+        return noop();
+    }
+
     shutdown(): void {
         this.closeWebSocketServer();
     }

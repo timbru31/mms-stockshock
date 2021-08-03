@@ -1,17 +1,18 @@
 import { Logger } from "winston";
 import { BasketAdder } from "./cookies/basket-adder";
 import { BrowserManager } from "./core/browser-manager";
-import { CategoryChecker } from "./stock-checkers/category-checker";
-import { getStoreAndStoreConfig } from "./utils/cli-helper";
 import { CooldownManager } from "./core/cooldown-manager";
-import { DynamoDBCookieStore } from "./cookies/dynamodb-cookie-store";
+import { DatabaseConnection } from "./databases/database-connection";
+import { DynamoDBStore } from "./databases/dynamodb-store";
 import { Product } from "./models/api/product";
 import { CliArguments } from "./models/cli";
-import { Store } from "./models/stores/store";
-import { createLogger, loadConfig, sleep } from "./utils/utils";
-import { WishlistChecker } from "./stock-checkers/wishlist-checker";
 import { Notifier } from "./models/notifier";
+import { Store } from "./models/stores/store";
 import { DiscordNotifier, TwitterNotifier, WebSocketNotifier } from "./notifiers";
+import { CategoryChecker } from "./stock-checkers/category-checker";
+import { WishlistChecker } from "./stock-checkers/wishlist-checker";
+import { getStoreAndStoreConfig } from "./utils/cli-helper";
+import { createLogger, loadConfig, sleep } from "./utils/utils";
 
 (async function () {
     const logger = createLogger();
@@ -29,9 +30,9 @@ import { DiscordNotifier, TwitterNotifier, WebSocketNotifier } from "./notifiers
     const cooldownManager = new CooldownManager();
     cooldownManager.cleanupCooldowns();
 
-    let cookieStore: DynamoDBCookieStore | undefined;
+    let cookieStore: DatabaseConnection | undefined;
     if (storeConfig.dynamo_db_region && storeConfig.dynamo_db_table_name) {
-        cookieStore = new DynamoDBCookieStore(store, storeConfig);
+        cookieStore = new DynamoDBStore(store, storeConfig);
     }
 
     const notifiers: Notifier[] = [];

@@ -13,7 +13,7 @@ import { Product } from "../models/api/product";
 import { SelectedProductResponse } from "../models/api/selected-product-response";
 import { StoreConfiguration } from "../models/stores/config-model";
 import { Notifier } from "../models/notifier";
-import { DynamoDBCookieStore } from "../cookies/dynamodb-cookie-store";
+import { DatabaseConnection } from "../databases/database-connection";
 
 export class CategoryChecker {
     private readonly store: Store;
@@ -23,7 +23,7 @@ export class CategoryChecker {
     private readonly browserManager: BrowserManager;
     private readonly cooldownManager: CooldownManager;
     private readonly productHelper = new ProductHelper();
-    private readonly cookieStore: DynamoDBCookieStore | undefined;
+    private readonly database: DatabaseConnection | undefined;
 
     constructor(
         store: Store,
@@ -32,7 +32,7 @@ export class CategoryChecker {
         browserManager: BrowserManager,
         cooldownManager: CooldownManager,
         notifiers: Notifier[],
-        cookieStore?: DynamoDBCookieStore
+        database?: DatabaseConnection
     ) {
         this.store = store;
         this.storeConfiguration = storeConfiguration;
@@ -40,7 +40,7 @@ export class CategoryChecker {
         this.browserManager = browserManager;
         this.cooldownManager = cooldownManager;
         this.notifiers = notifiers;
-        this.cookieStore = cookieStore;
+        this.database = database;
     }
 
     async checkCategory(category: string, categoryRegex?: string): Promise<Map<string, Product>> {
@@ -290,12 +290,20 @@ export class CategoryChecker {
             }
 
             if (!this.cooldownManager.hasCooldown(itemId)) {
-                const cookiesAmount = this.cookieStore ? await this.cookieStore.getCookiesAmount(item.product) : 0;
+                const cookiesAmount = this.database ? await this.database.getCookiesAmount(item.product) : 0;
+                const lastKnownPrice = this.database ? await this.database.getLastKnownPrice(item.product) : NaN;
+                const price = item.price?.price ?? NaN;
                 for (const notifier of this.notifiers) {
                     const message = await notifier.notifyStock(item, cookiesAmount);
                     if (message) {
                         this.logger.info(message);
                     }
+                    if (price && lastKnownPrice && price !== lastKnownPrice) {
+                        await notifier.notifyPriceChange(item, price);
+                    }
+                }
+                if (price && price !== lastKnownPrice) {
+                    await this.database?.storePrice(item.product, price);
                 }
                 this.cooldownManager.addToCooldownMap(isProductBuyable, item, Boolean(cookiesAmount));
             }

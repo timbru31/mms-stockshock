@@ -3,13 +3,13 @@ import { v4 } from "uuid";
 import { Logger } from "winston";
 import { BrowserManager } from "../core/browser-manager";
 import { CooldownManager } from "../core/cooldown-manager";
-import { DynamoDBCookieStore } from "./dynamodb-cookie-store";
+import { DatabaseConnection } from "../databases/database-connection";
 import { AddProductResponse } from "../models/api/add-product-response";
 import { Product } from "../models/api/product";
+import { Notifier } from "../models/notifier";
 import { StoreConfiguration } from "../models/stores/config-model";
 import { Store } from "../models/stores/store";
 import { GRAPHQL_CLIENT_VERSION, sleep } from "../utils/utils";
-import { Notifier } from "../models/notifier";
 
 export class BasketAdder {
     private basketProducts = new Map<string, Product>();
@@ -19,7 +19,7 @@ export class BasketAdder {
     private readonly notifiers: Notifier[] = [];
     private readonly browserManager: BrowserManager;
     private readonly cooldownManager: CooldownManager;
-    private readonly cookieStore: DynamoDBCookieStore | undefined;
+    private readonly database: DatabaseConnection | undefined;
 
     constructor(
         store: Store,
@@ -28,7 +28,7 @@ export class BasketAdder {
         browserManager: BrowserManager,
         cooldownManager: CooldownManager,
         notifiers: Notifier[],
-        cookieStore: DynamoDBCookieStore | undefined
+        database: DatabaseConnection | undefined
     ) {
         this.store = store;
         this.storeConfiguration = storeConfiguration;
@@ -36,7 +36,7 @@ export class BasketAdder {
         this.browserManager = browserManager;
         this.cooldownManager = cooldownManager;
         this.notifiers = notifiers;
-        this.cookieStore = cookieStore;
+        this.database = database;
     }
 
     clearBasketProducts(): void {
@@ -179,8 +179,8 @@ export class BasketAdder {
                         await notifier.notifyCookies(product, cookies);
                     }
                     this.cooldownManager.addToBasketCooldownMap(product);
-                    if (this.cookieStore) {
-                        this.cookieStore.storeCookies(product, cookies);
+                    if (this.database) {
+                        this.database.storeCookies(product, cookies);
                     }
                 }
             }
