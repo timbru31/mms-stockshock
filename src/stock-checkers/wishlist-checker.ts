@@ -187,7 +187,7 @@ export class WishlistChecker {
                                 this.logger.info(message);
                             }
                             if (price && lastKnownPrice && price !== lastKnownPrice) {
-                                await notifier.notifyPriceChange(item, price);
+                                await notifier.notifyPriceChange(item, lastKnownPrice);
                             }
                         }
                         if (price && price !== lastKnownPrice) {
