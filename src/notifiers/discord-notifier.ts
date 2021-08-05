@@ -168,7 +168,7 @@ export class DiscordNotifier implements Notifier {
         const embed = this.createEmbed(item);
         const newPrice = item?.price?.price ?? 0;
         const delta = newPrice - oldPrice;
-        const deltaPercentage = ((newPrice - oldPrice) / oldPrice) * 100;
+        const deltaPercentage = (((newPrice - oldPrice) / oldPrice) * 100).toFixed(2);
 
         embed.addFields([
             { name: "ProductID", value: item.product.id },
