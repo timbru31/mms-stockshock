@@ -38,7 +38,7 @@
         "uuid": "^8.3.2",
         "winston": "^3.3.3",
         "ws": "^8.0.0",
-        "yargs": "^17.0.1"
+        "yargs": "^17.1.0"
     },
     "devDependencies": {
         "@types/inquirer": "^7.3.3",
