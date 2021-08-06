@@ -173,13 +173,13 @@ export class DiscordNotifier implements Notifier {
         embed.addFields([
             { name: "ProductID", value: item.product.id },
             {
-                name: "New Price",
-                value: `${newPrice} ${item?.price?.currency ?? "𑿠"}`,
+                name: "Old Price",
+                value: `${oldPrice} ${item?.price?.currency ?? "𑿠"}`,
                 inline: true,
             },
             {
-                name: "Old Price",
-                value: `${oldPrice} ${item?.price?.currency ?? "𑿠"}`,
+                name: "New Price",
+                value: `${newPrice} ${item?.price?.currency ?? "𑿠"}`,
                 inline: true,
             },
             {
