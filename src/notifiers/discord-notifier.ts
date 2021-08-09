@@ -166,25 +166,26 @@ export class DiscordNotifier implements Notifier {
 
     async notifyPriceChange(item: Item, oldPrice: number): Promise<void> {
         const embed = this.createEmbed(item);
+        const currency = item?.price?.currency ?? "𑿠";
         const newPrice = item?.price?.price ?? 0;
         const delta = newPrice - oldPrice;
-        const deltaPercentage = (((newPrice - oldPrice) / oldPrice) * 100).toFixed(2);
+        const deltaPercentage = ((newPrice - oldPrice) / oldPrice) * 100;
 
         embed.addFields([
             { name: "ProductID", value: item.product.id },
             {
                 name: "Old Price",
-                value: `${oldPrice} ${item?.price?.currency ?? "𑿠"}`,
+                value: `${oldPrice} ${currency}`,
                 inline: true,
             },
             {
                 name: "New Price",
-                value: `${newPrice} ${item?.price?.currency ?? "𑿠"}`,
+                value: `${newPrice} ${currency}`,
                 inline: true,
             },
             {
                 name: "Delta",
-                value: `${delta} ${item?.price?.currency ?? "𑿠"} (${deltaPercentage}%)`,
+                value: `${delta.toFixed(2)} ${currency} (${deltaPercentage.toFixed(2)}%)`,
                 inline: true,
             },
             {
@@ -203,9 +204,9 @@ export class DiscordNotifier implements Notifier {
                 await this.priceChangeChannel.send({
                     embed,
                     content: this.decorateMessageWithRoles(
-                        `${emoji} ${item?.product?.title} [${item?.product?.id}] changed the price to ${item?.price?.price ?? "0"} ${
-                            item?.price?.currency ?? "𑿠"
-                        }`,
+                        `${emoji} ${item?.product?.title} [${
+                            item?.product?.id
+                        }] changed the price from ${oldPrice} ${currency} to ${newPrice} ${currency} (${deltaPercentage.toFixed(2)}%)`,
                         this.priceChangeRolePing
                     ),
                 });
