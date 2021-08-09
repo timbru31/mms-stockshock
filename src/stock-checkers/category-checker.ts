@@ -176,7 +176,7 @@ export class CategoryChecker {
                                     .catch((_) => ({ status: res.status, body: null, retryAfterHeader: res.headers.get("Retry-After") }))
                             )
                             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                            .catch((_) => ({ status: -1, body: null })),
+                            .catch((_) => ({ status: -2, body: null })),
                     this.store as SerializableOrJSHandle,
                     page,
                     category,
@@ -185,7 +185,7 @@ export class CategoryChecker {
                     this.storeConfiguration.categorySHA256
                 ),
                 sleep(5000, {
-                    status: 0,
+                    status: -1,
                     body: { errors: "Timeout" },
                 }),
             ]);
@@ -254,7 +254,7 @@ export class CategoryChecker {
                                     .catch((_) => ({ status: res.status, body: null, retryAfterHeader: res.headers.get("Retry-After") }))
                             )
                             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                            .catch((_) => ({ status: -1, body: null })),
+                            .catch((_) => ({ status: -2, body: null })),
                     this.store as SerializableOrJSHandle,
                     productId,
                     v4(),
@@ -262,7 +262,7 @@ export class CategoryChecker {
                     this.storeConfiguration.getProductSHA256
                 ),
                 sleep(5000, {
-                    status: 0,
+                    status: -1,
                     body: { errors: "Timeout" },
                 }),
             ]);

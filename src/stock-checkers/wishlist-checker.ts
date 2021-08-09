@@ -138,7 +138,7 @@ export class WishlistChecker {
                                     .catch((_) => ({ status: res.status, body: null, retryAfterHeader: res.headers.get("Retry-After") }))
                             )
                             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                            .catch((_) => ({ status: -1, body: null })),
+                            .catch((_) => ({ status: -2, body: null })),
                     this.store as SerializableOrJSHandle,
                     offset,
                     v4(),
@@ -146,7 +146,7 @@ export class WishlistChecker {
                     this.storeConfiguration.wishlistSHA256
                 ),
                 sleep(10000, {
-                    status: 0,
+                    status: -1,
                     body: { errors: "Timeout" },
                 }),
             ]);
