@@ -21,7 +21,7 @@ You need to put items on your wishlist in order to have this bot working.
 
 ## Installation
 
-Install Node.js v14 or higher.  
+Install Node.js v16 or higher.  
 Download or clone the project then run:
 
 ```sh
