@@ -1,6 +1,7 @@
 import { readFileSync } from "fs";
 import http from "http";
 import https from "https";
+import { Socket } from "net";
 import { Logger } from "winston";
 import WebSocket from "ws";
 import { Item } from "../models/api/item";
@@ -66,11 +67,14 @@ export class WebSocketNotifier implements Notifier {
         }
         const wss = new WebSocket.Server({ noServer: true });
 
-        server.on("upgrade", (request, socket, head) => {
-            if (!storeConfig.websocket_passwords?.includes(request.headers["sec-websocket-protocol"])) {
+        server.on("upgrade", (request, socket: Socket, head) => {
+            if (
+                !request.headers["sec-websocket-protocol"] ||
+                !storeConfig.websocket_passwords?.includes(request.headers["sec-websocket-protocol"])
+            ) {
+                this.logger.info(`😵‍💫 WebSocket connection from client from ${socket?.remoteAddress} was denied!`);
                 socket.write("HTTP/1.1 401 Unauthorized\r\n\r\n");
                 socket.destroy();
-                this.logger.info(`😵‍💫 WebSocket connection from client from ${socket?.remoteAddress} was denied!`);
                 return;
             }
             this.logger.info(`👌 WebSocket client from ${socket?.remoteAddress} connected successfully`);
