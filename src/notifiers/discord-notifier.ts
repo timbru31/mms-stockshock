@@ -149,7 +149,7 @@ export class DiscordNotifier implements Notifier {
         if (stockChannelForItem) {
             try {
                 await stockChannelForItem.send({
-                    embed,
+                    embeds: [embed],
                     content: this.decorateMessageWithRoles(
                         `${emoji} ${item?.product?.title} [${item?.product?.id}] for ${item?.price?.price ?? "0"} ${
                             item?.price?.currency ?? "𑿠"
@@ -202,7 +202,7 @@ export class DiscordNotifier implements Notifier {
         if (this.priceChangeChannel) {
             try {
                 await this.priceChangeChannel.send({
-                    embed,
+                    embeds: [embed],
                     content: this.decorateMessageWithRoles(
                         `${emoji} ${item?.product?.title} [${
                             item?.product?.id
@@ -221,7 +221,9 @@ export class DiscordNotifier implements Notifier {
     }
 
     private async setupDiscordBot(storeConfig: StoreConfiguration) {
-        this.discordBot = new Client();
+        this.discordBot = new Client({
+            intents: [],
+        });
         await this.discordBot.login(storeConfig.discord_bot_token);
         this.discordBot.once("ready", async () => {
             this.logger.info(`👌 Discord bot integration ready`);
@@ -234,7 +236,7 @@ export class DiscordNotifier implements Notifier {
                     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                     (storeConfig?.stock_discord_channel || storeConfig?.discord_channel)!
                 );
-                if (((channel): channel is TextChannel => channel?.type === "text")(tempChannel)) {
+                if (((channel): channel is TextChannel => channel?.type === "GUILD_TEXT")(tempChannel)) {
                     this.stockChannel = tempChannel;
                 }
             }
@@ -243,7 +245,7 @@ export class DiscordNotifier implements Notifier {
                     const regexpStr = pair[0];
                     const channelId = pair[1];
                     const tempChannel = this.discordBot?.channels.cache.get(channelId);
-                    if (((channel): channel is TextChannel => channel?.type === "text")(tempChannel)) {
+                    if (((channel): channel is TextChannel => channel?.type === "GUILD_TEXT")(tempChannel)) {
                         const regexp = new RegExp(regexpStr, "i");
                         this.stockRegexChannel.set(regexp, tempChannel);
                     }
@@ -267,7 +269,7 @@ export class DiscordNotifier implements Notifier {
                     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                     (storeConfig?.cookie_discord_channel || storeConfig?.discord_channel)!
                 );
-                if (((channel): channel is TextChannel => channel?.type === "text")(tempChannel)) {
+                if (((channel): channel is TextChannel => channel?.type === "GUILD_TEXT")(tempChannel)) {
                     this.cookieChannel = tempChannel;
                 }
             }
@@ -280,7 +282,7 @@ export class DiscordNotifier implements Notifier {
                     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                     (storeConfig?.admin_discord_channel || storeConfig?.discord_channel)!
                 );
-                if (((channel): channel is TextChannel => channel?.type === "text")(tempChannel)) {
+                if (((channel): channel is TextChannel => channel?.type === "GUILD_TEXT")(tempChannel)) {
                     this.adminChannel = tempChannel;
                 }
             }
@@ -293,7 +295,7 @@ export class DiscordNotifier implements Notifier {
                     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                     (storeConfig?.price_change_discord_channel || storeConfig?.discord_channel)!
                 );
-                if (((channel): channel is TextChannel => channel?.type === "text")(tempChannel)) {
+                if (((channel): channel is TextChannel => channel?.type === "GUILD_TEXT")(tempChannel)) {
                     this.priceChangeChannel = tempChannel;
                 }
             }
@@ -304,9 +306,15 @@ export class DiscordNotifier implements Notifier {
             this.noCookieEmoji = this.discordBot?.emojis.cache.find((emoji) => emoji.name == "nocookie");
         });
 
-        this.discordBot.on("rateLimit", (error) => this.logger.error("Discord API error (rateLimit), %O", error));
-        this.discordBot.on("error", (error) => this.logger.error("Discord API error (error), %O", error));
-        this.discordBot.on("shardError", (error) => this.logger.error("Discord API error (shardError), %O", error));
+        this.discordBot.on("rateLimit", (error) => {
+            this.logger.error("Discord API error (rateLimit), %O", error);
+        });
+        this.discordBot.on("error", (error) => {
+            this.logger.error("Discord API error (error), %O", error);
+        });
+        this.discordBot.on("shardError", (error) => {
+            this.logger.error("Discord API error (shardError), %O", error);
+        });
     }
 
     private getRolePingsForTitle(title: string) {
