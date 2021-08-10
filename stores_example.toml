@@ -15,6 +15,7 @@ announce_cookies = true
 # Discord integration (optional)
 # You can set the same channel or role for all the types or a dedicated one for each type
 discord_bot_token = ""
+discord_nocookie_emoji = ""
 discord_channel = ""
 stock_discord_channel = ""
 stock_discord_regex_channel = []
@@ -77,6 +78,7 @@ announce_cookies = true
 # Discord integration (optional)
 # You can set the same channel or role for all the types or a dedicated one for each type
 discord_bot_token = ""
+discord_nocookie_emoji = ""
 discord_channel = ""
 stock_discord_channel = ""
 stock_discord_regex_channel = []
@@ -139,6 +141,7 @@ announce_cookies = true
 # Discord integration (optional)
 # You can set the same channel or role for all the types or a dedicated one for each type
 discord_bot_token = ""
+discord_nocookie_emoji = ""
 discord_channel = ""
 stock_discord_channel = ""
 stock_discord_regex_channel = []

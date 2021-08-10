@@ -1,4 +1,4 @@
-import { Client, GuildEmoji, MessageEmbed, TextChannel } from "discord.js";
+import { Client, MessageEmbed, TextChannel } from "discord.js";
 import { Logger } from "winston";
 import { version } from "../../package.json";
 import { Item } from "../models/api/item";
@@ -22,7 +22,7 @@ export class DiscordNotifier implements Notifier {
     private adminRolePing: string | undefined;
     private priceChangeChannel: TextChannel | undefined;
     private priceChangeRolePing: string | undefined;
-    private noCookieEmoji: GuildEmoji | undefined | null;
+    private noCookieEmoji: string | undefined;
     private readonly announceCookies: boolean = true;
     private readonly shoppingCartAlerts: boolean = true;
     private readonly store: Store;
@@ -232,7 +232,7 @@ export class DiscordNotifier implements Notifier {
             this.discordBot?.user?.setActivity({ name: "eating your cookies. 🍪", type: "PLAYING" });
 
             if (storeConfig?.stock_discord_channel || storeConfig?.discord_channel) {
-                const tempChannel = this.discordBot?.channels.cache.get(
+                const tempChannel = await this.discordBot?.channels.fetch(
                     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                     (storeConfig?.stock_discord_channel || storeConfig?.discord_channel)!
                 );
@@ -241,10 +241,10 @@ export class DiscordNotifier implements Notifier {
                 }
             }
             if (storeConfig?.stock_discord_regex_channel) {
-                storeConfig?.stock_discord_regex_channel.map((pair) => {
+                storeConfig?.stock_discord_regex_channel.map(async (pair) => {
                     const regexpStr = pair[0];
                     const channelId = pair[1];
-                    const tempChannel = this.discordBot?.channels.cache.get(channelId);
+                    const tempChannel = await this.discordBot?.channels.fetch(channelId);
                     if (((channel): channel is TextChannel => channel?.type === "GUILD_TEXT")(tempChannel)) {
                         const regexp = new RegExp(regexpStr, "i");
                         this.stockRegexChannel.set(regexp, tempChannel);
@@ -265,7 +265,7 @@ export class DiscordNotifier implements Notifier {
             }
 
             if (storeConfig?.cookie_discord_channel || storeConfig?.discord_channel) {
-                const tempChannel = this.discordBot?.channels.cache.get(
+                const tempChannel = await this.discordBot?.channels.fetch(
                     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                     (storeConfig?.cookie_discord_channel || storeConfig?.discord_channel)!
                 );
@@ -278,7 +278,7 @@ export class DiscordNotifier implements Notifier {
             }
 
             if (storeConfig?.admin_discord_channel || storeConfig?.discord_channel) {
-                const tempChannel = this.discordBot?.channels.cache.get(
+                const tempChannel = await this.discordBot?.channels.fetch(
                     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                     (storeConfig?.admin_discord_channel || storeConfig?.discord_channel)!
                 );
@@ -291,7 +291,7 @@ export class DiscordNotifier implements Notifier {
             }
 
             if (storeConfig?.price_change_discord_channel || storeConfig?.discord_channel) {
-                const tempChannel = this.discordBot?.channels.cache.get(
+                const tempChannel = await this.discordBot?.channels.fetch(
                     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                     (storeConfig?.price_change_discord_channel || storeConfig?.discord_channel)!
                 );
@@ -303,7 +303,7 @@ export class DiscordNotifier implements Notifier {
                 this.priceChangeRolePing = storeConfig?.price_change_discord_role_ping || storeConfig?.discord_role_ping;
             }
 
-            this.noCookieEmoji = this.discordBot?.emojis.cache.find((emoji) => emoji.name == "nocookie");
+            this.noCookieEmoji = storeConfig.discord_nocookie_emoji;
         });
 
         this.discordBot.on("rateLimit", (error) => {

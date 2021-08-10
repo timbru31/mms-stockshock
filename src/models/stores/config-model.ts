@@ -25,6 +25,7 @@ export interface StoreConfiguration {
 
     // Discord channels for notifications
     discord_bot_token?: string;
+    discord_nocookie_emoji?: string;
     discord_channel?: string;
     stock_discord_channel?: string;
     stock_discord_regex_channel?: string[][];
