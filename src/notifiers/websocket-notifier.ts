@@ -68,16 +68,18 @@ export class WebSocketNotifier implements Notifier {
         const wss = new WebSocket.Server({ noServer: true });
 
         server.on("upgrade", (request, socket: Socket, head) => {
-            if (
-                !request.headers["sec-websocket-protocol"] ||
-                !storeConfig.websocket_passwords?.includes(request.headers["sec-websocket-protocol"])
-            ) {
+            const password = request.headers["sec-websocket-protocol"];
+            if (!password || !storeConfig.websocket_passwords?.includes(password)) {
                 this.logger.info(`😵‍💫 WebSocket connection from client from ${socket?.remoteAddress} was denied!`);
                 socket.write("HTTP/1.1 401 Unauthorized\r\n\r\n");
                 socket.destroy();
                 return;
             }
-            this.logger.info(`👌 WebSocket client from ${socket?.remoteAddress} connected successfully`);
+            this.logger.info(
+                `👌 WebSocket client from ${socket?.remoteAddress} connected successfully with ${
+                    storeConfig.log_passwords ? password : "***"
+                }`
+            );
             wss.handleUpgrade(request, socket, head, (ws) => wss.emit("connection", ws, request));
         });
 

@@ -66,6 +66,7 @@ export interface StoreConfiguration {
     websocket_https?: boolean;
     websocket_cert_path?: string;
     websocket_key_path?: string;
+    log_passwords?: boolean;
 
     // SHA256 hashes for queries
     loginSHA256: string;
