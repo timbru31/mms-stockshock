@@ -8,7 +8,7 @@ import { Item } from "../models/api/item";
 import { Notifier } from "../models/notifier";
 import { StoreConfiguration } from "../models/stores/config-model";
 import { ProductHelper } from "../utils/product-helper";
-import { noop } from "../utils/utils";
+import { noop, shuffle } from "../utils/utils";
 
 export class WebSocketNotifier implements Notifier {
     private heartBeatPing: NodeJS.Timeout | undefined;
@@ -96,7 +96,7 @@ export class WebSocketNotifier implements Notifier {
 
     private async notifyWebSocketClients(item: Item, direct: boolean) {
         if (this.wss) {
-            for (const client of this.wss.clients) {
+            for (const client of shuffle(Array.from(this.wss.clients))) {
                 if (client.readyState === WebSocket.OPEN) {
                     client.send(
                         JSON.stringify({
