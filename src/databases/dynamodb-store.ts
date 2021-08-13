@@ -62,13 +62,16 @@ export class DynamoDBStore implements DatabaseConnection {
                 store: { S: this.store.shortCode },
                 productId: { S: product.id },
             },
-            UpdateExpression: "SET price = :price, title = :title",
+            UpdateExpression: "SET price = :price, title = :title, cookies = list_append(if_not_exists(cookies, :empty_list), :empty_list)",
             ExpressionAttributeValues: {
                 ":price": {
                     N: price.toString(),
                 },
                 ":title": {
                     S: product.title,
+                },
+                ":empty_list": {
+                    L: [],
                 },
             },
         };
