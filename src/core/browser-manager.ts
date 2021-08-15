@@ -11,7 +11,7 @@ import { Response } from "../models/api/response";
 import { Notifier } from "../models/notifier";
 import { StoreConfiguration } from "../models/stores/config-model";
 import { Store } from "../models/stores/store";
-import { GRAPHQL_CLIENT_VERSION, noop, shuffle, sleep } from "../utils/utils";
+import { GRAPHQL_CLIENT_VERSION, shuffle, sleep } from "../utils/utils";
 
 export class BrowserManager {
     reLoginRequired = true;
