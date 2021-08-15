@@ -87,7 +87,9 @@ import { createLogger, loadConfig, sleep } from "./utils/utils";
     const wishlistChecker = new WishlistChecker(store, storeConfig, logger, browserManager, cooldownManager, notifiers, cookieStore);
     const categoryChecker = new CategoryChecker(store, storeConfig, logger, browserManager, cooldownManager, notifiers, cookieStore);
     const basketAdder = new BasketAdder(store, storeConfig, logger, browserManager, cooldownManager, notifiers, cookieStore);
-    await browserManager.launchPuppeteer(args.headless, args.sandbox, args.shmUsage);
+    if (!(await browserManager.launchPuppeteer(args.headless, args.sandbox, args.shmUsage))) {
+        throw new Error("Puppeteer could not be launched!");
+    }
 
     while (shouldRun) {
         try {
@@ -155,7 +157,9 @@ async function reLoginIfRequired(
 ) {
     if (browserManager.reLoginRequired) {
         if (browserManager.reLaunchRequired) {
-            await browserManager.launchPuppeteer(args.headless, args.sandbox, args.shmUsage);
+            if (!(await browserManager.launchPuppeteer(args.headless, args.sandbox, args.shmUsage))) {
+                throw new Error("Puppeteer could not be launched!");
+            }
         }
         if (!(await browserManager.createIncognitoContext())) {
             throw new Error("Incognito context could not be created!");
@@ -171,7 +175,9 @@ async function reLoginIfRequired(
 async function reLaunchIfRequired(browserManager: BrowserManager, args: CliArguments, createNewContext?: boolean) {
     let relaunched = false;
     if (browserManager.reLaunchRequired) {
-        await browserManager.launchPuppeteer(args.headless, args.sandbox, args.shmUsage);
+        if (!(await browserManager.launchPuppeteer(args.headless, args.sandbox, args.shmUsage))) {
+            throw new Error("Puppeteer could not be launched!");
+        }
         relaunched = true;
     }
     if (createNewContext || relaunched) {

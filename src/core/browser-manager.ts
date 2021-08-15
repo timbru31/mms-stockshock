@@ -11,7 +11,7 @@ import { Response } from "../models/api/response";
 import { Notifier } from "../models/notifier";
 import { StoreConfiguration } from "../models/stores/config-model";
 import { Store } from "../models/stores/store";
-import { GRAPHQL_CLIENT_VERSION, shuffle, sleep } from "../utils/utils";
+import { GRAPHQL_CLIENT_VERSION, noop, shuffle, sleep } from "../utils/utils";
 
 export class BrowserManager {
     reLoginRequired = true;
@@ -52,7 +52,11 @@ export class BrowserManager {
         await this.proxyServer?.close(true);
     }
 
-    async launchPuppeteer(headless = true, sandbox = true, shmUsage = true): Promise<void> {
+    async launchPuppeteer(headless = true, sandbox = true, shmUsage = true): Promise<boolean> {
+        return Promise.race([this._launchPuppeteer(headless, sandbox, shmUsage), sleep(6000, false)]);
+    }
+
+    private async _launchPuppeteer(headless: boolean, sandbox: boolean, shmUsage: boolean) {
         await this.cleanOldReferences();
 
         const args = [];
@@ -89,6 +93,7 @@ export class BrowserManager {
             args,
         } as unknown as PuppeteerNodeLaunchOptions);
         this.reLaunchRequired = false;
+        return true;
     }
 
     async logIn(headless = true, email: string, password: string): Promise<void> {
@@ -267,7 +272,7 @@ export class BrowserManager {
                 this.rotateProxy();
                 this.reLoginRequired = true;
             }
-            if (!this.storeConfig.ignore_sleep) {
+            if (!this.storeConfig.ignore_sleep && res.retryAfterHeader) {
                 let cooldown = Number(res.retryAfterHeader);
                 this.logger.error(`Too many requests, we need to cooldown and sleep ${cooldown} seconds`);
                 for (const notifier of this.notifiers) {
@@ -281,7 +286,7 @@ export class BrowserManager {
             }
         }
 
-        if (res.status === 403 || res.status === 0) {
+        if (res.status === 403 || res.status <= 0) {
             this.reLoginRequired = true;
             this.reLaunchRequired = true;
         }
