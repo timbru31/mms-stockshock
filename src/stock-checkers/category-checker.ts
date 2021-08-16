@@ -289,10 +289,20 @@ export class CategoryChecker {
                 this.cooldownManager.deleteCooldown(itemId);
             }
 
+            const lastKnownPrice = this.database ? await this.database.getLastKnownPrice(item.product) : NaN;
+            const price = item.price?.price ?? NaN;
+
+            if (price && lastKnownPrice && price !== lastKnownPrice) {
+                for (const notifier of this.notifiers) {
+                    await notifier.notifyPriceChange(item, lastKnownPrice);
+                }
+            }
+            if (price && price !== lastKnownPrice) {
+                await this.database?.storePrice(item.product, price);
+            }
+
             if (!this.cooldownManager.hasCooldown(itemId)) {
                 const cookiesAmount = this.database ? await this.database.getCookiesAmount(item.product) : 0;
-                const lastKnownPrice = this.database ? await this.database.getLastKnownPrice(item.product) : NaN;
-                const price = item.price?.price ?? NaN;
                 for (const notifier of this.notifiers) {
                     const message = await notifier.notifyStock(item, cookiesAmount);
                     if (message) {
@@ -301,9 +311,6 @@ export class CategoryChecker {
                     if (price && lastKnownPrice && price !== lastKnownPrice) {
                         await notifier.notifyPriceChange(item, lastKnownPrice);
                     }
-                }
-                if (price && price !== lastKnownPrice) {
-                    await this.database?.storePrice(item.product, price);
                 }
                 this.cooldownManager.addToCooldownMap(isProductBuyable, item, Boolean(cookiesAmount));
             }
