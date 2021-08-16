@@ -41,12 +41,16 @@ export class ProductHelper {
         return item?.product?.onlineStatus;
     }
 
-    getProductURL(item: Item, store: Store, replacements?: Map<string, string>): string {
-        const replacement = replacements?.get(item.product.id);
+    getProductURL(item: Item, store: Store, replacements?: Map<string, string>, magician = false): string {
+        const replacement = replacements?.get(magician ? `${item.product.id}*` : item.product.id);
         if (replacement) {
             return replacement;
         }
 
-        return store.baseUrl + (item?.product?.url || `/de/product/-${item.product.id}.html`);
+        return (
+            store.baseUrl +
+            (item?.product?.url || `/de/product/-${item.product.id}.html`) +
+            (magician ? `?magician=${item?.product?.id}` : "")
+        );
     }
 }

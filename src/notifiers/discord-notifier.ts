@@ -28,6 +28,7 @@ export class DiscordNotifier implements Notifier {
     private readonly store: Store;
     private readonly logger: Logger;
     private readonly productHelper = new ProductHelper();
+    private readonly replacements = new Map<string, string>();
 
     constructor(store: Store, storeConfig: StoreConfiguration, logger: Logger) {
         this.store = store;
@@ -38,6 +39,14 @@ export class DiscordNotifier implements Notifier {
         this.shoppingCartAlerts = storeConfig.shopping_cart_alerts ?? true;
 
         this.logger = logger;
+
+        if (storeConfig.id_replacements) {
+            storeConfig.id_replacements.map((pair) => {
+                const id = pair[0];
+                const url = pair[1];
+                this.replacements.set(id, url);
+            });
+        }
     }
 
     async notifyAdmin(message: string): Promise<void> {
@@ -88,12 +97,14 @@ export class DiscordNotifier implements Notifier {
         let emoji: string;
         const embed = this.createEmbed(item);
 
+        const price = item?.price?.price ?? "0";
+        const currency = item?.price?.currency ?? "𑿠";
         embed.addFields([
-            { name: "Magician", value: `${this.productHelper.getProductURL(item, this.store)}?magician=${item?.product?.id}` },
+            { name: "Magician", value: `${this.productHelper.getProductURL(item, this.store, this.replacements, true)}` },
             { name: "ProductID", value: item.product.id },
             {
                 name: "Price",
-                value: `${item?.price?.price ?? "0"} ${item?.price?.currency ?? "𑿠"}`,
+                value: `${price} ${currency}`,
                 inline: true,
             },
             {
@@ -113,9 +124,14 @@ export class DiscordNotifier implements Notifier {
             emoji = "🟢";
 
             plainMessage = this.decorateMessageWithRoles(
-                `🟢 Item **available**: ${item?.product?.id}, ${item?.product?.title} for ${item?.price?.price ?? "0"} ${
-                    item?.price?.currency ?? "𑿠"
-                }! Go check it out: ${this.productHelper.getProductURL(item, this.store)}?magician=${item?.product?.id}`,
+                `🟢 Item **available**: ${item?.product?.id}, ${
+                    item?.product?.title
+                } for ${price} ${currency}! Go check it out: ${this.productHelper.getProductURL(
+                    item,
+                    this.store,
+                    this.replacements,
+                    true
+                )}`,
                 this.getRolePingsForTitle(item.product.title)
             );
         } else if (this.productHelper.canProductBeAddedToBasket(item)) {
@@ -127,9 +143,14 @@ export class DiscordNotifier implements Notifier {
             emoji = "🛒";
 
             plainMessage = this.decorateMessageWithRoles(
-                `🛒 Item **can be added to basket**: ${item?.product?.id}, ${item?.product?.title} for ${item?.price?.price ?? "0"} ${
-                    item?.price?.currency ?? "𑿠"
-                }! Go check it out: ${this.productHelper.getProductURL(item, this.store)}?magician=${item?.product?.id}`,
+                `🛒 Item **can be added to basket**: ${item?.product?.id}, ${
+                    item?.product?.title
+                } for ${price} ${currency}! Go check it out: ${this.productHelper.getProductURL(
+                    item,
+                    this.store,
+                    this.replacements,
+                    true
+                )}`,
                 this.getRolePingsForTitle(item.product.title)
             );
         } else {
@@ -138,9 +159,9 @@ export class DiscordNotifier implements Notifier {
             emoji = "🟡";
 
             plainMessage = this.decorateMessageWithRoles(
-                `🟡 Item for **basket parker**: ${item?.product?.id}, ${item?.product?.title} for ${item?.price?.price ?? "0"} ${
-                    item?.price?.currency ?? "𑿠"
-                }! Go check it out: ${this.productHelper.getProductURL(item, this.store)}`,
+                `🟡 Item for **basket parker**: ${item?.product?.id}, ${
+                    item?.product?.title
+                } for ${price} ${currency}! Go check it out: ${this.productHelper.getProductURL(item, this.store, this.replacements)}`,
                 this.getRolePingsForTitle(item.product.title)
             );
         }
@@ -151,9 +172,7 @@ export class DiscordNotifier implements Notifier {
                 await stockChannelForItem.send({
                     embeds: [embed],
                     content: this.decorateMessageWithRoles(
-                        `${emoji} ${item?.product?.title} [${item?.product?.id}] for ${item?.price?.price ?? "0"} ${
-                            item?.price?.currency ?? "𑿠"
-                        }`,
+                        `${emoji} ${item?.product?.title} [${item?.product?.id}] for ${price} ${currency}`,
                         this.getRolePingsForTitle(item.product.title)
                     ),
                 });
@@ -367,8 +386,8 @@ export class DiscordNotifier implements Notifier {
         const embed = new MessageEmbed().setTimestamp();
         embed.setImage(`https://assets.mmsrg.com/isr/166325/c1/-/${item.product.titleImageId}/mobile_200_200.png`);
         embed.setTitle(item?.product?.title);
-        embed.setURL(`${this.productHelper.getProductURL(item, this.store)}`);
-        embed.setFooter(`Stockshock v${version} • If you have paid for this, you have been scammed`);
+        embed.setURL(`${this.productHelper.getProductURL(item, this.store, this.replacements)}`);
+        embed.setFooter(`Stockshock v${version} • If you have paid for this, you have been scammed • Links may be affiliate links`);
         return embed;
     }
 }
