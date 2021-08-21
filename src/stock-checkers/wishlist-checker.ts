@@ -89,8 +89,6 @@ export class WishlistChecker {
     }> {
         if (!this.browserManager.page) {
             this.logger.error("Unable to perform wishlist query: page is undefined!");
-            this.browserManager.reLaunchRequired = true;
-            this.browserManager.reLoginRequired = true;
             return Promise.resolve({ status: 0, body: null });
         }
         try {

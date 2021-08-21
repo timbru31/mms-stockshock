@@ -115,8 +115,6 @@ export class CategoryChecker {
     }> {
         if (!this.browserManager.page) {
             this.logger.error("Unable to perform category query: page is undefined!");
-            this.browserManager.reLaunchRequired = true;
-            this.browserManager.reLoginRequired = true;
             return Promise.resolve({ status: 0, body: null });
         }
         try {
