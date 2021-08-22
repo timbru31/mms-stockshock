@@ -7,17 +7,20 @@ import WebSocket from "ws";
 import { Item } from "../models/api/item";
 import { Notifier } from "../models/notifier";
 import { StoreConfiguration } from "../models/stores/config-model";
+import { Store } from "../models/stores/store";
 import { ProductHelper } from "../utils/product-helper";
 import { noop, shuffle } from "../utils/utils";
 
 export class WebSocketNotifier implements Notifier {
     private heartBeatPing: NodeJS.Timeout | undefined;
     private readonly logger: Logger;
+    private readonly store: Store;
     private readonly productHelper = new ProductHelper();
     private readonly wss: WebSocket.Server | null;
 
-    constructor(storeConfig: StoreConfiguration, logger: Logger) {
+    constructor(storeConfig: StoreConfiguration, logger: Logger, store: Store) {
         this.logger = logger;
+        this.store = store;
         this.wss = this.setupWebSocketServer(storeConfig);
     }
 
@@ -114,7 +117,13 @@ export class WebSocketNotifier implements Notifier {
                         }
                     );
                 }
-                this.logger.info(`🏓 Sending stock ping to client with ready state ${client.readyState}`);
+
+                this.logger.info(
+                    `🏓 Sending stock ping to client (${(client as WebSocketExtended)._socket.remoteAddress}) with ready state ${
+                        client.readyState
+                    }`
+                );
+                this.store.getSleepTime();
             }
         }
     }
@@ -125,4 +134,8 @@ export class WebSocketNotifier implements Notifier {
         }
         this.wss?.close();
     }
+}
+
+interface WebSocketExtended extends WebSocket {
+    _socket: Socket;
 }

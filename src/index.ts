@@ -47,7 +47,7 @@ import { createLogger, loadConfig, sleep } from "./utils/utils";
     }
 
     if (storeConfig?.use_websocket) {
-        const webSocketNotifier = new WebSocketNotifier(storeConfig, logger);
+        const webSocketNotifier = new WebSocketNotifier(storeConfig, logger, store);
         notifiers.push(webSocketNotifier);
     }
     if (
