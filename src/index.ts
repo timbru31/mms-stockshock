@@ -115,10 +115,10 @@ import { createLogger, loadConfig, sleep } from "./utils/utils";
 
             if (storeConfig.categories?.length) {
                 if (storeConfig?.accounts?.length > 1) {
-                    await reLaunchIfRequired(browserManager, args, true);
+                    await reLaunchIfRequired(browserManager, args, logger, true);
                 }
                 for (const categoryId of storeConfig.categories) {
-                    await reLaunchIfRequired(browserManager, args);
+                    await reLaunchIfRequired(browserManager, args, logger);
                     logger.info(`📄 Checking category ${categoryId}`);
                     await sleep(store.getSleepTime());
                     const basketProducts = await Promise.race([
@@ -156,7 +156,9 @@ async function reLoginIfRequired(
     logger: Logger
 ) {
     if (browserManager.reLoginRequired) {
+        logger.info("Re-Login required!");
         if (browserManager.reLaunchRequired) {
+            logger.info("Re-Launch required!");
             if (!(await browserManager.launchPuppeteer(args.headless, args.sandbox, args.shmUsage))) {
                 throw new Error("Puppeteer could not be launched!");
             }
@@ -164,17 +166,19 @@ async function reLoginIfRequired(
         if (!(await browserManager.createIncognitoContext())) {
             throw new Error("Incognito context could not be created!");
         }
+        logger.info("New incognito context created!");
         await browserManager.logIn(args.headless, email, password);
         for (const notifier of notifiers) {
             await notifier.notifyAdmin(`🤖 [${store.getName()}] (Re-)Login succeeded, let's hunt`);
         }
-        logger.info("(Re-)Login succeeded, let's hunt!");
+        logger.info("Re-Login succeeded, let's hunt!");
     }
 }
 
-async function reLaunchIfRequired(browserManager: BrowserManager, args: CliArguments, createNewContext?: boolean) {
+async function reLaunchIfRequired(browserManager: BrowserManager, args: CliArguments, logger: Logger, createNewContext?: boolean) {
     let relaunched = false;
     if (browserManager.reLaunchRequired) {
+        logger.info("Re-Launch required!");
         if (!(await browserManager.launchPuppeteer(args.headless, args.sandbox, args.shmUsage))) {
             throw new Error("Puppeteer could not be launched!");
         }
@@ -184,5 +188,6 @@ async function reLaunchIfRequired(browserManager: BrowserManager, args: CliArgum
         if (!(await browserManager.createIncognitoContext())) {
             throw new Error("Incognito context could not be created!");
         }
+        logger.info("New incognito context created!");
     }
 }
