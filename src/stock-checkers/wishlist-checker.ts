@@ -4,7 +4,6 @@ import { Logger } from "winston";
 import { BrowserManager } from "../core/browser-manager";
 import { CooldownManager } from "../core/cooldown-manager";
 import { DatabaseConnection } from "../databases/database-connection";
-import { Item } from "../models/api/item";
 import { Product } from "../models/api/product";
 import { WishlistResponse } from "../models/api/wishlist-response";
 import { Notifier } from "../models/notifier";
@@ -58,7 +57,13 @@ export class WishlistChecker {
             if (!totalItems) {
                 throw new Error("Nothing on wishlist!");
             }
-            let items = await this.checkItems(res.body?.data?.wishlistItems?.items);
+            let items = await this.productHelper.checkItems(
+                res.body?.data?.wishlistItems?.items,
+                this.cooldownManager,
+                this.database,
+                this.notifiers,
+                this.logger
+            );
             basketProducts = new Map([...basketProducts, ...items]);
 
             if (totalItems > this.MAX_ITEMS_PER_QUERY) {
@@ -73,7 +78,13 @@ export class WishlistChecker {
                             break;
                         }
                     } else {
-                        items = await this.checkItems(res.body?.data?.wishlistItems?.items);
+                        items = await this.productHelper.checkItems(
+                            res.body?.data?.wishlistItems?.items,
+                            this.cooldownManager,
+                            this.database,
+                            this.notifiers,
+                            this.logger
+                        );
                         basketProducts = new Map([...basketProducts, ...items]);
                     }
                 }
@@ -154,57 +165,5 @@ export class WishlistChecker {
             this.logger.error("Unable to perform wishlist query: %O", error);
             return Promise.resolve({ status: 0, body: null });
         }
-    }
-
-    private async checkItems(items: Item[] | undefined): Promise<Map<string, Product>> {
-        const basketProducts = new Map<string, Product>();
-
-        if (items) {
-            for (const item of items) {
-                if (!item) {
-                    continue;
-                }
-
-                if (this.productHelper.isProductAvailable(item)) {
-                    const itemId = item?.product?.id;
-                    if (!itemId) {
-                        continue;
-                    }
-                    const isProductBuyable = this.productHelper.isProductBuyable(item);
-
-                    // Delete the cooldown in case the stock changes to really available
-                    if (!this.cooldownManager.getItem(itemId)?.isProductBuyable && isProductBuyable) {
-                        this.cooldownManager.deleteCooldown(itemId);
-                    }
-
-                    const lastKnownPrice = this.database ? await this.database.getLastKnownPrice(item.product) : NaN;
-                    const price = item.price?.price ?? NaN;
-                    if (price && lastKnownPrice && price !== lastKnownPrice) {
-                        for (const notifier of this.notifiers) {
-                            await notifier.notifyPriceChange(item, lastKnownPrice);
-                        }
-                    }
-                    if (price && price !== lastKnownPrice) {
-                        await this.database?.storePrice(item.product, price);
-                    }
-
-                    if (!this.cooldownManager.hasCooldown(itemId)) {
-                        const cookiesAmount = this.database ? await this.database.getCookiesAmount(item.product) : 0;
-                        for (const notifier of this.notifiers) {
-                            const message = await notifier.notifyStock(item, cookiesAmount);
-                            if (message) {
-                                this.logger.info(message);
-                            }
-                        }
-                        this.cooldownManager.addToCooldownMap(isProductBuyable, item, Boolean(cookiesAmount));
-                    }
-
-                    if (this.productHelper.canProductBeAddedToBasket(item) && !this.cooldownManager.hasBasketCooldown(itemId)) {
-                        basketProducts.set(itemId, item.product);
-                    }
-                }
-            }
-        }
-        return basketProducts;
     }
 }

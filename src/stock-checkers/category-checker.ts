@@ -3,17 +3,15 @@ import { v4 } from "uuid";
 import { Logger } from "winston";
 import { BrowserManager } from "../core/browser-manager";
 import { CooldownManager } from "../core/cooldown-manager";
-
-import { Item } from "../models/api/item";
-import { ProductHelper } from "../utils/product-helper";
-import { Store } from "../models/stores/store";
-import { GRAPHQL_CLIENT_VERSION, sleep } from "../utils/utils";
+import { DatabaseConnection } from "../databases/database-connection";
 import { CategoryResponse } from "../models/api/category-response";
 import { Product } from "../models/api/product";
 import { SelectedProductResponse } from "../models/api/selected-product-response";
-import { StoreConfiguration } from "../models/stores/config-model";
 import { Notifier } from "../models/notifier";
-import { DatabaseConnection } from "../databases/database-connection";
+import { StoreConfiguration } from "../models/stores/config-model";
+import { Store } from "../models/stores/store";
+import { ProductHelper } from "../utils/product-helper";
+import { GRAPHQL_CLIENT_VERSION, sleep } from "../utils/utils";
 
 export class CategoryChecker {
     private readonly store: Store;
@@ -96,7 +94,14 @@ export class CategoryChecker {
                     }
                 } else {
                     if (res?.body?.data) {
-                        await this.checkItem(res.body.data, basketProducts);
+                        await this.productHelper.checkItem(
+                            res.body.data,
+                            basketProducts,
+                            this.cooldownManager,
+                            this.database,
+                            this.notifiers,
+                            this.logger
+                        );
                     }
                 }
                 await sleep(this.store.getSleepTime());
@@ -270,55 +275,5 @@ export class CategoryChecker {
             this.logger.error("Unable to perform get product: %O", error);
             return Promise.resolve({ status: 0, body: null });
         }
-    }
-
-    private async checkItem(item: Item | undefined, basketProducts: Map<string, Product>): Promise<Map<string, Product>> {
-        if (!item) {
-            return basketProducts;
-        }
-
-        if (this.productHelper.isProductAvailable(item)) {
-            const itemId = item?.product?.id;
-            if (!itemId) {
-                return basketProducts;
-            }
-            const isProductBuyable = this.productHelper.isProductBuyable(item);
-
-            // Delete the cooldown in case the stock changes to really available
-            if (!this.cooldownManager.getItem(itemId)?.isProductBuyable && isProductBuyable) {
-                this.cooldownManager.deleteCooldown(itemId);
-            }
-
-            const lastKnownPrice = this.database ? await this.database.getLastKnownPrice(item.product) : NaN;
-            const price = item.price?.price ?? NaN;
-
-            if (price && lastKnownPrice && price !== lastKnownPrice) {
-                for (const notifier of this.notifiers) {
-                    await notifier.notifyPriceChange(item, lastKnownPrice);
-                }
-            }
-            if (price && price !== lastKnownPrice) {
-                await this.database?.storePrice(item.product, price);
-            }
-
-            if (!this.cooldownManager.hasCooldown(itemId)) {
-                const cookiesAmount = this.database ? await this.database.getCookiesAmount(item.product) : 0;
-                for (const notifier of this.notifiers) {
-                    const message = await notifier.notifyStock(item, cookiesAmount);
-                    if (message) {
-                        this.logger.info(message);
-                    }
-                    if (price && lastKnownPrice && price !== lastKnownPrice) {
-                        await notifier.notifyPriceChange(item, lastKnownPrice);
-                    }
-                }
-                this.cooldownManager.addToCooldownMap(isProductBuyable, item, Boolean(cookiesAmount));
-            }
-
-            if (this.productHelper.canProductBeAddedToBasket(item) && !this.cooldownManager.hasBasketCooldown(itemId)) {
-                basketProducts.set(itemId, item.product);
-            }
-        }
-        return basketProducts;
     }
 }
