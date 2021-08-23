@@ -70,7 +70,7 @@ export class ProductHelper {
 
         if (items) {
             for (const item of items) {
-                this.checkItem(item, basketProducts, cooldownManager, database, notifiers, logger);
+                await this.checkItem(item, basketProducts, cooldownManager, database, notifiers, logger);
             }
         }
         return basketProducts;
