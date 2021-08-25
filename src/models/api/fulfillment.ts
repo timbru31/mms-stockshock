@@ -1,7 +1,7 @@
 export type FulfillmentMethod = "DELIVERY" | "PACKSTATION" | "PICKUP" | "SHIP_FROM_OUTLET";
 
 export interface Fulfillment {
-    method: string;
+    method: FulfillmentMethod;
     amount: {
         currency: string;
         price: number;
