@@ -61,7 +61,7 @@ export class TwitterNotifier implements Notifier {
     }
 
     async notifyStock(item: Item | undefined): Promise<string | undefined> {
-        if (!this.twitterClient || !item) {
+        if (!this.twitterClient || !item?.product) {
             return;
         }
 

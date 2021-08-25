@@ -106,6 +106,9 @@ export class WebSocketNotifier implements Notifier {
     }
 
     private async notifyWebSocketClients(item: Item, direct: boolean) {
+        if (!item.product) {
+            return;
+        }
         if (this.wss) {
             for (const client of shuffle(Array.from(this.wss.clients))) {
                 if (client.readyState === WebSocket.OPEN) {

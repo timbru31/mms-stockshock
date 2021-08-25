@@ -16,7 +16,7 @@ export class ProductHelper {
      * Special note: LONG_TAIL needs to be purchasable (onlineStatus)!
      */
     isProductAvailable(item: Item): boolean {
-        if (item.product.onlineStatus) {
+        if (item.product?.onlineStatus) {
             return true;
         }
 
@@ -33,7 +33,7 @@ export class ProductHelper {
     }
 
     isProductBuyable(item: Item): boolean {
-        if (item.product.onlineStatus) {
+        if (item.product?.onlineStatus) {
             switch (item.availability.delivery.availabilityType) {
                 case "IN_STORE":
                     return true;
@@ -49,10 +49,13 @@ export class ProductHelper {
     }
 
     canProductBeAddedToBasket(item: Item): boolean {
-        return item.product.onlineStatus;
+        return item.product?.onlineStatus ?? false;
     }
 
     getProductURL(item: Item, store: Store, replacements?: Map<string, string>, magician = false): string {
+        if (!item.product) {
+            return "";
+        }
         const replacement = replacements?.get(magician ? `${item.product.id}*` : item.product.id);
         if (replacement) {
             return replacement;
@@ -92,7 +95,7 @@ export class ProductHelper {
             return basketProducts;
         }
 
-        if (this.isProductAvailable(item)) {
+        if (item.product && this.isProductAvailable(item)) {
             const itemId = item.product.id;
             if (!itemId) {
                 return basketProducts;

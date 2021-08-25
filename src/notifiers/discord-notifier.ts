@@ -104,7 +104,7 @@ export class DiscordNotifier implements Notifier {
     }
 
     async notifyStock(item?: Item, cookiesAmount?: number): Promise<string | undefined> {
-        if (!item) {
+        if (!item?.product) {
             return;
         }
         let plainMessage: string;
@@ -199,7 +199,7 @@ export class DiscordNotifier implements Notifier {
     }
 
     async notifyPriceChange(item?: Item, oldPrice?: number): Promise<void> {
-        if (item && oldPrice) {
+        if (item?.product && oldPrice) {
             const embed = this.createEmbed(item);
             const currency = item.price?.currency ?? "𑿠";
             const newPrice = item.price?.price ?? this.zero;
@@ -407,10 +407,13 @@ export class DiscordNotifier implements Notifier {
 
     private createEmbed(item: Item) {
         const embed = new MessageEmbed().setTimestamp();
+        embed.setFooter(`Stockshock v${version} • If you have paid for this, you have been scammed • Links may be affiliate links`);
+        if (!item.product) {
+            return embed;
+        }
         embed.setImage(`https://assets.mmsrg.com/isr/166325/c1/-/${item.product.titleImageId}/mobile_200_200.png`);
         embed.setTitle(item.product.title);
         embed.setURL(`${this.productHelper.getProductURL(item, this.store, this.replacements)}`);
-        embed.setFooter(`Stockshock v${version} • If you have paid for this, you have been scammed • Links may be affiliate links`);
         return embed;
     }
 }
