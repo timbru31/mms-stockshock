@@ -1,7 +1,7 @@
 /// <reference types="node" />
 
 declare module "proxy-chain" {
-    import { IncomingMessage } from "http";
+    import type { IncomingMessage } from "http";
     import { EventEmitter } from "events";
 
     interface ServerOptions {

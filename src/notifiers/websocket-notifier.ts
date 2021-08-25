@@ -1,15 +1,15 @@
 import { readFileSync } from "fs";
 import http from "http";
 import https from "https";
-import { Socket } from "net";
-import { Logger } from "winston";
+import type { Socket } from "net";
+import type { Logger } from "winston";
 import WebSocket from "ws";
-import { Item } from "../models/api/item";
-import { Notifier } from "../models/notifier";
-import { StoreConfiguration } from "../models/stores/config-model";
-import { Store } from "../models/stores/store";
+import type { Item } from "../models/api/item";
+import type { Notifier } from "../models/notifier";
+import type { StoreConfiguration } from "../models/stores/config-model";
+import type { Store } from "../models/stores/store";
 import { ProductHelper } from "../utils/product-helper";
-import { noop, shuffle } from "../utils/utils";
+import { noopPromise, shuffle, sleep } from "../utils/utils";
 
 export class WebSocketNotifier implements Notifier {
     private heartBeatPing: NodeJS.Timeout | undefined;
@@ -17,6 +17,7 @@ export class WebSocketNotifier implements Notifier {
     private readonly store: Store;
     private readonly productHelper = new ProductHelper();
     private readonly wss: WebSocket.Server | null;
+    private readonly fallbackPrice = 0;
 
     constructor(storeConfig: StoreConfiguration, logger: Logger, store: Store) {
         this.logger = logger;
@@ -25,18 +26,21 @@ export class WebSocketNotifier implements Notifier {
     }
 
     async notifyAdmin(): Promise<void> {
-        return noop();
+        await noopPromise();
     }
 
     async notifyRateLimit(): Promise<void> {
-        return noop();
+        await noopPromise();
     }
 
     async notifyCookies(): Promise<void> {
-        return noop();
+        await noopPromise();
     }
 
-    async notifyStock(item: Item): Promise<string | undefined> {
+    async notifyStock(item: Item | undefined): Promise<string | undefined> {
+        if (!item) {
+            return undefined;
+        }
         const fullAlert = this.productHelper.isProductBuyable(item);
         if (fullAlert) {
             await this.notifyWebSocketClients(item, true);
@@ -47,7 +51,7 @@ export class WebSocketNotifier implements Notifier {
     }
 
     async notifyPriceChange(): Promise<void> {
-        return noop();
+        await noopPromise();
     }
 
     shutdown(): void {
@@ -73,29 +77,31 @@ export class WebSocketNotifier implements Notifier {
         server.on("upgrade", (request, socket: Socket, head) => {
             const password = request.headers["sec-websocket-protocol"];
             if (!password || !storeConfig.websocket_passwords?.includes(password)) {
-                this.logger.info(`😵‍💫 WebSocket connection from client from ${socket?.remoteAddress} was denied!`);
+                this.logger.info(`😵‍💫 WebSocket connection from client from ${socket.remoteAddress ?? ""} was denied!`);
                 socket.write("HTTP/1.1 401 Unauthorized\r\n\r\n");
                 socket.destroy();
                 return;
             }
             this.logger.info(
-                `👌 WebSocket client from ${socket?.remoteAddress} connected successfully with ${
+                `👌 WebSocket client from ${socket.remoteAddress ?? ""} connected successfully with ${
                     storeConfig.log_passwords ? password : "***"
                 }`
             );
             wss.handleUpgrade(request, socket, head, (ws) => wss.emit("connection", ws, request));
         });
 
-        server.listen(storeConfig.websocket_port ?? 8080);
+        const defaultPort = 8080;
+        server.listen(storeConfig.websocket_port ?? defaultPort);
 
-        this.heartBeatPing = setInterval(async () => {
-            for (const client of wss?.clients) {
+        const heartbeatInMilliseconds = 30000;
+        this.heartBeatPing = setInterval(() => {
+            for (const client of wss.clients) {
                 if (client.readyState === WebSocket.OPEN) {
                     client.ping();
                     this.logger.info("💖 Sending heartbeat ping to client");
                 }
             }
-        }, 30000);
+        }, heartbeatInMilliseconds);
         return wss;
     }
 
@@ -108,9 +114,9 @@ export class WebSocketNotifier implements Notifier {
                             direct,
                             title: item.product.title,
                             id: item.product.id,
-                            price: item?.price?.price || 0,
+                            price: item.price?.price ?? this.fallbackPrice,
                         }),
-                        async (e) => {
+                        (e: unknown) => {
                             if (e) {
                                 this.logger.info("😵‍💫 Error sending stock ping, %O", e);
                             }
@@ -119,11 +125,11 @@ export class WebSocketNotifier implements Notifier {
                 }
 
                 this.logger.info(
-                    `🏓 Sending stock ping to client (${(client as WebSocketExtended)._socket.remoteAddress}) with ready state ${
+                    `🏓 Sending stock ping to client (${(client as WebSocketExtended)._socket.remoteAddress ?? ""}) with ready state ${
                         client.readyState
                     }`
                 );
-                this.store.getSleepTime();
+                await sleep(this.store.getSleepTime());
             }
         }
     }

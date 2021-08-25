@@ -1,14 +1,15 @@
-import { SerializableOrJSHandle } from "puppeteer";
+import type { SerializableOrJSHandle } from "puppeteer";
 import { v4 } from "uuid";
-import { Logger } from "winston";
-import { BrowserManager } from "../core/browser-manager";
-import { CooldownManager } from "../core/cooldown-manager";
-import { DatabaseConnection } from "../databases/database-connection";
-import { Product } from "../models/api/product";
-import { WishlistResponse } from "../models/api/wishlist-response";
-import { Notifier } from "../models/notifier";
-import { StoreConfiguration } from "../models/stores/config-model";
-import { Store } from "../models/stores/store";
+import type { Logger } from "winston";
+import type { BrowserManager } from "../core/browser-manager";
+import type { CooldownManager } from "../core/cooldown-manager";
+import type { DatabaseConnection } from "../databases/database-connection";
+import type { Product } from "../models/api/product";
+import type { WishlistResponse } from "../models/api/wishlist-response";
+import type { Notifier } from "../models/notifier";
+import type { StoreConfiguration } from "../models/stores/config-model";
+import type { Store } from "../models/stores/store";
+import { HTTPStatusCode } from "../utils/http";
 import { ProductHelper } from "../utils/product-helper";
 import { GRAPHQL_CLIENT_VERSION, sleep } from "../utils/utils";
 
@@ -24,6 +25,8 @@ export class WishlistChecker {
     private readonly cooldownManager: CooldownManager;
     private readonly productHelper = new ProductHelper();
     private readonly database: DatabaseConnection | undefined;
+    private readonly defaultOffset = 0;
+    private readonly wishlistRaceTimeout = 10000;
 
     constructor(
         store: Store,
@@ -50,15 +53,15 @@ export class WishlistChecker {
         let basketProducts = new Map<string, Product>();
 
         const res = await this.performWishlistQuery();
-        if (res.status !== 200 || !res.body || res.body?.errors) {
+        if (res.status !== HTTPStatusCode.OK || !res.body || res.body.errors) {
             await this.browserManager.handleResponseError("WishlistItems", res);
         } else {
-            const totalItems = res.body?.data?.wishlistItems?.total;
+            const totalItems = res.body.data?.wishlistItems?.total;
             if (!totalItems) {
                 throw new Error("Nothing on wishlist!");
             }
             let items = await this.productHelper.checkItems(
-                res.body?.data?.wishlistItems?.items,
+                res.body.data?.wishlistItems?.items,
                 this.cooldownManager,
                 this.database,
                 this.notifiers,
@@ -68,18 +71,19 @@ export class WishlistChecker {
 
             if (totalItems > this.MAX_ITEMS_PER_QUERY) {
                 const remainingQueryCalls = Math.ceil((totalItems - this.MAX_ITEMS_PER_QUERY) / this.MAX_ITEMS_PER_QUERY);
+                // eslint-disable-next-line @typescript-eslint/no-magic-numbers
                 for (let additionalQueryCalls = 1; additionalQueryCalls <= remainingQueryCalls; additionalQueryCalls += 1) {
                     await sleep(this.store.getSleepTime());
                     const newOffset = additionalQueryCalls * this.MAX_ITEMS_PER_QUERY;
-                    const res = await this.performWishlistQuery(newOffset);
-                    if (res.status !== 200 || !res.body || res.body?.errors) {
-                        await this.browserManager.handleResponseError("WishlistItems", res);
+                    const innerResponse = await this.performWishlistQuery(newOffset);
+                    if (innerResponse.status !== HTTPStatusCode.OK || !innerResponse.body || innerResponse.body.errors) {
+                        await this.browserManager.handleResponseError("WishlistItems", innerResponse);
                         if (this.browserManager.reLoginRequired || this.browserManager.reLaunchRequired) {
                             break;
                         }
                     } else {
                         items = await this.productHelper.checkItems(
-                            res.body?.data?.wishlistItems?.items,
+                            innerResponse.body.data?.wishlistItems?.items,
                             this.cooldownManager,
                             this.database,
                             this.notifiers,
@@ -93,7 +97,7 @@ export class WishlistChecker {
         return basketProducts;
     }
 
-    private performWishlistQuery(offset = 0): Promise<{
+    private async performWishlistQuery(offset = this.defaultOffset): Promise<{
         status: number;
         body: WishlistResponse | null;
         retryAfterHeader?: string | null;
@@ -103,10 +107,10 @@ export class WishlistChecker {
             return Promise.resolve({ status: 0, body: null });
         }
         try {
-            return Promise.race([
+            return await Promise.race([
                 this.browserManager.page.evaluate(
-                    async (store: Store, offset: number, flowId: string, graphQLClientVersion: string, wishlistSHA256: string) =>
-                        await fetch(`${store.baseUrl}/api/v1/graphql?anti-cache=${new Date().getTime()}`, {
+                    async (store: Store, pageOffset: number, flowId: string, graphQLClientVersion: string, wishlistSHA256: string) =>
+                        fetch(`${store.baseUrl}/api/v1/graphql?anti-cache=${new Date().getTime()}`, {
                             credentials: "include",
                             headers: {
                                 "content-type": "application/json",
@@ -130,7 +134,7 @@ export class WishlistChecker {
                                     hasMarketplace: true,
                                     shouldFetchBasket: true,
                                     limit: 24,
-                                    offset,
+                                    offset: pageOffset,
                                 },
                                 extensions: {
                                     pwa: { salesLine: store.salesLine, country: store.countryCode, language: store.languageCode },
@@ -141,10 +145,10 @@ export class WishlistChecker {
                                 },
                             }),
                         })
-                            .then((res) =>
+                            .then(async (res) =>
                                 res
                                     .json()
-                                    .then((data) => ({ status: res.status, body: data }))
+                                    .then((data: WishlistResponse) => ({ status: res.status, body: data }))
                                     // eslint-disable-next-line @typescript-eslint/no-unused-vars
                                     .catch((_) => ({ status: res.status, body: null, retryAfterHeader: res.headers.get("Retry-After") }))
                             )
@@ -156,14 +160,14 @@ export class WishlistChecker {
                     GRAPHQL_CLIENT_VERSION,
                     this.storeConfiguration.wishlistSHA256
                 ),
-                sleep(10000, {
-                    status: -1,
+                sleep(this.wishlistRaceTimeout, {
+                    status: HTTPStatusCode.Timeout,
                     body: { errors: "Timeout" },
                 }),
             ]);
-        } catch (error) {
+        } catch (error: unknown) {
             this.logger.error("Unable to perform wishlist query: %O", error);
-            return Promise.resolve({ status: 0, body: null });
+            return Promise.resolve({ status: HTTPStatusCode.Error, body: null });
         }
     }
 }

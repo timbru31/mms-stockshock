@@ -19,8 +19,8 @@ export interface StoreConfiguration {
     min_sleep_time?: number;
     max_sleep_time?: number;
     cookies?: number;
-    announce_cookies: boolean;
-    shopping_cart_alerts: boolean;
+    announce_cookies?: boolean;
+    shopping_cart_alerts?: boolean;
     id_replacements?: string[][];
 
     // Discord channels for notifications

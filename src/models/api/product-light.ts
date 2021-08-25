@@ -1,4 +1,4 @@
-import { Availability } from "./availability";
+import type { Availability } from "./availability";
 
 export interface ProductLight {
     productId: string;

@@ -1,6 +1,6 @@
-import { Fulfillment } from "./fulfillment";
-import { LineItem } from "./line-item";
-import { Response } from "./response";
+import type { Fulfillment } from "./fulfillment";
+import type { LineItem } from "./line-item";
+import type { Response } from "./response";
 
 export interface GetBasketResponse extends Response {
     data?: {
@@ -14,7 +14,7 @@ export interface GetBasketResponse extends Response {
                     } | null;
                     mp: unknown[];
                     addresses: {
-                        additionalInfo: null | unknown;
+                        additionalInfo: unknown | null;
                         city: string;
                         country: string;
                         firstname: string;
@@ -22,7 +22,7 @@ export interface GetBasketResponse extends Response {
                         houseNumber: string;
                         id: string;
                         lastname: string;
-                        phoneNumber: null | string;
+                        phoneNumber: string | null;
                         preferredBilling: boolean;
                         preferredShipping: boolean;
                         selected: {
@@ -37,16 +37,16 @@ export interface GetBasketResponse extends Response {
                 };
                 customer: {
                     birthdate: string;
-                    companyName: null | string;
-                    companyTaxId: null | string;
-                    customerTaxId: null | string;
+                    companyName: string | null;
+                    companyTaxId: string | null;
+                    customerTaxId: string | null;
                     businessRelationship: string;
                     email: string;
                     firstName: string;
                     lastName: string;
                     loyaltyCardId: string;
-                    loyaltyLevel: null | string;
-                    phoneNumber: null | string;
+                    loyaltyLevel: string | null;
+                    phoneNumber: string | null;
                     type: string;
                     emailOptIn: false;
                     gender: string;
@@ -56,22 +56,22 @@ export interface GetBasketResponse extends Response {
             payment: {
                 amountPaid: {
                     currency: string;
-                    price: 0;
+                    price: number;
                 };
                 amountToPay: {
                     currency: string;
-                    price: 0;
+                    price: number;
                 };
                 amountToPayExcludingGiftcards: {
                     currency: string;
-                    price: 0;
+                    price: number;
                 };
                 amountToReturn: {
                     currency: string;
-                    price: 0;
+                    price: number;
                 };
                 storedPaymentMethods: unknown[];
-                paymentId: null | unknown;
+                paymentId: unknown | null;
             };
 
             coupons: unknown[];

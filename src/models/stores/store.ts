@@ -6,17 +6,20 @@ export interface Store {
     shortCode: string;
     loginSleepTime?: number;
 
-    getSleepTime(): number;
-    setSleepTimes(minSleepTime: undefined | number, maxSleepTime: undefined | number): void;
+    getSleepTime: () => number;
+    setSleepTimes: (minSleepTime: number | undefined, maxSleepTime: number | undefined) => void;
 
-    getName(): string;
-    getShortName(): string;
+    getName: () => string;
+    getShortName: () => string;
 
+    /* eslint-disable @typescript-eslint/indent */
+    // eslint-disable-next-line @typescript-eslint/member-ordering
     [key: string]:
-        | string
         | number
-        | undefined
+        | string
         | (() => number)
         | (() => string)
-        | ((minSleepTime: undefined | number, maxSleepTime: undefined | number) => void);
+        | ((minSleepTime: number | undefined, maxSleepTime: number | undefined) => void)
+        | undefined;
+    /* eslint-enable @typescript-eslint/indent */
 }

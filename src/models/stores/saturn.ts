@@ -1,5 +1,5 @@
 import { CommonStore } from "./abstract-store";
-import { Store } from "./store";
+import type { Store } from "./store";
 
 export class Saturn extends CommonStore implements Store {
     readonly baseUrl = "https://www.saturn.de";

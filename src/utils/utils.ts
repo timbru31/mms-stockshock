@@ -1,21 +1,36 @@
 import colors from "colors/safe";
 import { readFile } from "fs/promises";
 import { parse } from "toml";
-import { createLogger as createWinstonLogger, format, Logger, transports } from "winston";
-import { ConfigModel } from "../models/stores/config-model";
+import type { Logger } from "winston";
+import { createLogger as createWinstonLogger, format, transports } from "winston";
+import type { ConfigModel } from "../models/stores/config-model";
 
 export const GRAPHQL_CLIENT_VERSION = "7.29.1";
 
+function getEmojiForLevel(level: string) {
+    switch (colors.stripColors(level)) {
+        case "info":
+            return "🧚";
+        case "error":
+        default:
+            return "⚡️";
+    }
+}
+
 export async function sleep<T>(sleepTime: number, returnValue?: T): Promise<T> {
-    return new Promise<T>((resolve) => setTimeout(() => resolve(returnValue || ({} as T)), sleepTime));
+    return new Promise<T>((resolve) =>
+        setTimeout(() => {
+            resolve(returnValue ?? ({} as T));
+        }, sleepTime)
+    );
 }
 
 export async function loadConfig(logger: Logger): Promise<ConfigModel | null> {
     const configFile = await readFile("stores.toml", "utf-8");
     let config: ConfigModel | null = null;
     try {
-        config = parse(configFile);
-    } catch (e) {
+        config = parse(configFile) as ConfigModel;
+    } catch (e: unknown) {
         logger.error("Uh oh! Unable to parse the config file!");
         logger.error(e);
     }
@@ -24,7 +39,7 @@ export async function loadConfig(logger: Logger): Promise<ConfigModel | null> {
 
 export function createLogger(): Logger {
     const customLogFormat = format.printf((info) => {
-        return `${info.timestamp} [${getEmojiForLevel(info.level)}] ${info.level}: ${info.message} `;
+        return `${info.timestamp as string} [${getEmojiForLevel(info.level)}] ${info.level}: ${info.message} `;
     });
 
     return createWinstonLogger({
@@ -60,12 +75,14 @@ export function shuffle<T>(array: T[]): T[] {
     let currentIndex = array.length;
     let temporaryValue: T;
     let randomIndex: number;
+    const breakage = 0;
+    const step = 1;
 
-    // While there remain elements to shuffle...
-    while (0 !== currentIndex) {
+    // While there remaining elements to shuffle...
+    while (breakage !== currentIndex) {
         // Pick a remaining element...
         randomIndex = Math.floor(Math.random() * currentIndex);
-        currentIndex -= 1;
+        currentIndex -= step;
 
         // And swap it with the current element.
         temporaryValue = array[currentIndex];
@@ -79,12 +96,6 @@ export function shuffle<T>(array: T[]): T[] {
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 export function noop(): void {}
 
-function getEmojiForLevel(level: string) {
-    switch (colors.stripColors(level)) {
-        case "info":
-            return "🧚";
-        case "error":
-        default:
-            return "⚡️";
-    }
+export async function noopPromise(): Promise<void> {
+    return Promise.resolve();
 }

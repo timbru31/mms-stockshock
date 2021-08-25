@@ -1,8 +1,8 @@
 import { add, isAfter, parseISO } from "date-fns";
 import { existsSync, readFileSync, writeFileSync } from "fs";
-import { Item } from "../models/api/item";
-import { Product } from "../models/api/product";
-import { NotificationCooldown } from "../models/cooldown";
+import type { Item } from "../models/api/item";
+import type { Product } from "../models/api/product";
+import type { NotificationCooldown } from "../models/cooldown";
 import { ProductHelper } from "../utils/product-helper";
 
 export class CooldownManager {
@@ -13,6 +13,7 @@ export class CooldownManager {
     constructor() {
         if (existsSync("basket-cooldowns.json")) {
             try {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 this.basketCooldowns = new Map(JSON.parse(readFileSync("basket-cooldowns.json", "utf-8")));
             } catch {
                 this.basketCooldowns = new Map<string, NotificationCooldown>();
@@ -21,6 +22,7 @@ export class CooldownManager {
 
         if (existsSync("cooldowns.json")) {
             try {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 this.cooldowns = new Map(JSON.parse(readFileSync("cooldowns.json", "utf-8")));
             } catch {
                 this.cooldowns = new Map<string, NotificationCooldown>();
@@ -41,12 +43,13 @@ export class CooldownManager {
             };
         } else {
             cooldownTime = {
+                // eslint-disable-next-line @typescript-eslint/no-magic-numbers
                 hours: hasCookies ? 2 : 24,
             };
         }
         const endTime = add(new Date(), cooldownTime);
-        this.cooldowns.set(item?.product?.id, {
-            id: item?.product?.id,
+        this.cooldowns.set(item.product.id, {
+            id: item.product.id,
             isProductBuyable,
             endTime,
         });
@@ -56,8 +59,8 @@ export class CooldownManager {
         const endTime = add(new Date(), {
             hours: 8,
         });
-        this.basketCooldowns.set(product?.id, {
-            id: product?.id,
+        this.basketCooldowns.set(product.id, {
+            id: product.id,
             endTime,
         });
     }

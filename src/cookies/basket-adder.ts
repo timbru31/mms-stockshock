@@ -1,14 +1,15 @@
-import { SerializableOrJSHandle } from "puppeteer";
+import type { SerializableOrJSHandle } from "puppeteer";
 import { v4 } from "uuid";
-import { Logger } from "winston";
-import { BrowserManager } from "../core/browser-manager";
-import { CooldownManager } from "../core/cooldown-manager";
-import { DatabaseConnection } from "../databases/database-connection";
-import { AddProductResponse } from "../models/api/add-product-response";
-import { Product } from "../models/api/product";
-import { Notifier } from "../models/notifier";
-import { StoreConfiguration } from "../models/stores/config-model";
-import { Store } from "../models/stores/store";
+import type { Logger } from "winston";
+import type { BrowserManager } from "../core/browser-manager";
+import type { CooldownManager } from "../core/cooldown-manager";
+import type { DatabaseConnection } from "../databases/database-connection";
+import type { AddProductResponse } from "../models/api/add-product-response";
+import type { Product } from "../models/api/product";
+import type { Notifier } from "../models/notifier";
+import type { StoreConfiguration } from "../models/stores/config-model";
+import type { Store } from "../models/stores/store";
+import { HTTPStatusCode } from "../utils/http";
 import { GRAPHQL_CLIENT_VERSION, sleep } from "../utils/utils";
 
 export class BasketAdder {
@@ -20,6 +21,10 @@ export class BasketAdder {
     private readonly browserManager: BrowserManager;
     private readonly cooldownManager: CooldownManager;
     private readonly database: DatabaseConnection | undefined;
+    private readonly defaultCookieAmount = 10;
+    private readonly oneCookie = 1;
+    private readonly incognitoRaceTimeout = 6000;
+    private readonly addProductRaceTimeout = 2000;
 
     constructor(
         store: Store,
@@ -47,7 +52,7 @@ export class BasketAdder {
         this.basketProducts = new Map([...this.basketProducts, ...newProducts]);
     }
 
-    async createBasketCookies(cookieAmount = 10, newSession = true): Promise<void> {
+    async createBasketCookies(cookieAmount = this.defaultCookieAmount, newSession = true): Promise<void> {
         if (!this.browserManager.page) {
             this.logger.error("Unable to to create cookies: page is undefined!");
             return;
@@ -55,7 +60,7 @@ export class BasketAdder {
 
         if (this.basketProducts.size) {
             if (!newSession) {
-                cookieAmount = 1;
+                cookieAmount = this.oneCookie;
             }
             for (const [id, product] of this.basketProducts.entries()) {
                 const cookies: string[] = [];
@@ -63,8 +68,11 @@ export class BasketAdder {
                     if (newSession) {
                         let contextCreated = false;
                         try {
-                            contextCreated = await Promise.race([this.browserManager.createIncognitoContext(), sleep(6000, false)]);
-                        } catch (e) {
+                            contextCreated = await Promise.race([
+                                this.browserManager.createIncognitoContext(),
+                                sleep(this.incognitoRaceTimeout, false),
+                            ]);
+                        } catch (e: unknown) {
                             this.logger.error("Context creation failed, error %O", e);
                         }
                         if (!contextCreated) {
@@ -77,8 +85,15 @@ export class BasketAdder {
                     try {
                         res = await Promise.race([
                             this.browserManager.page.evaluate(
-                                async (store: Store, productId: string, flowId: string, graphQLClientVersion, addProductSHA256: string) =>
-                                    await fetch(`${store.baseUrl}/api/v1/graphql?anti-cache=${new Date().getTime()}`, {
+                                // eslint-disable-next-line @typescript-eslint/no-loop-func
+                                async (
+                                    store: Store,
+                                    productId: string,
+                                    flowId: string,
+                                    graphQLClientVersion: string,
+                                    addProductSHA256: string
+                                ) =>
+                                    fetch(`${store.baseUrl}/api/v1/graphql?anti-cache=${new Date().getTime()}`, {
                                         credentials: "include",
                                         headers: {
                                             "content-type": "application/json",
@@ -86,12 +101,14 @@ export class BasketAdder {
                                             "apollographql-client-version": graphQLClientVersion,
                                             "x-operation": "AddProduct",
                                             "x-cacheable": "false",
+                                            /* eslint-disable @typescript-eslint/naming-convention */
                                             "X-MMS-Language": store.languageCode,
                                             "X-MMS-Country": store.countryCode,
                                             "X-MMS-Salesline": store.salesLine,
                                             "x-flow-id": flowId,
                                             Pragma: "no-cache",
                                             "Cache-Control": "no-cache",
+                                            /* eslint-enable @typescript-eslint/naming-convention */
                                         },
                                         referrer: `${store.baseUrl}/`,
                                         method: "POST",
@@ -122,20 +139,21 @@ export class BasketAdder {
                                             },
                                         }),
                                     })
-                                        .then((res) =>
-                                            res
+                                        .then(async (addProductResponse) =>
+                                            addProductResponse
                                                 .json()
-                                                .then((data) => ({
-                                                    success: res.status === 200,
-                                                    status: res.status,
+                                                .then((data: AddProductResponse) => ({
+                                                    // eslint-disable-next-line @typescript-eslint/no-magic-numbers
+                                                    success: addProductResponse.status === 200,
+                                                    status: addProductResponse.status,
                                                     body: data,
                                                 }))
                                                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
                                                 .catch((_) => ({
                                                     success: false,
-                                                    status: res.status,
+                                                    status: addProductResponse.status,
                                                     body: null,
-                                                    retryAfterHeader: res.headers.get("Retry-After"),
+                                                    retryAfterHeader: addProductResponse.headers.get("Retry-After"),
                                                 }))
                                         )
                                         // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -146,27 +164,28 @@ export class BasketAdder {
                                 GRAPHQL_CLIENT_VERSION,
                                 this.storeConfiguration.addProductSHA256
                             ),
-                            sleep(2000, {
+                            sleep(this.addProductRaceTimeout, {
                                 success: false,
-                                status: -1,
+                                status: HTTPStatusCode.Timeout,
                                 body: null,
                             }),
                         ]);
-                    } catch (e) {
-                        res = { success: false, status: 0, body: null };
+                    } catch (e: unknown) {
+                        res = { success: false, status: HTTPStatusCode.Error, body: null };
                         this.logger.error("Error, %O", e);
                     }
 
                     if (res.success) {
                         try {
-                            const basketCookie = (await this.browserManager.page?.cookies())?.filter((cookie) => cookie.name === "r")[0];
-                            if (basketCookie) {
+                            // eslint-disable-next-line @typescript-eslint/no-magic-numbers
+                            const basketCookie = (await this.browserManager.page.cookies()).filter((cookie) => cookie.name === "r")[0];
+                            if (basketCookie.value) {
                                 cookies.push(basketCookie.value);
                                 this.logger.info(
                                     `Made cookie ${basketCookie.value} for product ${id}: ${this.store.baseUrl}?cookie=${basketCookie.value}`
                                 );
                             }
-                        } catch (e) {
+                        } catch (e: unknown) {
                             this.logger.error("Unable to get cookie from page, error %O", e);
                         }
                     } else {
@@ -174,13 +193,13 @@ export class BasketAdder {
                     }
                     await sleep(this.store.getSleepTime());
                 }
-                if (cookies?.length) {
+                if (cookies.length) {
                     for (const notifier of this.notifiers) {
                         await notifier.notifyCookies(product, cookies);
                     }
                     this.cooldownManager.addToBasketCooldownMap(product);
                     if (this.database) {
-                        this.database.storeCookies(product, cookies);
+                        await this.database.storeCookies(product, cookies);
                     }
                 }
             }

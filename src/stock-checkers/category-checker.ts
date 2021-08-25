@@ -1,15 +1,16 @@
-import { SerializableOrJSHandle } from "puppeteer";
+import type { SerializableOrJSHandle } from "puppeteer";
 import { v4 } from "uuid";
-import { Logger } from "winston";
-import { BrowserManager } from "../core/browser-manager";
-import { CooldownManager } from "../core/cooldown-manager";
-import { DatabaseConnection } from "../databases/database-connection";
-import { CategoryResponse } from "../models/api/category-response";
-import { Product } from "../models/api/product";
-import { SelectedProductResponse } from "../models/api/selected-product-response";
-import { Notifier } from "../models/notifier";
-import { StoreConfiguration } from "../models/stores/config-model";
-import { Store } from "../models/stores/store";
+import type { Logger } from "winston";
+import type { BrowserManager } from "../core/browser-manager";
+import type { CooldownManager } from "../core/cooldown-manager";
+import type { DatabaseConnection } from "../databases/database-connection";
+import type { CategoryResponse } from "../models/api/category-response";
+import type { Product } from "../models/api/product";
+import type { SelectedProductResponse } from "../models/api/selected-product-response";
+import type { Notifier } from "../models/notifier";
+import type { StoreConfiguration } from "../models/stores/config-model";
+import type { Store } from "../models/stores/store";
+import { HTTPStatusCode } from "../utils/http";
 import { ProductHelper } from "../utils/product-helper";
 import { GRAPHQL_CLIENT_VERSION, sleep } from "../utils/utils";
 
@@ -22,6 +23,9 @@ export class CategoryChecker {
     private readonly cooldownManager: CooldownManager;
     private readonly productHelper = new ProductHelper();
     private readonly database: DatabaseConnection | undefined;
+    private readonly defaultPage = 0;
+    private readonly categoryRaceTimeout = 5000;
+    private readonly getProductRaceTimeout = 5000;
 
     constructor(
         store: Store,
@@ -49,33 +53,39 @@ export class CategoryChecker {
         const basketProducts = new Map<string, Product>();
         const productIds: string[] = [];
 
-        const res = await this.performCategoryQuery(category);
-        if (res.status !== 200 || !res.body || res.body?.errors) {
-            await this.browserManager.handleResponseError("CategoryV4", res);
+        const outerCategoryResponse = await this.performCategoryQuery(category);
+        if (outerCategoryResponse.status !== HTTPStatusCode.OK || !outerCategoryResponse.body || outerCategoryResponse.body.errors) {
+            await this.browserManager.handleResponseError("CategoryV4", outerCategoryResponse);
         } else {
-            const totalPages = res.body?.data?.categoryV4?.paging?.pageCount;
+            const totalPages = outerCategoryResponse.body.data?.categoryV4.paging.pageCount;
 
-            if (res?.body?.data?.categoryV4?.products) {
-                for (const product of res.body.data.categoryV4.products) {
-                    if (product?.productId && (!categoryRegExp || categoryRegExp.test(product?.details?.title))) {
+            if (outerCategoryResponse.body.data?.categoryV4.products) {
+                for (const product of outerCategoryResponse.body.data.categoryV4.products) {
+                    if (product.productId && (!categoryRegExp || categoryRegExp.test(product.details.title))) {
                         productIds.push(product.productId);
                     }
                 }
             }
 
+            // eslint-disable-next-line @typescript-eslint/no-magic-numbers
             if (totalPages && !Number.isNaN(totalPages) && totalPages > 1) {
+                // eslint-disable-next-line @typescript-eslint/no-magic-numbers
                 for (let additionalQueryCalls = 2; additionalQueryCalls <= totalPages; additionalQueryCalls += 1) {
                     await sleep(this.store.getSleepTime());
-                    const res = await this.performCategoryQuery(category, additionalQueryCalls);
-                    if (res.status !== 200 || !res.body || res.body?.errors) {
-                        await this.browserManager.handleResponseError("CategoryV4", res);
+                    const innerCategoryResponse = await this.performCategoryQuery(category, additionalQueryCalls);
+                    if (
+                        innerCategoryResponse.status !== HTTPStatusCode.OK ||
+                        !innerCategoryResponse.body ||
+                        innerCategoryResponse.body.errors
+                    ) {
+                        await this.browserManager.handleResponseError("CategoryV4", innerCategoryResponse);
                         if (this.browserManager.reLoginRequired || this.browserManager.reLaunchRequired) {
                             break;
                         }
                     } else {
-                        if (res?.body?.data?.categoryV4?.products) {
-                            for (const product of res.body.data.categoryV4.products) {
-                                if (product?.productId && (!categoryRegExp || categoryRegExp.test(product?.details?.title))) {
+                        if (innerCategoryResponse.body.data?.categoryV4.products) {
+                            for (const product of innerCategoryResponse.body.data.categoryV4.products) {
+                                if (product.productId && (!categoryRegExp || categoryRegExp.test(product.details.title))) {
                                     productIds.push(product.productId);
                                 }
                             }
@@ -86,16 +96,20 @@ export class CategoryChecker {
         }
         if (productIds.length) {
             for (const productId of productIds) {
-                const res = await this.performProductDetailsQuery(productId);
-                if (res.status !== 200 || !res.body || res.body?.errors) {
-                    await this.browserManager.handleResponseError("GetSelectProduct", res);
+                const productDetailResponse = await this.performProductDetailsQuery(productId);
+                if (
+                    productDetailResponse.status !== HTTPStatusCode.OK ||
+                    !productDetailResponse.body ||
+                    productDetailResponse.body.errors
+                ) {
+                    await this.browserManager.handleResponseError("GetSelectProduct", productDetailResponse);
                     if (this.browserManager.reLoginRequired || this.browserManager.reLaunchRequired) {
                         break;
                     }
                 } else {
-                    if (res?.body?.data) {
+                    if (productDetailResponse.body.data) {
                         await this.productHelper.checkItem(
-                            res.body.data,
+                            productDetailResponse.body.data,
                             basketProducts,
                             this.cooldownManager,
                             this.database,
@@ -110,30 +124,32 @@ export class CategoryChecker {
         return basketProducts;
     }
 
-    private performCategoryQuery(
+    private async performCategoryQuery(
         category: string,
-        page = 0
+        page = this.defaultPage
     ): Promise<{
+        /* eslint-disable @typescript-eslint/indent */
         status: number;
         body: CategoryResponse | null;
         retryAfterHeader?: string | null;
     }> {
+        /* eslint-enable @typescript-eslint/indent */
         if (!this.browserManager.page) {
             this.logger.error("Unable to perform category query: page is undefined!");
             return Promise.resolve({ status: 0, body: null });
         }
         try {
-            return Promise.race([
+            return await Promise.race([
                 this.browserManager.page.evaluate(
                     async (
                         store: Store,
-                        page: number,
-                        category: string,
+                        pageOffset: number,
+                        wcsId: string,
                         flowId: string,
                         graphQLClientVersion: string,
                         categorySHA256: string
                     ) =>
-                        await fetch(`${store.baseUrl}/api/v1/graphql?anti-cache=${new Date().getTime()}`, {
+                        fetch(`${store.baseUrl}/api/v1/graphql?anti-cache=${new Date().getTime()}`, {
                             credentials: "include",
                             headers: {
                                 "content-type": "application/json",
@@ -156,8 +172,8 @@ export class CategoryChecker {
                                 variables: {
                                     hasMarketplace: true,
                                     filters: [],
-                                    wcsId: category,
-                                    page,
+                                    wcsId,
+                                    page: pageOffset,
                                 },
                                 extensions: {
                                     pwa: {
@@ -173,10 +189,10 @@ export class CategoryChecker {
                                 },
                             }),
                         })
-                            .then((res) =>
+                            .then(async (res) =>
                                 res
                                     .json()
-                                    .then((data) => ({ status: res.status, body: data }))
+                                    .then((data: CategoryResponse) => ({ status: res.status, body: data }))
                                     // eslint-disable-next-line @typescript-eslint/no-unused-vars
                                     .catch((_) => ({ status: res.status, body: null, retryAfterHeader: res.headers.get("Retry-After") }))
                             )
@@ -189,18 +205,18 @@ export class CategoryChecker {
                     GRAPHQL_CLIENT_VERSION,
                     this.storeConfiguration.categorySHA256
                 ),
-                sleep(5000, {
-                    status: -1,
+                sleep(this.categoryRaceTimeout, {
+                    status: HTTPStatusCode.Timeout,
                     body: { errors: "Timeout" },
                 }),
             ]);
-        } catch (error) {
+        } catch (error: unknown) {
             this.logger.error("Unable to perform category query: %O", error);
-            return Promise.resolve({ status: 0, body: null });
+            return Promise.resolve({ status: HTTPStatusCode.Error, body: null });
         }
     }
 
-    private performProductDetailsQuery(productId: string): Promise<{
+    private async performProductDetailsQuery(productId: string): Promise<{
         status: number;
         body: SelectedProductResponse | null;
         retryAfterHeader?: string | null;
@@ -210,10 +226,10 @@ export class CategoryChecker {
             return Promise.resolve({ status: 0, body: null });
         }
         try {
-            return Promise.race([
+            return await Promise.race([
                 this.browserManager.page.evaluate(
-                    async (store: Store, productId: string, flowId: string, graphQLClientVersion: string, getProductSHA256: string) =>
-                        await fetch(`${store.baseUrl}/api/v1/graphql?anti-cache=${new Date().getTime()}`, {
+                    async (store: Store, id: string, flowId: string, graphQLClientVersion: string, getProductSHA256: string) =>
+                        fetch(`${store.baseUrl}/api/v1/graphql?anti-cache=${new Date().getTime()}`, {
                             credentials: "include",
                             headers: {
                                 "content-type": "application/json",
@@ -235,7 +251,7 @@ export class CategoryChecker {
                                 operationName: "GetSelectProduct",
                                 variables: {
                                     hasMarketplace: true,
-                                    id: productId,
+                                    id,
                                 },
                                 extensions: {
                                     pwa: {
@@ -251,10 +267,10 @@ export class CategoryChecker {
                                 },
                             }),
                         })
-                            .then((res) =>
+                            .then(async (res) =>
                                 res
                                     .json()
-                                    .then((data) => ({ status: res.status, body: data }))
+                                    .then((data: SelectedProductResponse) => ({ status: res.status, body: data }))
                                     // eslint-disable-next-line @typescript-eslint/no-unused-vars
                                     .catch((_) => ({ status: res.status, body: null, retryAfterHeader: res.headers.get("Retry-After") }))
                             )
@@ -266,14 +282,14 @@ export class CategoryChecker {
                     GRAPHQL_CLIENT_VERSION,
                     this.storeConfiguration.getProductSHA256
                 ),
-                sleep(5000, {
-                    status: -1,
+                sleep(this.getProductRaceTimeout, {
+                    status: HTTPStatusCode.Timeout,
                     body: { errors: "Timeout" },
                 }),
             ]);
-        } catch (error) {
+        } catch (error: unknown) {
             this.logger.error("Unable to perform get product: %O", error);
-            return Promise.resolve({ status: 0, body: null });
+            return Promise.resolve({ status: HTTPStatusCode.Error, body: null });
         }
     }
 }

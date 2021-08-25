@@ -1,12 +1,14 @@
-import { Logger } from "winston";
-import { CooldownManager } from "../core/cooldown-manager";
-import { DatabaseConnection } from "../databases/database-connection";
-import { Item } from "../models/api/item";
-import { Product } from "../models/api/product";
-import { Notifier } from "../models/notifier";
-import { Store } from "../models/stores/store";
+import type { Logger } from "winston";
+import type { CooldownManager } from "../core/cooldown-manager";
+import type { DatabaseConnection } from "../databases/database-connection";
+import type { Item } from "../models/api/item";
+import type { Product } from "../models/api/product";
+import type { Notifier } from "../models/notifier";
+import type { Store } from "../models/stores/store";
 
 export class ProductHelper {
+    private readonly fallbackAmount = 0;
+
     /*
      * Check if an item can be added to basket (onlineStatus) - this overrules everything
      * Otherwise check if the item is listed as IN_WAREHOUSE or LONG_TAIL with at least a quantity > 0
@@ -14,36 +16,40 @@ export class ProductHelper {
      * Special note: LONG_TAIL needs to be purchasable (onlineStatus)!
      */
     isProductAvailable(item: Item): boolean {
-        if (item?.product?.onlineStatus) {
+        if (item.product.onlineStatus) {
             return true;
         }
 
-        switch (item?.availability?.delivery?.availabilityType) {
+        switch (item.availability.delivery.availabilityType) {
             case "IN_STORE":
                 return true;
             case "IN_WAREHOUSE":
-                return item?.availability?.delivery?.quantity > 0;
             case "LONG_TAIL":
-                return item?.product.onlineStatus && item?.availability?.delivery?.quantity > 0;
+                return item.availability.delivery.quantity > this.fallbackAmount;
+            case "NONE": {
+                return false;
+            }
         }
-        return false;
     }
 
     isProductBuyable(item: Item): boolean {
-        if (item?.product?.onlineStatus) {
-            switch (item?.availability?.delivery?.availabilityType) {
+        if (item.product.onlineStatus) {
+            switch (item.availability.delivery.availabilityType) {
                 case "IN_STORE":
                     return true;
                 case "IN_WAREHOUSE":
                 case "LONG_TAIL":
-                    return item?.availability?.delivery?.quantity > 0;
+                    return item.availability.delivery.quantity > this.fallbackAmount;
+                case "NONE": {
+                    return false;
+                }
             }
         }
         return false;
     }
 
     canProductBeAddedToBasket(item: Item): boolean {
-        return item?.product?.onlineStatus;
+        return item.product.onlineStatus;
     }
 
     getProductURL(item: Item, store: Store, replacements?: Map<string, string>, magician = false): string {
@@ -53,9 +59,7 @@ export class ProductHelper {
         }
 
         return (
-            store.baseUrl +
-            (item?.product?.url || `/de/product/-${item.product.id}.html`) +
-            (magician ? `?magician=${item?.product?.id}` : "")
+            store.baseUrl + (item.product.url || `/de/product/-${item.product.id}.html`) + (magician ? `?magician=${item.product.id}` : "")
         );
     }
 
@@ -89,7 +93,7 @@ export class ProductHelper {
         }
 
         if (this.isProductAvailable(item)) {
-            const itemId = item?.product?.id;
+            const itemId = item.product.id;
             if (!itemId) {
                 return basketProducts;
             }
@@ -112,7 +116,7 @@ export class ProductHelper {
             }
 
             if (!cooldownManager.hasCooldown(itemId)) {
-                const cookiesAmount = database ? await database.getCookiesAmount(item.product) : 0;
+                const cookiesAmount = database ? await database.getCookiesAmount(item.product) : this.fallbackAmount;
                 for (const notifier of notifiers) {
                     const message = await notifier.notifyStock(item, cookiesAmount);
                     if (message) {

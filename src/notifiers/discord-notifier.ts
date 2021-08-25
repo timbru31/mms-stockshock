@@ -1,11 +1,12 @@
-import { Client, MessageEmbed, TextChannel } from "discord.js";
-import { Logger } from "winston";
+import type { TextChannel } from "discord.js";
+import { Client, MessageEmbed } from "discord.js";
+import type { Logger } from "winston";
 import { version } from "../../package.json";
-import { Item } from "../models/api/item";
-import { Product } from "../models/api/product";
-import { Notifier } from "../models/notifier";
-import { StoreConfiguration } from "../models/stores/config-model";
-import { Store } from "../models/stores/store";
+import type { Item } from "../models/api/item";
+import type { Product } from "../models/api/product";
+import type { Notifier } from "../models/notifier";
+import type { StoreConfiguration } from "../models/stores/config-model";
+import type { Store } from "../models/stores/store";
 import { ProductHelper } from "../utils/product-helper";
 import { noop } from "../utils/utils";
 
@@ -13,9 +14,9 @@ export class DiscordNotifier implements Notifier {
     discordBotReady = false;
     private discordBot: Client | undefined;
     private stockChannel: TextChannel | undefined;
-    private stockRegexChannel = new Map<RegExp, TextChannel>();
+    private readonly stockRegexChannel = new Map<RegExp, TextChannel>();
     private stockRolePing: string | undefined;
-    private stockRegexRolePing = new Map<RegExp, string[]>();
+    private readonly stockRegexRolePing = new Map<RegExp, string[]>();
     private cookieChannel: TextChannel | undefined;
     private cookieRolePing: string | undefined;
     private adminChannel: TextChannel | undefined;
@@ -29,11 +30,13 @@ export class DiscordNotifier implements Notifier {
     private readonly logger: Logger;
     private readonly productHelper = new ProductHelper();
     private readonly replacements = new Map<string, string>();
+    private readonly discordBotTimeout = 10000;
+    private readonly zero = 0;
 
     constructor(store: Store, storeConfig: StoreConfiguration, logger: Logger) {
         this.store = store;
-        this.setupDiscordBot(storeConfig);
-        setTimeout(() => (this.discordBotReady = true), 10000);
+        void this.setupDiscordBot(storeConfig);
+        setTimeout(() => (this.discordBotReady = true), this.discordBotTimeout);
 
         this.announceCookies = storeConfig.announce_cookies ?? true;
         this.shoppingCartAlerts = storeConfig.shopping_cart_alerts ?? true;
@@ -41,64 +44,76 @@ export class DiscordNotifier implements Notifier {
         this.logger = logger;
 
         if (storeConfig.id_replacements) {
+            const key = 0;
+            const value = 1;
             storeConfig.id_replacements.map((pair) => {
-                const id = pair[0];
-                const url = pair[1];
+                const id = pair[key];
+                const url = pair[value];
                 this.replacements.set(id, url);
             });
         }
     }
 
-    async notifyAdmin(message: string): Promise<void> {
-        if (this.adminChannel) {
+    async notifyAdmin(message?: string): Promise<void> {
+        if (this.adminChannel && message) {
             const decoratedMessage = this.decorateMessageWithRoles(message, this.adminRolePing);
             try {
                 await this.adminChannel.send(decoratedMessage);
-            } catch (e) {
+            } catch (e: unknown) {
                 this.logger.error("Error sending message, error: %O", e);
             }
         }
     }
 
-    async notifyRateLimit(seconds: number): Promise<void> {
-        if (this.adminChannel && seconds > 300) {
+    async notifyRateLimit(seconds?: number): Promise<void> {
+        const fiveMinutesInSeconds = 300;
+        if (this.adminChannel && seconds && seconds > fiveMinutesInSeconds) {
+            const precision = 2;
+            const minutesFactor = 60;
             const message = this.decorateMessageWithRoles(
-                `💤 [${this.store.getName()}] Too many requests, we need to pause ${(seconds / 60).toFixed(2)} minutes... 😴`,
+                `💤 [${this.store.getName()}] Too many requests, we need to pause ${(seconds / minutesFactor).toFixed(
+                    precision
+                )} minutes... 😴`,
                 this.adminRolePing
             );
             try {
                 await this.adminChannel.send(message);
-            } catch (e) {
+            } catch (e: unknown) {
                 this.logger.error("Error sending message, error: %O", e);
             }
         }
     }
 
-    async notifyCookies(product: Product, cookies: string[]): Promise<void> {
-        let rawMessage = `🍪 ${cookies.length} basket cookies were made for **${product?.id}**, **${
-            product?.title
-        }** for ${this.store.getName()}`;
-        if (this.announceCookies) {
-            rawMessage += `:\n\`${cookies.map((cookie) => `${this.store.baseUrl}?cookie=${cookie}`).join("\n")}\`\n`;
-        }
-        const message = this.decorateMessageWithRoles(rawMessage, this.cookieRolePing);
-        if (this.cookieChannel) {
-            try {
-                await this.cookieChannel.send(message);
-            } catch (e) {
-                this.logger.error("Error sending message, error: %O", e);
+    async notifyCookies(product?: Product, cookies?: string[]): Promise<void> {
+        if (product && cookies) {
+            let rawMessage = `🍪 ${cookies.length} basket cookies were made for **${product.id}**, **${
+                product.title
+            }** for ${this.store.getName()}`;
+            if (this.announceCookies) {
+                rawMessage += `:\n\`${cookies.map((cookie) => `${this.store.baseUrl}?cookie=${cookie}`).join("\n")}\`\n`;
+            }
+            const message = this.decorateMessageWithRoles(rawMessage, this.cookieRolePing);
+            if (this.cookieChannel) {
+                try {
+                    await this.cookieChannel.send(message);
+                } catch (e: unknown) {
+                    this.logger.error("Error sending message, error: %O", e);
+                }
             }
         }
     }
 
-    async notifyStock(item: Item, cookiesAmount?: number): Promise<string | undefined> {
+    async notifyStock(item?: Item, cookiesAmount?: number): Promise<string | undefined> {
+        if (!item) {
+            return;
+        }
         let plainMessage: string;
         const fullAlert = this.productHelper.isProductBuyable(item);
         let emoji: string;
         const embed = this.createEmbed(item);
 
-        const price = item?.price?.price ?? "0";
-        const currency = item?.price?.currency ?? "𑿠";
+        const price = item.price?.price ?? "0";
+        const currency = item.price?.currency ?? "𑿠";
         embed.addFields([
             { name: "Magician", value: `${this.productHelper.getProductURL(item, this.store, this.replacements, true)}` },
             { name: "ProductID", value: item.product.id },
@@ -124,8 +139,8 @@ export class DiscordNotifier implements Notifier {
             emoji = "🟢";
 
             plainMessage = this.decorateMessageWithRoles(
-                `🟢 Item **available**: ${item?.product?.id}, ${
-                    item?.product?.title
+                `🟢 Item **available**: ${item.product.id}, ${
+                    item.product.title
                 } for ${price} ${currency}! Go check it out: ${this.productHelper.getProductURL(
                     item,
                     this.store,
@@ -143,8 +158,8 @@ export class DiscordNotifier implements Notifier {
             emoji = "🛒";
 
             plainMessage = this.decorateMessageWithRoles(
-                `🛒 Item **can be added to basket**: ${item?.product?.id}, ${
-                    item?.product?.title
+                `🛒 Item **can be added to basket**: ${item.product.id}, ${
+                    item.product.title
                 } for ${price} ${currency}! Go check it out: ${this.productHelper.getProductURL(
                     item,
                     this.store,
@@ -159,8 +174,8 @@ export class DiscordNotifier implements Notifier {
             emoji = "🟡";
 
             plainMessage = this.decorateMessageWithRoles(
-                `🟡 Item for **basket parker**: ${item?.product?.id}, ${
-                    item?.product?.title
+                `🟡 Item for **basket parker**: ${item.product.id}, ${
+                    item.product.title
                 } for ${price} ${currency}! Go check it out: ${this.productHelper.getProductURL(item, this.store, this.replacements)}`,
                 this.getRolePingsForTitle(item.product.title)
             );
@@ -172,71 +187,77 @@ export class DiscordNotifier implements Notifier {
                 await stockChannelForItem.send({
                     embeds: [embed],
                     content: this.decorateMessageWithRoles(
-                        `${emoji} ${item?.product?.title} [${item?.product?.id}] for ${price} ${currency}`,
+                        `${emoji} ${item.product.title} [${item.product.id}] for ${price} ${currency}`,
                         this.getRolePingsForTitle(item.product.title)
                     ),
                 });
-            } catch (e) {
+            } catch (e: unknown) {
                 this.logger.error("Error sending message, error: %O", e);
             }
         }
         return plainMessage;
     }
 
-    async notifyPriceChange(item: Item, oldPrice: number): Promise<void> {
-        const embed = this.createEmbed(item);
-        const currency = item?.price?.currency ?? "𑿠";
-        const newPrice = item?.price?.price ?? 0;
-        const delta = newPrice - oldPrice;
-        const deltaPercentage = ((newPrice - oldPrice) / oldPrice) * 100;
+    async notifyPriceChange(item?: Item, oldPrice?: number): Promise<void> {
+        if (item && oldPrice) {
+            const embed = this.createEmbed(item);
+            const currency = item.price?.currency ?? "𑿠";
+            const newPrice = item.price?.price ?? this.zero;
+            const delta = newPrice - oldPrice;
+            const percentageFactor = 100;
+            const precision = 2;
+            const deltaPercentage = ((newPrice - oldPrice) / oldPrice) * percentageFactor;
 
-        embed.addFields([
-            { name: "ProductID", value: item.product.id },
-            {
-                name: "Old Price",
-                value: `${oldPrice} ${currency}`,
-                inline: true,
-            },
-            {
-                name: "New Price",
-                value: `${newPrice} ${currency}`,
-                inline: true,
-            },
-            {
-                name: "Delta",
-                value: `${delta.toFixed(2)} ${currency} (${deltaPercentage.toFixed(2)}%)`,
-                inline: true,
-            },
-            {
-                name: "Store",
-                value: this.store.getName(),
-                inline: true,
-            },
-        ]);
+            embed.addFields([
+                { name: "ProductID", value: item.product.id },
+                {
+                    name: "Old Price",
+                    value: `${oldPrice} ${currency}`,
+                    inline: true,
+                },
+                {
+                    name: "New Price",
+                    value: `${newPrice} ${currency}`,
+                    inline: true,
+                },
+                {
+                    name: "Delta",
+                    value: `${delta.toFixed(precision)} ${currency} (${deltaPercentage.toFixed(precision)}%)`,
+                    inline: true,
+                },
+                {
+                    name: "Store",
+                    value: this.store.getName(),
+                    inline: true,
+                },
+            ]);
 
-        const emoji = delta > 0 ? "⏫" : "⏬";
-        embed.setDescription(`${emoji} Price change`);
-        embed.setColor(delta > 0 ? "#c31515" : "#7ab05e");
+            const emoji = delta > this.zero ? "⏫" : "⏬";
+            embed.setDescription(`${emoji} Price change`);
+            embed.setColor(delta > this.zero ? "#c31515" : "#7ab05e");
 
-        if (this.priceChangeChannel) {
-            try {
-                await this.priceChangeChannel.send({
-                    embeds: [embed],
-                    content: this.decorateMessageWithRoles(
-                        `${emoji} ${item?.product?.title} [${
-                            item?.product?.id
-                        }] changed the price from ${oldPrice} ${currency} to ${newPrice} ${currency} (${deltaPercentage.toFixed(2)}%)`,
-                        this.priceChangeRolePing
-                    ),
-                });
-            } catch (e) {
-                this.logger.error("Error sending message, error: %O", e);
+            if (this.priceChangeChannel) {
+                try {
+                    await this.priceChangeChannel.send({
+                        embeds: [embed],
+                        content: this.decorateMessageWithRoles(
+                            `${emoji} ${item.product.title} [${
+                                item.product.id
+                            }] changed the price from ${oldPrice} ${currency} to ${newPrice} ${currency} (${deltaPercentage.toFixed(
+                                precision
+                            )}%)`,
+                            this.priceChangeRolePing
+                        ),
+                    });
+                } catch (e: unknown) {
+                    this.logger.error("Error sending message, error: %O", e);
+                }
             }
         }
     }
 
     shutdown(): void {
-        return noop();
+        noop();
     }
 
     private async setupDiscordBot(storeConfig: StoreConfiguration) {
@@ -245,24 +266,26 @@ export class DiscordNotifier implements Notifier {
         });
         await this.discordBot.login(storeConfig.discord_bot_token);
         this.discordBot.once("ready", async () => {
-            this.logger.info(`👌 Discord bot integration ready`);
+            this.logger.info("👌 Discord bot integration ready");
             this.discordBotReady = true;
             this.discordBot?.user?.setStatus("online");
             this.discordBot?.user?.setActivity({ name: "eating your cookies. 🍪", type: "PLAYING" });
+            const key = 0;
+            const value = 1;
 
-            if (storeConfig?.stock_discord_channel || storeConfig?.discord_channel) {
+            if (storeConfig.stock_discord_channel || storeConfig.discord_channel) {
                 const tempChannel = await this.discordBot?.channels.fetch(
                     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                    (storeConfig?.stock_discord_channel || storeConfig?.discord_channel)!
+                    (storeConfig.stock_discord_channel ?? storeConfig.discord_channel)!
                 );
                 if (((channel): channel is TextChannel => channel?.type === "GUILD_TEXT")(tempChannel)) {
                     this.stockChannel = tempChannel;
                 }
             }
-            if (storeConfig?.stock_discord_regex_channel) {
-                storeConfig?.stock_discord_regex_channel.map(async (pair) => {
-                    const regexpStr = pair[0];
-                    const channelId = pair[1];
+            if (storeConfig.stock_discord_regex_channel) {
+                storeConfig.stock_discord_regex_channel.map(async (pair) => {
+                    const regexpStr = pair[key];
+                    const channelId = pair[value];
                     const tempChannel = await this.discordBot?.channels.fetch(channelId);
                     if (((channel): channel is TextChannel => channel?.type === "GUILD_TEXT")(tempChannel)) {
                         const regexp = new RegExp(regexpStr, "i");
@@ -271,55 +294,55 @@ export class DiscordNotifier implements Notifier {
                 });
             }
 
-            if (storeConfig?.stock_discord_role_ping || storeConfig?.discord_role_ping) {
-                this.stockRolePing = storeConfig?.stock_discord_role_ping || storeConfig?.discord_role_ping;
+            if (storeConfig.stock_discord_role_ping || storeConfig.discord_role_ping) {
+                this.stockRolePing = storeConfig.stock_discord_role_ping ?? storeConfig.discord_role_ping;
             }
-            if (storeConfig?.stock_discord_regex_role_ping) {
-                storeConfig?.stock_discord_regex_role_ping.map((pair) => {
-                    const regexpStr = pair[0];
-                    const roleId = pair[1].split(",");
+            if (storeConfig.stock_discord_regex_role_ping) {
+                storeConfig.stock_discord_regex_role_ping.map((pair) => {
+                    const regexpStr = pair[key];
+                    const roleId = pair[value].split(",");
                     const regexp = new RegExp(regexpStr, "i");
                     this.stockRegexRolePing.set(regexp, roleId);
                 });
             }
 
-            if (storeConfig?.cookie_discord_channel || storeConfig?.discord_channel) {
+            if (storeConfig.cookie_discord_channel || storeConfig.discord_channel) {
                 const tempChannel = await this.discordBot?.channels.fetch(
                     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                    (storeConfig?.cookie_discord_channel || storeConfig?.discord_channel)!
+                    (storeConfig.cookie_discord_channel ?? storeConfig.discord_channel)!
                 );
                 if (((channel): channel is TextChannel => channel?.type === "GUILD_TEXT")(tempChannel)) {
                     this.cookieChannel = tempChannel;
                 }
             }
-            if (storeConfig?.cookie_discord_role_ping || storeConfig?.discord_role_ping) {
-                this.cookieRolePing = storeConfig?.cookie_discord_role_ping || storeConfig?.discord_role_ping;
+            if (storeConfig.cookie_discord_role_ping || storeConfig.discord_role_ping) {
+                this.cookieRolePing = storeConfig.cookie_discord_role_ping ?? storeConfig.discord_role_ping;
             }
 
-            if (storeConfig?.admin_discord_channel || storeConfig?.discord_channel) {
+            if (storeConfig.admin_discord_channel || storeConfig.discord_channel) {
                 const tempChannel = await this.discordBot?.channels.fetch(
                     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                    (storeConfig?.admin_discord_channel || storeConfig?.discord_channel)!
+                    (storeConfig.admin_discord_channel ?? storeConfig.discord_channel)!
                 );
                 if (((channel): channel is TextChannel => channel?.type === "GUILD_TEXT")(tempChannel)) {
                     this.adminChannel = tempChannel;
                 }
             }
-            if (storeConfig?.admin_discord_role_ping || storeConfig?.discord_role_ping) {
-                this.adminRolePing = storeConfig?.admin_discord_role_ping || storeConfig?.discord_role_ping;
+            if (storeConfig.admin_discord_role_ping || storeConfig.discord_role_ping) {
+                this.adminRolePing = storeConfig.admin_discord_role_ping ?? storeConfig.discord_role_ping;
             }
 
-            if (storeConfig?.price_change_discord_channel || storeConfig?.discord_channel) {
+            if (storeConfig.price_change_discord_channel || storeConfig.discord_channel) {
                 const tempChannel = await this.discordBot?.channels.fetch(
                     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                    (storeConfig?.price_change_discord_channel || storeConfig?.discord_channel)!
+                    (storeConfig.price_change_discord_channel ?? storeConfig.discord_channel)!
                 );
                 if (((channel): channel is TextChannel => channel?.type === "GUILD_TEXT")(tempChannel)) {
                     this.priceChangeChannel = tempChannel;
                 }
             }
-            if (storeConfig?.price_change_discord_role_ping || storeConfig?.discord_role_ping) {
-                this.priceChangeRolePing = storeConfig?.price_change_discord_role_ping || storeConfig?.discord_role_ping;
+            if (storeConfig.price_change_discord_role_ping || storeConfig.discord_role_ping) {
+                this.priceChangeRolePing = storeConfig.price_change_discord_role_ping ?? storeConfig.discord_role_ping;
             }
 
             this.noCookieEmoji = storeConfig.discord_nocookie_emoji;
@@ -337,7 +360,7 @@ export class DiscordNotifier implements Notifier {
     }
 
     private getRolePingsForTitle(title: string) {
-        if (this.stockRegexRolePing?.size) {
+        if (this.stockRegexRolePing.size) {
             let threshold = 1;
             const rolePings: string[] = [];
             for (const [regexp, ids] of this.stockRegexRolePing.entries()) {
@@ -351,7 +374,7 @@ export class DiscordNotifier implements Notifier {
                     }
                 }
             }
-            if (rolePings?.length < threshold) {
+            if (rolePings.length < threshold) {
                 return [...rolePings, ...(this.stockRolePing?.split(",") ?? [])];
             }
             return rolePings;
@@ -360,7 +383,7 @@ export class DiscordNotifier implements Notifier {
     }
 
     private getChannelForTitle(title: string) {
-        if (this.stockRegexChannel?.size) {
+        if (this.stockRegexChannel.size) {
             for (const [regexp, channel] of this.stockRegexChannel.entries()) {
                 if (regexp.test(title)) {
                     return channel;
@@ -378,14 +401,14 @@ export class DiscordNotifier implements Notifier {
         if (Array.isArray(webhookRolePings) && webhookRolePings.length) {
             return `${message} ${webhookRolePings.map((webhookRolePing) => `<@&${webhookRolePing}>`).join(" ")}`;
         } else {
-            return `${message} <@&${webhookRolePings}>`;
+            return `${message} <@&${webhookRolePings.toString()}>`;
         }
     }
 
     private createEmbed(item: Item) {
         const embed = new MessageEmbed().setTimestamp();
         embed.setImage(`https://assets.mmsrg.com/isr/166325/c1/-/${item.product.titleImageId}/mobile_200_200.png`);
-        embed.setTitle(item?.product?.title);
+        embed.setTitle(item.product.title);
         embed.setURL(`${this.productHelper.getProductURL(item, this.store, this.replacements)}`);
         embed.setFooter(`Stockshock v${version} • If you have paid for this, you have been scammed • Links may be affiliate links`);
         return embed;

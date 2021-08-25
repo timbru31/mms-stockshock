@@ -1,16 +1,17 @@
 import { prompt } from "inquirer";
 import { Server } from "proxy-chain";
-import { Browser, BrowserContext, Page, PuppeteerNodeLaunchOptions, SerializableOrJSHandle } from "puppeteer";
+import type { Browser, BrowserContext, Page, PuppeteerNodeLaunchOptions, SerializableOrJSHandle } from "puppeteer";
 import puppeteer from "puppeteer-extra";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import UserAgent from "user-agents";
 import { v4 } from "uuid";
-import { Logger } from "winston";
-import { LoginResponse } from "../models/api/login-response";
-import { Response } from "../models/api/response";
-import { Notifier } from "../models/notifier";
-import { StoreConfiguration } from "../models/stores/config-model";
-import { Store } from "../models/stores/store";
+import type { Logger } from "winston";
+import type { LoginResponse } from "../models/api/login-response";
+import type { Response } from "../models/api/response";
+import type { Notifier } from "../models/notifier";
+import type { StoreConfiguration } from "../models/stores/config-model";
+import type { Store } from "../models/stores/store";
+import { HTTPStatusCode } from "../utils/http";
 import { GRAPHQL_CLIENT_VERSION, shuffle, sleep } from "../utils/utils";
 
 export class BrowserManager {
@@ -26,8 +27,17 @@ export class BrowserManager {
     private readonly logger: Logger;
     private readonly notifiers: Notifier[] = [];
     private readonly proxies: string[] = [];
-    private proxyIndex = 0;
+    private readonly defaultProxyIndex = 0;
+    private proxyIndex = this.defaultProxyIndex;
     private proxyServer: Server | undefined;
+    private readonly launchRaceTimeout = 15000;
+    private readonly loginRaceTimeout = 10000;
+    private readonly incognitoRaceTimeout = 6000;
+    private readonly baseWidth = 1024;
+    private readonly baseHeight = 768;
+    private readonly randomFactor = 100;
+
+    private readonly millisecondsFactor = 1000;
 
     constructor(store: Store, storeConfig: StoreConfiguration, logger: Logger, notifiers: Notifier[]) {
         this.logger = logger;
@@ -53,7 +63,166 @@ export class BrowserManager {
     }
 
     async launchPuppeteer(headless = true, sandbox = true, shmUsage = true): Promise<boolean> {
-        return Promise.race([this._launchPuppeteer(headless, sandbox, shmUsage), sleep(6000, false)]);
+        return Promise.race([this._launchPuppeteer(headless, sandbox, shmUsage), sleep(this.launchRaceTimeout, false)]);
+    }
+
+    async logIn(email: string, password: string, headless = true): Promise<void> {
+        if (!this.browser || !this.page) {
+            this.reLaunchRequired = true;
+            this.reLoginRequired = true;
+            throw new Error(`Puppeteer context not initialized! ${!this.page ? "Page" : "Browser"} is undefined.`);
+        }
+
+        let res: { status: number; body: LoginResponse | string | null; retryAfterHeader?: string | null };
+        try {
+            res = await Promise.race([
+                this.page.evaluate(
+                    async (
+                        store: Store,
+                        // eslint-disable-next-line @typescript-eslint/no-shadow
+                        email: string,
+                        // eslint-disable-next-line @typescript-eslint/no-shadow
+                        password: string,
+                        flowId: string,
+                        graphQLClientVersion: string,
+                        loginSHA256: string
+                    ) =>
+                        fetch(`${store.baseUrl}/api/v1/graphql?anti-cache=${new Date().getTime()}`, {
+                            credentials: "include",
+                            headers: {
+                                "content-type": "application/json",
+                                "apollographql-client-name": "pwa-client",
+                                "apollographql-client-version": graphQLClientVersion,
+                                "x-operation": "LoginProfileUser",
+                                "x-cacheable": "false",
+                                /* eslint-disable @typescript-eslint/naming-convention */
+                                "X-MMS-Language": store.languageCode,
+                                "X-MMS-Country": store.countryCode,
+                                "X-MMS-Salesline": store.salesLine,
+                                "x-flow-id": flowId,
+                                Pragma: "no-cache",
+                                "Cache-Control": "no-cache",
+                                /* eslint-enable @typescript-eslint/naming-convention */
+                            },
+                            referrer: `${store.baseUrl}/`,
+                            method: "POST",
+                            mode: "cors",
+                            body: JSON.stringify({
+                                operationName: "LoginProfileUser",
+                                variables: { email, password },
+                                extensions: {
+                                    pwa: { salesLine: store.salesLine, country: store.countryCode, language: store.languageCode },
+                                    persistedQuery: {
+                                        version: 1,
+                                        sha256Hash: loginSHA256,
+                                    },
+                                },
+                            }),
+                        })
+                            .then(
+                                async (loginResponse) =>
+                                    // eslint-disable-next-line @typescript-eslint/no-magic-numbers
+                                    loginResponse.status === 200
+                                        ? /* eslint-disable @typescript-eslint/indent */
+                                          loginResponse
+                                              .json()
+                                              .then((data: LoginResponse) => ({ status: loginResponse.status, body: data }))
+                                              // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                                              .catch((_) => ({
+                                                  status: loginResponse.status,
+                                                  body: null,
+                                                  retryAfterHeader: loginResponse.headers.get("Retry-After"),
+                                              }))
+                                        : loginResponse.text().then((data) => ({
+                                              status: loginResponse.status,
+                                              body: data,
+                                              retryAfterHeader: loginResponse.headers.get("Retry-After"),
+                                          }))
+                                /* eslint-enable @typescript-eslint/indent */
+                            )
+                            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                            .catch((_) => ({ status: -2, body: null })),
+                    this.store as SerializableOrJSHandle,
+                    email,
+                    password,
+                    v4(),
+                    GRAPHQL_CLIENT_VERSION,
+                    this.storeConfig.loginSHA256
+                ),
+                sleep(this.loginRaceTimeout, {
+                    status: HTTPStatusCode.Timeout,
+                    body: { errors: "Timeout" },
+                }),
+            ]);
+        } catch (e: unknown) {
+            res = { status: HTTPStatusCode.Error, body: null };
+            this.logger.error("Error, %O", e);
+        }
+        if (res.status !== HTTPStatusCode.OK || !res.body || (res.body as LoginResponse).errors) {
+            if (headless) {
+                this.logger.error(`Login did not succeed. Status ${res.status}`);
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+                if ((res.body as LoginResponse)?.errors) {
+                    this.logger.error("Errors: %O", res.body);
+                }
+                if (res.retryAfterHeader) {
+                    this.logger.error("Retry after: %O", res.retryAfterHeader);
+                }
+                for (const notifier of this.notifiers) {
+                    await notifier.notifyAdmin(`😵 [${this.store.getName()}] Login did not succeed. Status ${res.status}`);
+                }
+                throw new Error(`Login did not succeed. Status ${res.status}`);
+            }
+            await prompt({
+                name: "noop",
+                message: "Login did not succeed, please check browser for captcha and log in manually. Then hit enter...",
+            });
+        }
+        this.loggedIn = true;
+        this.reLoginRequired = false;
+    }
+
+    async createIncognitoContext(): Promise<boolean> {
+        return Promise.race([this._createIncognitoContext(), sleep(this.incognitoRaceTimeout, false)]);
+    }
+
+    async handleResponseError(
+        query: string,
+        res: { status: number; body: Response | null; retryAfterHeader?: string | null }
+    ): Promise<void> {
+        this.logger.error(`${query} query did not succeed, status code: ${res.status}`);
+        if (res.body?.errors) {
+            this.logger.error("Error: %O", res.body.errors);
+        }
+        if (
+            res.status <= HTTPStatusCode.Timeout ||
+            res.status === HTTPStatusCode.Forbidden ||
+            (res.status === HTTPStatusCode.TooManyRequests && res.retryAfterHeader)
+        ) {
+            if (this.proxies.length) {
+                this.rotateProxy();
+                this.reLoginRequired = true;
+            }
+            if (!this.storeConfig.ignore_sleep && res.retryAfterHeader) {
+                let cooldown = Number(res.retryAfterHeader);
+                this.logger.error(`Too many requests, we need to cooldown and sleep ${cooldown} seconds`);
+                for (const notifier of this.notifiers) {
+                    await notifier.notifyRateLimit(cooldown);
+                }
+                const fiveMinutes = 300;
+                const fiveMinutesWithBuffer = 320;
+                if (cooldown > fiveMinutes) {
+                    this.reLoginRequired = true;
+                    cooldown = fiveMinutesWithBuffer;
+                }
+                await sleep(cooldown * this.millisecondsFactor);
+            }
+        }
+
+        if (res.status === HTTPStatusCode.Forbidden || res.status <= HTTPStatusCode.Timeout) {
+            this.reLoginRequired = true;
+            this.reLaunchRequired = true;
+        }
     }
 
     private async _launchPuppeteer(headless: boolean, sandbox: boolean, shmUsage: boolean) {
@@ -96,117 +265,6 @@ export class BrowserManager {
         return true;
     }
 
-    async logIn(headless = true, email: string, password: string): Promise<void> {
-        if (!this.browser || !this.page) {
-            this.reLaunchRequired = true;
-            this.reLoginRequired = true;
-            throw new Error(`Puppeteer context not initialized! ${!this.page ? "Page" : "Browser"} is undefined.`);
-        }
-
-        let res: { status: number; body: LoginResponse | null; retryAfterHeader?: string | null };
-        try {
-            res = await Promise.race([
-                this.page.evaluate(
-                    async (
-                        store: Store,
-                        email: string,
-                        password: string,
-                        flowId: string,
-                        graphQLClientVersion: string,
-                        loginSHA256: string
-                    ) =>
-                        await fetch(`${store.baseUrl}/api/v1/graphql?anti-cache=${new Date().getTime()}`, {
-                            credentials: "include",
-                            headers: {
-                                "content-type": "application/json",
-                                "apollographql-client-name": "pwa-client",
-                                "apollographql-client-version": graphQLClientVersion,
-                                "x-operation": "LoginProfileUser",
-                                "x-cacheable": "false",
-                                "X-MMS-Language": store.languageCode,
-                                "X-MMS-Country": store.countryCode,
-                                "X-MMS-Salesline": store.salesLine,
-                                "x-flow-id": flowId,
-                                Pragma: "no-cache",
-                                "Cache-Control": "no-cache",
-                            },
-                            referrer: `${store.baseUrl}/`,
-                            method: "POST",
-                            mode: "cors",
-                            body: JSON.stringify({
-                                operationName: "LoginProfileUser",
-                                variables: { email, password },
-                                extensions: {
-                                    pwa: { salesLine: store.salesLine, country: store.countryCode, language: store.languageCode },
-                                    persistedQuery: {
-                                        version: 1,
-                                        sha256Hash: loginSHA256,
-                                    },
-                                },
-                            }),
-                        })
-                            .then((res) =>
-                                res.status === 200
-                                    ? res
-                                          .json()
-                                          .then((data) => ({ status: res.status, body: data }))
-                                          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                                          .catch((_) => ({
-                                              status: res.status,
-                                              body: null,
-                                              retryAfterHeader: res.headers.get("Retry-After"),
-                                          }))
-                                    : res.text().then((data) => ({
-                                          status: res.status,
-                                          body: data,
-                                          retryAfterHeader: res.headers.get("Retry-After"),
-                                      }))
-                            )
-                            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                            .catch((_) => ({ status: -2, body: null })),
-                    this.store as SerializableOrJSHandle,
-                    email,
-                    password,
-                    v4(),
-                    GRAPHQL_CLIENT_VERSION,
-                    this.storeConfig.loginSHA256
-                ),
-                sleep(10000, {
-                    status: -1,
-                    body: { errors: "Timeout" },
-                }),
-            ]);
-        } catch (e) {
-            res = { status: 0, body: null };
-            this.logger.error("Error, %O", e);
-        }
-        if (res.status !== 200 || !res.body || res.body?.errors) {
-            if (headless) {
-                this.logger.error(`Login did not succeed. Status ${res.status}`);
-                if (res.body?.errors) {
-                    this.logger.error("Errors: %O", res.body);
-                }
-                if (res.retryAfterHeader) {
-                    this.logger.error("Retry after: %O", res.retryAfterHeader);
-                }
-                for (const notifier of this.notifiers) {
-                    await notifier.notifyAdmin(`😵 [${this.store.getName()}] Login did not succeed. Status ${res.status}`);
-                }
-                throw new Error(`Login did not succeed. Status ${res.status}`);
-            }
-            await prompt({
-                name: "noop",
-                message: "Login did not succeed, please check browser for captcha and log in manually. Then hit enter...",
-            });
-        }
-        this.loggedIn = true;
-        this.reLoginRequired = false;
-    }
-
-    async createIncognitoContext(): Promise<boolean> {
-        return Promise.race([this._createIncognitoContext(), sleep(6000, false)]);
-    }
-
     private async _createIncognitoContext() {
         if (!this.browser) {
             this.logger.error("Unable to create incognito context, browser is undefined!");
@@ -239,15 +297,15 @@ export class BrowserManager {
         // This is the fastest site to render without any JS or CSS bloat
         await this.page.setJavaScriptEnabled(false);
         await this.page.setViewport({
-            width: 1024 + Math.floor(Math.random() * 100),
-            height: 768 + Math.floor(Math.random() * 100),
+            width: this.baseWidth + Math.floor(Math.random() * this.randomFactor),
+            height: this.baseHeight + Math.floor(Math.random() * this.randomFactor),
         });
         try {
-            await this.page.goto(this.storeConfig.start_url || `${this.store.baseUrl}/404`, {
+            await this.page.goto(this.storeConfig.start_url ?? `${this.store.baseUrl}/404`, {
                 waitUntil: "networkidle0",
                 timeout: 5000,
             });
-        } catch (e) {
+        } catch (e: unknown) {
             this.logger.error("Unable to visit start page...");
             this.rotateProxy();
             return false;
@@ -257,39 +315,6 @@ export class BrowserManager {
             await sleep(this.store.loginSleepTime);
         }
         return true;
-    }
-
-    async handleResponseError(
-        query: string,
-        res: { status: number; body: Response | null; retryAfterHeader?: string | null }
-    ): Promise<void> {
-        this.logger.error(`${query} query did not succeed, status code: ${res.status}`);
-        if (res?.body?.errors) {
-            this.logger.error("Error: %O", res.body.errors);
-        }
-        if (res.status <= 0 || res.status === 403 || (res.status === 429 && res?.retryAfterHeader)) {
-            if (this.proxies?.length) {
-                this.rotateProxy();
-                this.reLoginRequired = true;
-            }
-            if (!this.storeConfig.ignore_sleep && res.retryAfterHeader) {
-                let cooldown = Number(res.retryAfterHeader);
-                this.logger.error(`Too many requests, we need to cooldown and sleep ${cooldown} seconds`);
-                for (const notifier of this.notifiers) {
-                    await notifier.notifyRateLimit(cooldown);
-                }
-                if (cooldown > 300) {
-                    this.reLoginRequired = true;
-                    cooldown = 320;
-                }
-                await sleep(cooldown * 1000);
-            }
-        }
-
-        if (res.status === 403 || res.status <= 0) {
-            this.reLoginRequired = true;
-            this.reLaunchRequired = true;
-        }
     }
 
     // See https://intoli.com/blog/making-chrome-headless-undetectable/
@@ -303,14 +328,17 @@ export class BrowserManager {
                 Object.defineProperty(HTMLDivElement.prototype, "offsetHeight", {
                     ...elementDescriptor,
                     get: function () {
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                         if (this.id === "modernizr") {
+                            // eslint-disable-next-line @typescript-eslint/no-magic-numbers
                             return 1;
                         }
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                         return elementDescriptor?.get?.apply(this);
                     },
                 });
             });
-        } catch (e) {
+        } catch (e: unknown) {
             this.logger.error("Unable to patch hairline detection, error %O", e);
         }
     }
@@ -319,7 +347,7 @@ export class BrowserManager {
         if (this.page) {
             try {
                 await this.page.close();
-            } catch (e) {
+            } catch (e: unknown) {
                 this.logger.error("Unable to close page, %O", e);
             } finally {
                 this.page = undefined;
@@ -328,7 +356,7 @@ export class BrowserManager {
         if (this.context) {
             try {
                 await this.context.close();
-            } catch (e) {
+            } catch (e: unknown) {
                 this.logger.error("Unable to close context, %O", e);
             } finally {
                 this.context = undefined;
@@ -337,7 +365,7 @@ export class BrowserManager {
         if (this.browser) {
             try {
                 await this.browser.close();
-            } catch (e) {
+            } catch (e: unknown) {
                 this.logger.error("Unable to close browser, %O", e);
             } finally {
                 this.browser = undefined;

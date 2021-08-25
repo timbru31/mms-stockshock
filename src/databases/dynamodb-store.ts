@@ -1,20 +1,16 @@
-import {
-    DynamoDBClient,
-    DynamoDBClientConfig,
-    GetItemCommand,
-    GetItemCommandInput,
-    UpdateItemCommand,
-    UpdateItemCommandInput,
-} from "@aws-sdk/client-dynamodb";
-import { Product } from "../models/api/product";
-import { StoreConfiguration } from "../models/stores/config-model";
-import { Store } from "../models/stores/store";
-import { DatabaseConnection } from "./database-connection";
+/* eslint-disable @typescript-eslint/naming-convention */
+import type { DynamoDBClientConfig, GetItemCommandInput, UpdateItemCommandInput } from "@aws-sdk/client-dynamodb";
+import { DynamoDBClient, GetItemCommand, UpdateItemCommand } from "@aws-sdk/client-dynamodb";
+import type { Product } from "../models/api/product";
+import type { StoreConfiguration } from "../models/stores/config-model";
+import type { Store } from "../models/stores/store";
+import type { DatabaseConnection } from "./database-connection";
 
 export class DynamoDBStore implements DatabaseConnection {
     private readonly store: Store;
     private readonly storeConfiguration: StoreConfiguration;
     private readonly client: DynamoDBClient;
+    private readonly fallbackAmount = 0;
 
     constructor(store: Store, storeConfiguration: StoreConfiguration) {
         this.store = store;
@@ -90,9 +86,9 @@ export class DynamoDBStore implements DatabaseConnection {
         const command = new GetItemCommand(params);
         try {
             const response = await this.client.send(command);
-            return response.Item?.cookies.L?.length ?? 0;
-        } catch (e) {
-            return 0;
+            return response.Item?.cookies.L?.length ?? this.fallbackAmount;
+        } catch (e: unknown) {
+            return this.fallbackAmount;
         }
     }
 
@@ -109,7 +105,7 @@ export class DynamoDBStore implements DatabaseConnection {
             const response = await this.client.send(command);
             const priceString = response.Item?.price.N;
             return priceString ? parseFloat(priceString) : NaN;
-        } catch (e) {
+        } catch (e: unknown) {
             return NaN;
         }
     }

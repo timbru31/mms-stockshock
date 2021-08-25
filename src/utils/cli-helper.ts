@@ -1,12 +1,12 @@
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
-import { ConfigModel, StoreConfiguration } from "../models/stores/config-model";
+import type { ConfigModel, StoreConfiguration } from "../models/stores/config-model";
 import { Saturn } from "../models/stores/saturn";
-import { Store } from "../models/stores/store";
+import type { Store } from "../models/stores/store";
 import { prompt } from "inquirer";
 import { MediaMarktGermany } from "../models/stores/media-markt-germany";
 import { MediaMarktAustria } from "../models/stores/media-markt-austria";
-import { CliArguments } from "../models/cli";
+import type { CliArguments } from "../models/cli";
 import { MediaMarktSpain } from "../models/stores/media-markt-spain";
 
 export async function getStoreAndStoreConfig(config: ConfigModel): Promise<{
@@ -46,7 +46,7 @@ export async function getStoreAndStoreConfig(config: ConfigModel): Promise<{
                 },
             ],
         });
-        storeArgument = storePrompt.store;
+        storeArgument = storePrompt.store as string;
     } else {
         storeArgument = args.store;
     }

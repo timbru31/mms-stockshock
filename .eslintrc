@@ -1,6 +1,32 @@
 {
     "root": true,
     "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "project": "./tsconfig.json"
+    },
     "plugins": ["@typescript-eslint"],
-    "extends": ["eslint:recommended", "plugin:@typescript-eslint/eslint-recommended", "plugin:@typescript-eslint/recommended"]
+    "extends": ["eslint:recommended", "plugin:@typescript-eslint/eslint-recommended", "plugin:@typescript-eslint/all"],
+    "rules": {
+        "@typescript-eslint/no-floating-promises": 2,
+        "@typescript-eslint/explicit-member-accessibility": 0,
+        "@typescript-eslint/lines-between-class-members": 0,
+        "@typescript-eslint/object-curly-spacing": 0,
+        "@typescript-eslint/strict-boolean-expressions": 0,
+        "@typescript-eslint/space-before-function-paren": 0,
+        "@typescript-eslint/comma-dangle": 0,
+        "@typescript-eslint/explicit-function-return-type": 0,
+        "@typescript-eslint/prefer-readonly-parameter-types": 0,
+        "@typescript-eslint/no-magic-numbers": ["error", { "ignoreReadonlyClassProperties": true, "ignoreEnums": true }],
+        "@typescript-eslint/init-declarations": 0,
+        "@typescript-eslint/no-extra-parens": 0,
+        "@typescript-eslint/naming-convention": [
+            "error",
+            {
+                "selector": "variable",
+                "format": ["camelCase", "UPPER_CASE"]
+            }
+        ],
+        "@typescript-eslint/no-unnecessary-condition": ["error", { "allowConstantLoopConditions": true }],
+        "@typescript-eslint/no-type-alias": ["error", { "allowAliases": "in-unions" }]
+    }
 }

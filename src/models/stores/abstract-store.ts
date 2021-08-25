@@ -1,8 +1,10 @@
-import { Store } from "./store";
+import type { Store } from "./store";
 
 export abstract class CommonStore implements Store {
-    private MIN_SLEEP_TIME = 100;
-    private MAX_SLEEP_TIME = 500;
+    private readonly defaultMinSleepTime = 100;
+    private readonly defaultMaxSleepTime = 500;
+    private maxSleepTime = this.defaultMaxSleepTime;
+    private minSleepTime = this.defaultMinSleepTime;
 
     abstract baseUrl: string;
     abstract countryCode: string;
@@ -10,27 +12,30 @@ export abstract class CommonStore implements Store {
     abstract salesLine: string;
     abstract shortCode: string;
 
-    abstract getName(): string;
-    abstract getShortName(): string;
-
-    setSleepTimes(minSleepTime: undefined | number, maxSleepTime: undefined | number): void {
+    setSleepTimes(minSleepTime: number | undefined, maxSleepTime: number | undefined): void {
         if (minSleepTime) {
-            this.MIN_SLEEP_TIME = minSleepTime;
+            this.minSleepTime = minSleepTime;
         }
         if (maxSleepTime) {
-            this.MAX_SLEEP_TIME = maxSleepTime;
+            this.maxSleepTime = maxSleepTime;
         }
     }
 
     getSleepTime(): number {
-        return Math.random() * (this.MAX_SLEEP_TIME - this.MIN_SLEEP_TIME) + this.MIN_SLEEP_TIME;
+        return Math.random() * (this.maxSleepTime - this.minSleepTime) + this.minSleepTime;
     }
 
+    abstract getName(): string;
+    abstract getShortName(): string;
+
+    /* eslint-disable @typescript-eslint/indent */
+    // eslint-disable-next-line @typescript-eslint/member-ordering
     [key: string]:
-        | string
         | number
-        | undefined
+        | string
         | (() => number)
         | (() => string)
-        | ((minSleepTime: undefined | number, maxSleepTime: undefined | number) => void);
+        | ((minSleepTime: number | undefined, maxSleepTime: number | undefined) => void)
+        | undefined;
+    /* eslint-enable @typescript-eslint/indent */
 }

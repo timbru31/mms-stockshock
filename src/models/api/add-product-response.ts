@@ -1,5 +1,5 @@
-import { LineItem } from "./line-item";
-import { Response } from "./response";
+import type { LineItem } from "./line-item";
+import type { Response } from "./response";
 
 export interface AddProductResponse extends Response {
     data?: {
