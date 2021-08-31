@@ -93,7 +93,7 @@ void (async function () {
     }
 
     if (storeConfig.use_websocket) {
-        const webSocketNotifier = new WebSocketNotifier(storeConfig, logger, store);
+        const webSocketNotifier = new WebSocketNotifier(storeConfig, logger);
         notifiers.push(webSocketNotifier);
     }
     if (

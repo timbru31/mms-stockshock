@@ -7,21 +7,21 @@ import WebSocket from "ws";
 import type { Item } from "../models/api/item";
 import type { Notifier } from "../models/notifier";
 import type { StoreConfiguration } from "../models/stores/config-model";
-import type { Store } from "../models/stores/store";
 import { ProductHelper } from "../utils/product-helper";
 import { noopPromise, shuffle, sleep } from "../utils/utils";
 
 export class WebSocketNotifier implements Notifier {
     private heartBeatPing: NodeJS.Timeout | undefined;
     private readonly logger: Logger;
-    private readonly store: Store;
     private readonly productHelper = new ProductHelper();
     private readonly wss: WebSocket.Server | null;
     private readonly fallbackPrice = 0;
+    private readonly fallbackSleepTime = 1000;
+    private readonly sleepTime: number;
 
-    constructor(storeConfig: StoreConfiguration, logger: Logger, store: Store) {
+    constructor(storeConfig: StoreConfiguration, logger: Logger) {
         this.logger = logger;
-        this.store = store;
+        this.sleepTime = storeConfig.ping_sleep_time ?? this.fallbackSleepTime;
         this.wss = this.setupWebSocketServer(storeConfig);
     }
 
@@ -132,7 +132,7 @@ export class WebSocketNotifier implements Notifier {
                         client.readyState
                     }`
                 );
-                await sleep(this.store.getSleepTime());
+                await sleep(this.sleepTime);
             }
         }
     }
