@@ -197,7 +197,7 @@ export class BrowserManager {
         if (
             res.status <= HTTPStatusCode.Timeout ||
             res.status === HTTPStatusCode.Forbidden ||
-            (res.status === HTTPStatusCode.TooManyRequests && res.retryAfterHeader)
+            res.status === HTTPStatusCode.TooManyRequests
         ) {
             if (this.proxies.length) {
                 this.rotateProxy();
@@ -216,12 +216,10 @@ export class BrowserManager {
                     cooldown = fiveMinutesWithBuffer;
                 }
                 await sleep(cooldown * this.millisecondsFactor);
+            } else {
+                this.reLoginRequired = true;
+                this.reLaunchRequired = true;
             }
-        }
-
-        if (res.status === HTTPStatusCode.Forbidden || res.status <= HTTPStatusCode.Timeout) {
-            this.reLoginRequired = true;
-            this.reLaunchRequired = true;
         }
     }
 
