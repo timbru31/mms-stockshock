@@ -9,6 +9,7 @@ import type { CliArguments } from "./models/cli";
 import type { Notifier } from "./models/notifier";
 import type { Store } from "./models/stores/store";
 import { DiscordNotifier, TwitterNotifier, WebSocketNotifier } from "./notifiers";
+import { TelegramNotifier } from "./notifiers/telegram-notifier";
 import { CategoryChecker } from "./stock-checkers/category-checker";
 import { WishlistChecker } from "./stock-checkers/wishlist-checker";
 import { getStoreAndStoreConfig } from "./utils/cli-helper";
@@ -117,6 +118,11 @@ void (async function () {
     ) {
         const twitterNotifier = new TwitterNotifier(store, storeConfig, logger);
         notifiers.push(twitterNotifier);
+    }
+
+    if (storeConfig.telegram_channel_id && storeConfig.telegram_bot_api_key) {
+        const telegramNotifier = new TelegramNotifier(store, storeConfig, logger);
+        notifiers.push(telegramNotifier);
     }
 
     const browserManager = new BrowserManager(store, storeConfig, logger, notifiers);

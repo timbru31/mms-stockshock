@@ -47,6 +47,10 @@ export interface StoreConfiguration {
     twitter_access_token_secret?: string;
     twitter_tags?: string[];
 
+    // Telegram notification settings
+    telegram_bot_api_key?: string;
+    telegram_channel_id?: string;
+
     // Proxies
     proxy_url?: string;
     proxy_username?: string;
