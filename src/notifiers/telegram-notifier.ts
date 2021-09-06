@@ -15,7 +15,7 @@ export class TelegramNotifier implements Notifier {
     private readonly store: Store;
     private readonly replacements = new Map<string, string>();
     private telegramBot: Telegraf | undefined = undefined;
-    private channelId: string = "";
+    private channelId = "";
 
     constructor(store: Store, storeConfig: StoreConfiguration, logger: Logger) {
         this.store = store;
