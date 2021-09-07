@@ -96,6 +96,10 @@ price_change_discord_role_ping = ""
 twitter_bearer_token = ""
 twitter_tags = []
 
+# Telegram integration (optional)
+telegram_bot_api_key = ""
+telegram_channel_id = ""
+
 # Important!
 # If you use multiple proxies, use the basic auth format: http://user:pass@foo.bar:8080
 # Set only proxy_urls or proxy_url NOT both
