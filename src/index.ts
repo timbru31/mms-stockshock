@@ -139,6 +139,7 @@ void (async function () {
         });
     });
 
+    let shouldRun = true;
     ["SIGINT", "SIGTERM"].forEach((evt) => {
         process.on(evt, () => {
             console.log("👋 Shutting down...");
@@ -147,6 +148,7 @@ void (async function () {
             }
             cooldownManager.saveCooldowns();
             void browserManager.shutdown();
+            shouldRun = false;
         });
     });
 
@@ -161,7 +163,6 @@ void (async function () {
     const wishlistRaceTimeout = 60000;
     const loginRaceTimeout = 30000;
 
-    const shouldRun = true;
     while (shouldRun) {
         try {
             logger.info("🤖 Beep, I'm alive and well checking your stock");
