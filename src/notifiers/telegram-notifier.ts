@@ -58,7 +58,7 @@ export class TelegramNotifier implements Notifier {
         if (fullAlert) {
             message = this.addTimestamp(
                 `\uD83D\uDFE2 Produkt bei ${this.store.getShortName()} verfügbar: \n\n${item.product.title}` +
-                    `\n\nPreis : ${item.price?.price ?? "0"} ${item.price?.currency ?? "𑿠"}!` +
+                    `\nPreis : ${item.price?.price ?? "0"} ${item.price?.currency ?? "𑿠"}!` +
                     `\n\n${this.productHelper.getProductURL(item, this.store, this.replacements)}`
             );
         } else if (this.productHelper.canProductBeAddedToBasket(item)) {
@@ -68,13 +68,13 @@ export class TelegramNotifier implements Notifier {
             message = this.addTimestamp(
                 `\uD83D\uDED2 Produkt bei ${this.store.getShortName()} kann zum Warenkorb hinzugefügt werden: ` +
                     `\n\n${item.product.title} ` +
-                    `\n\nPreis : ${item.price?.price ?? "0"} ${item.price?.currency ?? "𑿠"}!` +
+                    `\nPreis : ${item.price?.price ?? "0"} ${item.price?.currency ?? "𑿠"}!` +
                     `\n\n${this.productHelper.getProductURL(item, this.store, this.replacements)}`
             );
         } else {
             message = this.addTimestamp(
                 `\uD83D\uDFE1 Produkt bei ${this.store.getShortName()} für Warenkorb-Parker: \n\n${item.product.title} ` +
-                    `\n\nPreis : ${item.price?.price ?? "0"} ${item.price?.currency ?? "𑿠"}! ` +
+                    `\nPreis : ${item.price?.price ?? "0"} ${item.price?.currency ?? "𑿠"}! ` +
                     `\n\n${this.productHelper.getProductURL(item, this.store, this.replacements)}`
             );
         }
