@@ -5,7 +5,6 @@
     "description": "A simple bot for MediaMarkt and Saturn to check if items on the wishlist are available",
     "main": "dist/index.js",
     "scripts": {
-        "postinstall": "patch-package",
         "build": "tsc",
         "start:dev": "ts-node src/index.ts",
         "prestart": "npm run build",
@@ -27,7 +26,6 @@
         "date-fns": "^2.24.0",
         "discord.js": "^13.1.0",
         "inquirer": "^8.1.5",
-        "patch-package": "^6.4.7",
         "proxy-chain": "^1.0.4",
         "puppeteer": "^10.4.0",
         "puppeteer-extra": "^3.2.0",
