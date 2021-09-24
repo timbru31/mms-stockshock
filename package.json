@@ -28,7 +28,7 @@
         "inquirer": "^8.1.5",
         "proxy-chain": "^1.0.4",
         "puppeteer": "^10.4.0",
-        "puppeteer-extra": "^3.2.0",
+        "puppeteer-extra": "^3.2.1",
         "puppeteer-extra-plugin-stealth": "^2.8.0",
         "telegraf": "^4.4.2",
         "toml": "^3.0.0",
