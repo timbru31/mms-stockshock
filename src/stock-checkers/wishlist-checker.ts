@@ -15,6 +15,7 @@ import { GRAPHQL_CLIENT_VERSION, sleep } from "../utils/utils";
 
 export class WishlistChecker {
     // This is set by MM/S and a fixed constant
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     readonly MAX_ITEMS_PER_QUERY = 24;
 
     private readonly store: Store;
@@ -118,12 +119,14 @@ export class WishlistChecker {
                                 "apollographql-client-version": graphQLClientVersion,
                                 "x-operation": "GetUser",
                                 "x-cacheable": "false",
-                                "X-MMS-Language": store.languageCode,
-                                "X-MMS-Country": store.countryCode,
-                                "X-MMS-Salesline": store.salesLine,
+                                "x-mms-language": store.languageCode,
+                                "x-mms-country": store.countryCode,
+                                "x-mms-salesline": store.salesLine,
                                 "x-flow-id": flowId,
+                                /* eslint-disable @typescript-eslint/naming-convention */
                                 Pragma: "no-cache",
                                 "Cache-Control": "no-cache",
+                                /* eslint-enable @typescript-eslint/naming-convention */
                             },
                             referrer: `${store.baseUrl}/`,
                             method: "POST",

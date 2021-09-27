@@ -5,6 +5,7 @@ export interface ConfigModel {
     mmes: StoreConfiguration;
 }
 
+/* eslint-disable @typescript-eslint/naming-convention */
 export interface StoreConfiguration {
     // User data
     accounts: string[][];
@@ -80,3 +81,4 @@ export interface StoreConfiguration {
     addProductSHA256: string;
     getProductSHA256: string;
 }
+/* eslint-enable @typescript-eslint/naming-convention */

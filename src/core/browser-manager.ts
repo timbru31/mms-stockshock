@@ -95,11 +95,11 @@ export class BrowserManager {
                                 "apollographql-client-version": graphQLClientVersion,
                                 "x-operation": "LoginProfileUser",
                                 "x-cacheable": "false",
-                                /* eslint-disable @typescript-eslint/naming-convention */
-                                "X-MMS-Language": store.languageCode,
-                                "X-MMS-Country": store.countryCode,
-                                "X-MMS-Salesline": store.salesLine,
+                                "x-mms-language": store.languageCode,
+                                "x-mms-country": store.countryCode,
+                                "x-mms-salesline": store.salesLine,
                                 "x-flow-id": flowId,
+                                /* eslint-disable @typescript-eslint/naming-convention */
                                 Pragma: "no-cache",
                                 "Cache-Control": "no-cache",
                                 /* eslint-enable @typescript-eslint/naming-convention */

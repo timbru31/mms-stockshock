@@ -102,9 +102,9 @@ export class BasketAdder {
                                             "x-operation": "AddProduct",
                                             "x-cacheable": "false",
                                             /* eslint-disable @typescript-eslint/naming-convention */
-                                            "X-MMS-Language": store.languageCode,
-                                            "X-MMS-Country": store.countryCode,
-                                            "X-MMS-Salesline": store.salesLine,
+                                            "x-mms-language": store.languageCode,
+                                            "x-mms-country": store.countryCode,
+                                            "x-mms-salesline": store.salesLine,
                                             "x-flow-id": flowId,
                                             Pragma: "no-cache",
                                             "Cache-Control": "no-cache",

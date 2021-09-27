@@ -19,13 +19,6 @@
         "@typescript-eslint/no-magic-numbers": ["error", { "ignoreReadonlyClassProperties": true, "ignoreEnums": true }],
         "@typescript-eslint/init-declarations": 0,
         "@typescript-eslint/no-extra-parens": 0,
-        "@typescript-eslint/naming-convention": [
-            "error",
-            {
-                "selector": "variable",
-                "format": ["camelCase", "UPPER_CASE"]
-            }
-        ],
         "@typescript-eslint/no-unnecessary-condition": ["error", { "allowConstantLoopConditions": true }],
         "@typescript-eslint/no-type-alias": ["error", { "allowAliases": "in-unions" }]
     }
