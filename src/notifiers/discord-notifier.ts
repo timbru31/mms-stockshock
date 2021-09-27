@@ -26,6 +26,8 @@ export class DiscordNotifier implements Notifier {
     private noCookieEmoji: string | undefined;
     private readonly announceCookies: boolean = true;
     private readonly shoppingCartAlerts: boolean = true;
+    private readonly showCookiesAmount: boolean = true;
+    private readonly showMagicianLink: boolean = true;
     private readonly store: Store;
     private readonly logger: Logger;
     private readonly productHelper = new ProductHelper();
@@ -40,6 +42,8 @@ export class DiscordNotifier implements Notifier {
 
         this.announceCookies = storeConfig.announce_cookies ?? true;
         this.shoppingCartAlerts = storeConfig.shopping_cart_alerts ?? true;
+        this.showCookiesAmount = storeConfig.show_cookies_amount ?? true;
+        this.showMagicianLink = storeConfig.show_magician_link ?? true;
 
         this.logger = logger;
 
@@ -115,16 +119,10 @@ export class DiscordNotifier implements Notifier {
         const price = item.price?.price ?? "0";
         const currency = item.price?.currency ?? "𑿠";
         embed.addFields([
-            { name: "Magician", value: `${this.productHelper.getProductURL(item, this.store, this.replacements, true)}` },
             { name: "ProductID", value: item.product.id },
             {
                 name: "Price",
                 value: `${price} ${currency}`,
-                inline: true,
-            },
-            {
-                name: "Cookies?",
-                value: cookiesAmount ? `${cookiesAmount} 🍪` : `${this.noCookieEmoji ?? "👎"}`,
                 inline: true,
             },
             {
@@ -133,6 +131,12 @@ export class DiscordNotifier implements Notifier {
                 inline: true,
             },
         ]);
+        if (this.showMagicianLink) {
+            embed.addField("Magician", `${this.productHelper.getProductURL(item, this.store, this.replacements, true)}`);
+        }
+        if (this.showCookiesAmount) {
+            embed.addField("Cookies", cookiesAmount ? `${cookiesAmount} 🍪` : `${this.noCookieEmoji ?? "👎"}`, true);
+        }
         if (fullAlert) {
             embed.setDescription("🟢 Item **available**");
             embed.setColor("#7ab05e");

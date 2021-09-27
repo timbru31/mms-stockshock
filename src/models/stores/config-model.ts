@@ -22,6 +22,8 @@ export interface StoreConfiguration {
     cookies?: number;
     announce_cookies?: boolean;
     shopping_cart_alerts?: boolean;
+    show_cookies_amount?: boolean;
+    show_magician_link?: boolean;
     id_replacements?: string[][];
 
     // Discord channels for notifications
