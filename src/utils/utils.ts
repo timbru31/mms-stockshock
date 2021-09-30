@@ -5,7 +5,7 @@ import type { Logger } from "winston";
 import { createLogger as createWinstonLogger, format, transports } from "winston";
 import type { ConfigModel } from "../models/stores/config-model";
 
-export const GRAPHQL_CLIENT_VERSION = "1.49.1";
+export const GRAPHQL_CLIENT_VERSION = "1.50.0";
 
 function getEmojiForLevel(level: string) {
     switch (colors.stripColors(level)) {
