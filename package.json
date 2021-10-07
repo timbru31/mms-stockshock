@@ -21,7 +21,7 @@
         "node": ">=16"
     },
     "dependencies": {
-        "@aws-sdk/client-dynamodb": "^3.34.0",
+        "@aws-sdk/client-dynamodb": "^3.35.0",
         "@types/uuid": "^8.3.1",
         "date-fns": "^2.24.0",
         "discord.js": "^13.1.0",
@@ -33,7 +33,7 @@
         "telegraf": "^4.4.2",
         "toml": "^3.0.0",
         "twitter-api-v2": "^1.5.2",
-        "user-agents": "^1.0.790",
+        "user-agents": "^1.0.796",
         "uuid": "^8.3.2",
         "winston": "^3.3.3",
         "ws": "^8.2.2",
