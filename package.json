@@ -21,7 +21,7 @@
         "node": ">=16"
     },
     "dependencies": {
-        "@aws-sdk/client-dynamodb": "^3.34.0",
+        "@aws-sdk/client-dynamodb": "^3.36.1",
         "@types/uuid": "^8.3.1",
         "date-fns": "^2.25.0",
         "discord.js": "^13.1.0",
