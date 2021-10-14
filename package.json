@@ -23,13 +23,13 @@
     "dependencies": {
         "@aws-sdk/client-dynamodb": "^3.34.0",
         "@types/uuid": "^8.3.1",
-        "date-fns": "^2.24.0",
+        "date-fns": "^2.25.0",
         "discord.js": "^13.1.0",
         "inquirer": "^8.1.5",
         "proxy-chain": "^1.0.4",
         "puppeteer": "^10.4.0",
         "puppeteer-extra": "^3.2.3",
-        "puppeteer-extra-plugin-stealth": "^2.8.1",
+        "puppeteer-extra-plugin-stealth": "^2.8.2",
         "telegraf": "^4.4.2",
         "toml": "^3.0.0",
         "twitter-api-v2": "^1.5.2",
@@ -44,14 +44,14 @@
         "@types/user-agents": "^1.0.2",
         "@types/ws": "^8.2.0",
         "@types/yargs": "^17.0.3",
-        "@typescript-eslint/eslint-plugin": "^4.31.2",
+        "@typescript-eslint/eslint-plugin": "^4.33.0",
         "@typescript-eslint/parser": "^4.32.0",
         "eslint": "^7.32.0",
         "husky": "^7.0.2",
         "lint-staged": "^11.2.0",
         "prettier": "^2.4.1",
         "ts-node": "^10.2.1",
-        "typescript": "^4.4.3"
+        "typescript": "^4.4.4"
     },
     "funding": "https://github.com/sponsors/timbru31"
 }
