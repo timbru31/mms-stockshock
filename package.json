@@ -51,7 +51,7 @@
         "lint-staged": "^11.2.0",
         "prettier": "^2.4.1",
         "ts-node": "^10.2.1",
-        "typescript": "^4.4.3"
+        "typescript": "^4.4.4"
     },
     "funding": "https://github.com/sponsors/timbru31"
 }
