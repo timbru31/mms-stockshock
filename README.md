@@ -108,8 +108,15 @@ npm start -- --store <mmat|mmde|mmes|saturn>
 You can use the provided Docker image (https://hub.docker.com/r/timbru31/mms-stockshock), too.
 An example launch command would be:
 
+Pro tips:
+
+-   disable core dumps (`--ulimit core=0`)
+-   limit swap and memory
+-   restart on failures
+-   dev null the log file (you can use the logs command of docker)
+
 ```sh
-docker run --restart on-failure --memory 500m --memory-swap 500m -v $PWD/stores.toml:/opt/mms-stockshock/stores.toml -e "STORE=mmde" -d timbru31/mms-stockshock
+docker run --restart on-failure --memory 500m --memory-swap 500m --ulimit core=0 -v /dev/null:/opt/mms-stockshock/stockshock.log -v $PWD/stores.toml:/opt/mms-stockshock/stores.toml -v $PWD/cooldowns.json:/opt/mms-stockshock/cooldowns.json -v $PWD/basket-cooldowns.json:/opt/mms-stockshock/basket-cooldowns.json -v /etc/letsencrypt/live/my-domain/privkey.pem:/opt/mms-stockshock/key.pem -v /etc/letsencrypt/live/my-domain/fullchain.pem:/opt/mms-stockshock/cert.pem -e "STORE=saturn" -p 8080:8080 -d timbru31/mms-stockshock
 ```
 
 ---
