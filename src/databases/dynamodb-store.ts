@@ -32,7 +32,7 @@ export class DynamoDBStore implements DatabaseConnection {
                 store: { S: this.store.shortCode },
                 productId: { S: product.id },
             },
-            UpdateExpression: "SET cookies = list_append(if_not_exists(cookies, :empty_list), :cookies), title = :title",
+            UpdateExpression: "SET cookies = list_append(:cookies, if_not_exists(cookies, :empty_list)), title = :title",
             ExpressionAttributeValues: {
                 ":cookies": {
                     L: cookies.map((cookie) => ({
