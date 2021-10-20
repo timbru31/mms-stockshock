@@ -9,6 +9,8 @@ ignore_sleep = false
 id_replacements = []
 # check old online status field for basket check
 check_online_status = false
+# IDs of products you want to generate cookies for (strings)
+cookie_ids = []
 
 # Beware that >10 can cause issues with Discord's 2000 characters limit!
 cookies = 10
@@ -78,6 +80,8 @@ ignore_sleep = false
 id_replacements = []
 # check old online status field for basket check
 check_online_status = false
+# IDs of products you want to generate cookies for (strings)
+cookie_ids = []
 
 # Beware that >10 can cause issues with Discord's 2000 characters limit!
 cookies = 10
@@ -147,6 +151,8 @@ ignore_sleep = false
 id_replacements = []
 # check old online status field for basket check
 check_online_status = false
+# IDs of products you want to generate cookies for (strings)
+cookie_ids = []
 
 # Beware that >10 can cause issues with Discord's 2000 characters limit!
 cookies = 10

@@ -67,7 +67,8 @@ export class WishlistChecker {
                 this.database,
                 this.notifiers,
                 this.logger,
-                this.storeConfiguration.check_online_status ?? false
+                this.storeConfiguration.check_online_status ?? false,
+                this.storeConfiguration.cookie_ids ?? []
             );
             basketProducts = new Map([...basketProducts, ...items]);
 
@@ -90,7 +91,8 @@ export class WishlistChecker {
                             this.database,
                             this.notifiers,
                             this.logger,
-                            this.storeConfiguration.check_online_status ?? false
+                            this.storeConfiguration.check_online_status ?? false,
+                            this.storeConfiguration.cookie_ids ?? []
                         );
                         basketProducts = new Map([...basketProducts, ...items]);
                     }

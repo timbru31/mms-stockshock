@@ -1,6 +1,6 @@
 {
     "name": "stockshock",
-    "version": "5.5.1",
+    "version": "5.6.0",
     "private": true,
     "description": "A simple bot for MediaMarkt and Saturn to check if items on the wishlist are available",
     "main": "dist/index.js",

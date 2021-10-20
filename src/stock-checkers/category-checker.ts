@@ -115,7 +115,8 @@ export class CategoryChecker {
                             this.database,
                             this.notifiers,
                             this.logger,
-                            this.storeConfiguration.check_online_status ?? false
+                            this.storeConfiguration.check_online_status ?? false,
+                            this.storeConfiguration.cookie_ids ?? []
                         );
                     }
                 }

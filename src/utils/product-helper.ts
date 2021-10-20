@@ -86,13 +86,14 @@ export class ProductHelper {
         database: DatabaseConnection | undefined,
         notifiers: Notifier[],
         logger: Logger,
-        checkOnlineStatus: boolean
+        checkOnlineStatus: boolean,
+        cookieIds: string[]
     ): Promise<Map<string, Product>> {
         const basketProducts = new Map<string, Product>();
 
         if (items) {
             for (const item of items) {
-                await this.checkItem(item, basketProducts, cooldownManager, database, notifiers, logger, checkOnlineStatus);
+                await this.checkItem(item, basketProducts, cooldownManager, database, notifiers, logger, checkOnlineStatus, cookieIds);
             }
         }
         return basketProducts;
@@ -105,7 +106,8 @@ export class ProductHelper {
         database: DatabaseConnection | undefined,
         notifiers: Notifier[],
         logger: Logger,
-        checkOnlineStatus: boolean
+        checkOnlineStatus: boolean,
+        cookieIds: string[]
     ): Promise<Map<string, Product>> {
         if (!item) {
             return basketProducts;
@@ -145,7 +147,11 @@ export class ProductHelper {
                 cooldownManager.addToCooldownMap(isProductBuyable, item, checkOnlineStatus, Boolean(cookiesAmount));
             }
 
-            if (this.canProductBeAddedToBasket(item, checkOnlineStatus) && !cooldownManager.hasBasketCooldown(itemId)) {
+            if (
+                this.canProductBeAddedToBasket(item, checkOnlineStatus) &&
+                !cooldownManager.hasBasketCooldown(itemId) &&
+                (!cookieIds.length || cookieIds.includes(itemId))
+            ) {
                 basketProducts.set(itemId, item.product);
             }
         }

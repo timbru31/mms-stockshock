@@ -24,8 +24,9 @@ export interface StoreConfiguration {
     shopping_cart_alerts?: boolean;
     show_cookies_amount?: boolean;
     show_magician_link?: boolean;
-    id_replacements?: string[][];
     check_online_status?: boolean;
+    id_replacements?: string[][];
+    cookie_ids?: string[];
 
     // Discord channels for notifications
     discord_bot_token?: string;
