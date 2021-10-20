@@ -66,7 +66,8 @@ export class WishlistChecker {
                 this.cooldownManager,
                 this.database,
                 this.notifiers,
-                this.logger
+                this.logger,
+                this.storeConfiguration.check_online_status ?? false
             );
             basketProducts = new Map([...basketProducts, ...items]);
 
@@ -88,7 +89,8 @@ export class WishlistChecker {
                             this.cooldownManager,
                             this.database,
                             this.notifiers,
-                            this.logger
+                            this.logger,
+                            this.storeConfiguration.check_online_status ?? false
                         );
                         basketProducts = new Map([...basketProducts, ...items]);
                     }

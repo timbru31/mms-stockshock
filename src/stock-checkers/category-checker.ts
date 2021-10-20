@@ -114,7 +114,8 @@ export class CategoryChecker {
                             this.cooldownManager,
                             this.database,
                             this.notifiers,
-                            this.logger
+                            this.logger,
+                            this.storeConfiguration.check_online_status ?? false
                         );
                     }
                 }

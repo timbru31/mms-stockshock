@@ -24,6 +24,7 @@ export class DiscordNotifier implements Notifier {
     private priceChangeChannel: TextChannel | undefined;
     private priceChangeRolePing: string | undefined;
     private noCookieEmoji: string | undefined;
+    private readonly checkOnlineStatus: boolean;
     private readonly announceCookies: boolean = true;
     private readonly shoppingCartAlerts: boolean = true;
     private readonly showCookiesAmount: boolean = true;
@@ -44,6 +45,7 @@ export class DiscordNotifier implements Notifier {
         this.shoppingCartAlerts = storeConfig.shopping_cart_alerts ?? true;
         this.showCookiesAmount = storeConfig.show_cookies_amount ?? true;
         this.showMagicianLink = storeConfig.show_magician_link ?? true;
+        this.checkOnlineStatus = storeConfig.check_online_status ?? false;
 
         this.logger = logger;
 
@@ -112,7 +114,7 @@ export class DiscordNotifier implements Notifier {
             return;
         }
         let plainMessage: string;
-        const fullAlert = this.productHelper.isProductBuyable(item);
+        const fullAlert = this.productHelper.isProductBuyable(item, this.checkOnlineStatus);
         let emoji: string;
         const embed = this.createEmbed(item);
 
@@ -153,7 +155,7 @@ export class DiscordNotifier implements Notifier {
                 )}`,
                 this.getRolePingsForTitle(item.product.title)
             );
-        } else if (this.productHelper.canProductBeAddedToBasket(item)) {
+        } else if (this.productHelper.canProductBeAddedToBasket(item, this.checkOnlineStatus)) {
             if (!this.shoppingCartAlerts) {
                 return;
             }

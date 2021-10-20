@@ -13,6 +13,7 @@ import { noopPromise, shuffle, sleep } from "../utils/utils";
 export class WebSocketNotifier implements Notifier {
     private heartBeatPing: NodeJS.Timeout | undefined;
     private readonly logger: Logger;
+    private readonly checkOnlineStatus: boolean;
     private readonly productHelper = new ProductHelper();
     private readonly wss: WebSocket.Server | null;
     private readonly fallbackPrice = 0;
@@ -21,6 +22,8 @@ export class WebSocketNotifier implements Notifier {
 
     constructor(storeConfig: StoreConfiguration, logger: Logger) {
         this.logger = logger;
+        this.checkOnlineStatus = storeConfig.check_online_status ?? false;
+
         this.sleepTime = storeConfig.ping_sleep_time ?? this.fallbackSleepTime;
         this.wss = this.setupWebSocketServer(storeConfig);
     }
@@ -41,10 +44,10 @@ export class WebSocketNotifier implements Notifier {
         if (!item) {
             return undefined;
         }
-        const fullAlert = this.productHelper.isProductBuyable(item);
+        const fullAlert = this.productHelper.isProductBuyable(item, this.checkOnlineStatus);
         if (fullAlert) {
             await this.notifyWebSocketClients(item, true);
-        } else if (!this.productHelper.canProductBeAddedToBasket(item)) {
+        } else if (!this.productHelper.canProductBeAddedToBasket(item, this.checkOnlineStatus)) {
             await this.notifyWebSocketClients(item, false);
         }
         return undefined;

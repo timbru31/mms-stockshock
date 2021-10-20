@@ -30,11 +30,11 @@ export class CooldownManager {
         }
     }
 
-    addToCooldownMap(isProductBuyable: boolean, item: Item, hasCookies?: boolean): void {
+    addToCooldownMap(isProductBuyable: boolean, item: Item, checkOnlineStatus: boolean, hasCookies?: boolean): void {
         if (!item.product) {
             return;
         }
-        const canBeAddedToBasket = this.productHelper.canProductBeAddedToBasket(item);
+        const canBeAddedToBasket = this.productHelper.canProductBeAddedToBasket(item, checkOnlineStatus);
         let cooldownTime: Duration;
         if (isProductBuyable) {
             cooldownTime = {

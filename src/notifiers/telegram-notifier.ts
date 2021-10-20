@@ -12,6 +12,8 @@ export class TelegramNotifier implements Notifier {
     private readonly logger: Logger;
     private readonly productHelper = new ProductHelper();
     private readonly shoppingCartAlerts: boolean = true;
+    private readonly checkOnlineStatus: boolean;
+
     private readonly store: Store;
     private readonly replacements = new Map<string, string>();
     private telegramBot: Telegraf | undefined = undefined;
@@ -20,6 +22,7 @@ export class TelegramNotifier implements Notifier {
     constructor(store: Store, storeConfig: StoreConfiguration, logger: Logger) {
         this.store = store;
         this.shoppingCartAlerts = storeConfig.shopping_cart_alerts ?? true;
+        this.checkOnlineStatus = storeConfig.check_online_status ?? false;
         this.logger = logger;
         if (storeConfig.telegram_bot_api_key && storeConfig.telegram_channel_id) {
             this.setupTelegramBot(storeConfig.telegram_bot_api_key, storeConfig.telegram_channel_id);
@@ -54,14 +57,14 @@ export class TelegramNotifier implements Notifier {
         }
 
         let message: string;
-        const fullAlert = this.productHelper.isProductBuyable(item);
+        const fullAlert = this.productHelper.isProductBuyable(item, this.checkOnlineStatus);
         if (fullAlert) {
             message = this.addTimestamp(
                 `\uD83D\uDFE2 Produkt bei ${this.store.getShortName()} verfügbar: \n\n${item.product.title}` +
                     `\nPreis : ${item.price?.price ?? "0"} ${item.price?.currency ?? "𑿠"}!` +
                     `\n\n${this.productHelper.getProductURL(item, this.store, this.replacements)}`
             );
-        } else if (this.productHelper.canProductBeAddedToBasket(item)) {
+        } else if (this.productHelper.canProductBeAddedToBasket(item, this.checkOnlineStatus)) {
             if (!this.shoppingCartAlerts) {
                 return;
             }

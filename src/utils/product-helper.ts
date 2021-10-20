@@ -15,8 +15,13 @@ export class ProductHelper {
      * There seems to be IN_STORE too, where the quantity does not matter. Probably a local store will ship the item
      * Special note: LONG_TAIL needs to be purchasable (isInAssortment)!
      */
-    isProductAvailable(item: Item): boolean {
-        if (item.productControl?.isInAssortment) {
+    isProductAvailable(item: Item, checkOnlineStatus: boolean): boolean {
+        let fieldToCheck = item.productControl?.isInAssortment;
+        if (checkOnlineStatus) {
+            fieldToCheck = item.product?.onlineStatus;
+        }
+
+        if (fieldToCheck) {
             return true;
         }
 
@@ -32,8 +37,13 @@ export class ProductHelper {
         }
     }
 
-    isProductBuyable(item: Item): boolean {
-        if (item.productControl?.isInAssortment) {
+    isProductBuyable(item: Item, checkOnlineStatus: boolean): boolean {
+        let fieldToCheck = item.productControl?.isInAssortment;
+        if (checkOnlineStatus) {
+            fieldToCheck = item.product?.onlineStatus;
+        }
+
+        if (fieldToCheck) {
             switch (item.availability.delivery.availabilityType) {
                 case "IN_STORE":
                     return true;
@@ -48,7 +58,11 @@ export class ProductHelper {
         return false;
     }
 
-    canProductBeAddedToBasket(item: Item): boolean {
+    canProductBeAddedToBasket(item: Item, checkOnlineStatus: boolean): boolean {
+        if (checkOnlineStatus) {
+            return item.product?.onlineStatus ?? false;
+        }
+
         return item.productControl?.isInAssortment ?? false;
     }
 
@@ -71,13 +85,14 @@ export class ProductHelper {
         cooldownManager: CooldownManager,
         database: DatabaseConnection | undefined,
         notifiers: Notifier[],
-        logger: Logger
+        logger: Logger,
+        checkOnlineStatus: boolean
     ): Promise<Map<string, Product>> {
         const basketProducts = new Map<string, Product>();
 
         if (items) {
             for (const item of items) {
-                await this.checkItem(item, basketProducts, cooldownManager, database, notifiers, logger);
+                await this.checkItem(item, basketProducts, cooldownManager, database, notifiers, logger, checkOnlineStatus);
             }
         }
         return basketProducts;
@@ -89,18 +104,19 @@ export class ProductHelper {
         cooldownManager: CooldownManager,
         database: DatabaseConnection | undefined,
         notifiers: Notifier[],
-        logger: Logger
+        logger: Logger,
+        checkOnlineStatus: boolean
     ): Promise<Map<string, Product>> {
         if (!item) {
             return basketProducts;
         }
 
-        if (item.product && this.isProductAvailable(item)) {
+        if (item.product && this.isProductAvailable(item, checkOnlineStatus)) {
             const itemId = item.product.id;
             if (!itemId) {
                 return basketProducts;
             }
-            const isProductBuyable = this.isProductBuyable(item);
+            const isProductBuyable = this.isProductBuyable(item, checkOnlineStatus);
 
             // Delete the cooldown in case the stock changes to really available
             if (!cooldownManager.getItem(itemId)?.isProductBuyable && isProductBuyable) {
@@ -126,10 +142,10 @@ export class ProductHelper {
                         logger.info(message);
                     }
                 }
-                cooldownManager.addToCooldownMap(isProductBuyable, item, Boolean(cookiesAmount));
+                cooldownManager.addToCooldownMap(isProductBuyable, item, checkOnlineStatus, Boolean(cookiesAmount));
             }
 
-            if (this.canProductBeAddedToBasket(item) && !cooldownManager.hasBasketCooldown(itemId)) {
+            if (this.canProductBeAddedToBasket(item, checkOnlineStatus) && !cooldownManager.hasBasketCooldown(itemId)) {
                 basketProducts.set(itemId, item.product);
             }
         }
