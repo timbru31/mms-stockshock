@@ -10,13 +10,13 @@ export class ProductHelper {
     private readonly fallbackAmount = 0;
 
     /*
-     * Check if an item can be added to basket (onlineStatus) - this overrules everything
+     * Check if an item can be added to basket (isInAssortment) - this overrules everything
      * Otherwise check if the item is listed as IN_WAREHOUSE or LONG_TAIL with at least a quantity > 0
      * There seems to be IN_STORE too, where the quantity does not matter. Probably a local store will ship the item
-     * Special note: LONG_TAIL needs to be purchasable (onlineStatus)!
+     * Special note: LONG_TAIL needs to be purchasable (isInAssortment)!
      */
     isProductAvailable(item: Item): boolean {
-        if (item.product?.onlineStatus) {
+        if (item.productControl?.isInAssortment) {
             return true;
         }
 
@@ -33,7 +33,7 @@ export class ProductHelper {
     }
 
     isProductBuyable(item: Item): boolean {
-        if (item.product?.onlineStatus) {
+        if (item.productControl?.isInAssortment) {
             switch (item.availability.delivery.availabilityType) {
                 case "IN_STORE":
                     return true;
@@ -49,7 +49,7 @@ export class ProductHelper {
     }
 
     canProductBeAddedToBasket(item: Item): boolean {
-        return item.product?.onlineStatus ?? false;
+        return item.productControl?.isInAssortment ?? false;
     }
 
     getProductURL(item: Item, store: Store, replacements?: Map<string, string>, magician = false): string {

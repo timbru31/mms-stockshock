@@ -8,4 +8,7 @@ export interface Item {
         currency: string;
     } | null;
     availability: Availability;
+    productControl?: {
+        isInAssortment: boolean;
+    };
 }
