@@ -78,7 +78,7 @@ export class TwitterNotifier implements Notifier {
                         item,
                         this.store,
                         this.replacements
-                    )}`
+                    )} \uFF0A`
                 )
             );
         } else if (this.productHelper.canProductBeAddedToBasket(item, this.checkOnlineStatus)) {
@@ -93,7 +93,7 @@ export class TwitterNotifier implements Notifier {
                         item,
                         this.store,
                         this.replacements
-                    )}`
+                    )} \uFF0A`
                 )
             );
         } else {
@@ -105,7 +105,7 @@ export class TwitterNotifier implements Notifier {
                         item,
                         this.store,
                         this.replacements
-                    )}`
+                    )} \uFF0A`
                 )
             );
         }
