@@ -275,7 +275,10 @@ export class DiscordNotifier implements Notifier {
             this.logger.info("👌 Discord bot integration ready");
             this.discordBotReady = true;
             this.discordBot?.user?.setStatus("online");
-            this.discordBot?.user?.setActivity({ name: "eating your cookies. 🍪", type: "PLAYING" });
+            this.discordBot?.user?.setActivity({
+                name: storeConfig.discord_activity_message ?? "eating your cookies. 🍪",
+                type: "PLAYING",
+            });
             const key = 0;
             const value = 1;
 
