@@ -8,7 +8,7 @@ import type { Item } from "../models/api/item";
 import type { Notifier } from "../models/notifier";
 import type { StoreConfiguration } from "../models/stores/config-model";
 import { ProductHelper } from "../utils/product-helper";
-import { noopPromise, shuffle, sleep } from "../utils/utils";
+import { noopPromise, shuffle } from "../utils/utils";
 
 export class WebSocketNotifier implements Notifier {
     private heartBeatPing: NodeJS.Timeout | undefined;
@@ -18,15 +18,12 @@ export class WebSocketNotifier implements Notifier {
     private readonly productHelper = new ProductHelper();
     private readonly wss: WebSocket.Server | null;
     private readonly fallbackPrice = 0;
-    private readonly fallbackSleepTime = 1000;
-    private readonly sleepTime: number;
 
     constructor(storeConfig: StoreConfiguration, logger: Logger) {
         this.logger = logger;
         this.checkOnlineStatus = storeConfig.check_online_status ?? false;
         this.checkInAssortment = storeConfig.check_in_assortment ?? true;
 
-        this.sleepTime = storeConfig.ping_sleep_time ?? this.fallbackSleepTime;
         this.wss = this.setupWebSocketServer(storeConfig);
     }
 
@@ -44,15 +41,15 @@ export class WebSocketNotifier implements Notifier {
 
     async notifyStock(item: Item | undefined): Promise<string | undefined> {
         if (!item) {
-            return undefined;
+            return Promise.resolve(undefined);
         }
         const fullAlert = this.productHelper.isProductBuyable(item, this.checkOnlineStatus, this.checkInAssortment);
         if (fullAlert) {
-            await this.notifyWebSocketClients(item, true);
+            this.notifyWebSocketClients(item, true);
         } else if (!this.productHelper.canProductBeAddedToBasket(item, this.checkOnlineStatus, this.checkInAssortment)) {
-            await this.notifyWebSocketClients(item, false);
+            this.notifyWebSocketClients(item, false);
         }
-        return undefined;
+        return Promise.resolve(undefined);
     }
 
     async notifyPriceChange(): Promise<void> {
@@ -110,7 +107,7 @@ export class WebSocketNotifier implements Notifier {
         return wss;
     }
 
-    private async notifyWebSocketClients(item: Item, direct: boolean) {
+    private notifyWebSocketClients(item: Item, direct: boolean) {
         if (!item.product) {
             return;
         }
@@ -137,7 +134,6 @@ export class WebSocketNotifier implements Notifier {
                         client.readyState
                     }`
                 );
-                await sleep(this.sleepTime);
             }
         }
     }
