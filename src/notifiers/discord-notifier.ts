@@ -1,3 +1,4 @@
+import { format } from "date-fns";
 import type { TextChannel } from "discord.js";
 import { Client, MessageEmbed } from "discord.js";
 import type { Logger } from "winston";
@@ -140,6 +141,12 @@ export class DiscordNotifier implements Notifier {
         }
         if (this.showCookiesAmount) {
             embed.addField("Cookies", cookiesAmount ? `${cookiesAmount} 🍪` : `${this.noCookieEmoji ?? "👎"}`, true);
+        }
+        if (item.availability.delivery.earliest && item.availability.delivery.latest) {
+            embed.addField(
+                "Delivery",
+                format(item.availability.delivery.earliest, "dd.MM.yyyy") + " - " + format(item.availability.delivery.latest, "dd.MM.yyyy")
+            );
         }
         if (fullAlert) {
             embed.setDescription("🟢 Item **available**");
