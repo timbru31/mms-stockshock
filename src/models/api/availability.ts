@@ -3,8 +3,8 @@ export interface Availability {
     delivery: {
         availabilityType: "IN_STORE" | "IN_WAREHOUSE" | "LONG_TAIL" | "NONE";
         quantity: number;
-        earliest: Date | null;
-        latest: Date | null;
+        earliest: string | null; // Date compatible string
+        latest: string | null; // Date compatible string
     };
     pickup?: unknown;
 }
