@@ -10,18 +10,23 @@ export class ProductHelper {
     private readonly fallbackAmount = 0;
 
     /*
-     * Check if an item can be added to basket (isInAssortment) - this overrules everything
+     * Check if an item can be added to basket (isInAssortment and/or onlineStatus) - this overrules everything
      * Otherwise check if the item is listed as IN_WAREHOUSE or LONG_TAIL with at least a quantity > 0
      * There seems to be IN_STORE too, where the quantity does not matter. Probably a local store will ship the item
-     * Special note: LONG_TAIL needs to be purchasable (isInAssortment)!
+     * Special note: LONG_TAIL needs to be purchasable (isInAssortment and/or onlineStatus)!
      */
-    isProductAvailable(item: Item, checkOnlineStatus: boolean): boolean {
-        let fieldToCheck = item.productControl?.isInAssortment;
+    isProductAvailable(item: Item, checkOnlineStatus: boolean, checkInAssortment: boolean): boolean {
+        let onlineStatus = true;
         if (checkOnlineStatus) {
-            fieldToCheck = item.product?.onlineStatus;
+            onlineStatus = item.product?.onlineStatus ?? false;
         }
 
-        if (fieldToCheck) {
+        let inAssortmentStatus = true;
+        if (checkInAssortment) {
+            inAssortmentStatus = item.productControl?.isInAssortment ?? false;
+        }
+
+        if (onlineStatus && inAssortmentStatus) {
             return true;
         }
 
@@ -37,13 +42,18 @@ export class ProductHelper {
         }
     }
 
-    isProductBuyable(item: Item, checkOnlineStatus: boolean): boolean {
-        let fieldToCheck = item.productControl?.isInAssortment;
+    isProductBuyable(item: Item, checkOnlineStatus: boolean, checkInAssortment: boolean): boolean {
+        let onlineStatus = true;
         if (checkOnlineStatus) {
-            fieldToCheck = item.product?.onlineStatus;
+            onlineStatus = item.product?.onlineStatus ?? false;
         }
 
-        if (fieldToCheck) {
+        let inAssortmentStatus = true;
+        if (checkInAssortment) {
+            inAssortmentStatus = item.productControl?.isInAssortment ?? false;
+        }
+
+        if (onlineStatus && inAssortmentStatus) {
             switch (item.availability.delivery.availabilityType) {
                 case "IN_STORE":
                     return true;
@@ -58,12 +68,17 @@ export class ProductHelper {
         return false;
     }
 
-    canProductBeAddedToBasket(item: Item, checkOnlineStatus: boolean): boolean {
+    canProductBeAddedToBasket(item: Item, checkOnlineStatus: boolean, checkInAssortment: boolean): boolean {
+        let onlineStatus = true;
         if (checkOnlineStatus) {
-            return item.product?.onlineStatus ?? false;
+            onlineStatus = item.product?.onlineStatus ?? false;
         }
 
-        return item.productControl?.isInAssortment ?? false;
+        let inAssortmentStatus = true;
+        if (checkInAssortment) {
+            inAssortmentStatus = item.productControl?.isInAssortment ?? false;
+        }
+        return onlineStatus && inAssortmentStatus;
     }
 
     getProductURL(item: Item, store: Store, replacements?: Map<string, string>, magician = false): string {
@@ -76,7 +91,9 @@ export class ProductHelper {
         }
 
         return (
-            store.baseUrl + (item.product.url || `/de/product/-${item.product.id}.html`) + (magician ? `?magician=${item.product.id}` : "")
+            store.baseUrl +
+            (item.product.url || `/${store.languageCode}/product/-${item.product.id}.html`) +
+            (magician ? `?magician=${item.product.id}` : "")
         );
     }
 
@@ -87,13 +104,24 @@ export class ProductHelper {
         notifiers: Notifier[],
         logger: Logger,
         checkOnlineStatus: boolean,
+        checkInAssortment: boolean,
         cookieIds: string[]
     ): Promise<Map<string, Product>> {
         const basketProducts = new Map<string, Product>();
 
         if (items) {
             for (const item of items) {
-                await this.checkItem(item, basketProducts, cooldownManager, database, notifiers, logger, checkOnlineStatus, cookieIds);
+                await this.checkItem(
+                    item,
+                    basketProducts,
+                    cooldownManager,
+                    database,
+                    notifiers,
+                    logger,
+                    checkOnlineStatus,
+                    checkInAssortment,
+                    cookieIds
+                );
             }
         }
         return basketProducts;
@@ -107,18 +135,19 @@ export class ProductHelper {
         notifiers: Notifier[],
         logger: Logger,
         checkOnlineStatus: boolean,
+        checkInAssortment: boolean,
         cookieIds: string[]
     ): Promise<Map<string, Product>> {
         if (!item) {
             return basketProducts;
         }
 
-        if (item.product && this.isProductAvailable(item, checkOnlineStatus)) {
+        if (item.product && this.isProductAvailable(item, checkOnlineStatus, checkInAssortment)) {
             const itemId = item.product.id;
             if (!itemId) {
                 return basketProducts;
             }
-            const isProductBuyable = this.isProductBuyable(item, checkOnlineStatus);
+            const isProductBuyable = this.isProductBuyable(item, checkOnlineStatus, checkInAssortment);
 
             // Delete the cooldown in case the stock changes to really available
             if (!cooldownManager.getItem(itemId)?.isProductBuyable && isProductBuyable) {
@@ -144,11 +173,11 @@ export class ProductHelper {
                         logger.info(message);
                     }
                 }
-                cooldownManager.addToCooldownMap(isProductBuyable, item, checkOnlineStatus, Boolean(cookiesAmount));
+                cooldownManager.addToCooldownMap(isProductBuyable, item, checkOnlineStatus, checkInAssortment, Boolean(cookiesAmount));
             }
 
             if (
-                this.canProductBeAddedToBasket(item, checkOnlineStatus) &&
+                this.canProductBeAddedToBasket(item, checkOnlineStatus, checkInAssortment) &&
                 !cooldownManager.hasBasketCooldown(itemId) &&
                 (!cookieIds.length || cookieIds.includes(itemId))
             ) {

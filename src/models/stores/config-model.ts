@@ -25,6 +25,7 @@ export interface StoreConfiguration {
     show_cookies_amount?: boolean;
     show_magician_link?: boolean;
     check_online_status?: boolean;
+    check_in_assortment?: boolean;
     id_replacements?: string[][];
     cookie_ids?: string[];
 

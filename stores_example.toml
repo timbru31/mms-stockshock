@@ -9,6 +9,8 @@ ignore_sleep = false
 id_replacements = []
 # check old online status field for basket check
 check_online_status = false
+# check the new replacment field for the basket check
+check_in_assortment = true
 # IDs of products you want to generate cookies for (strings)
 cookie_ids = []
 
@@ -81,6 +83,8 @@ ignore_sleep = false
 id_replacements = []
 # check old online status field for basket check
 check_online_status = false
+# check the new replacment field for the basket check
+check_in_assortment = true
 # IDs of products you want to generate cookies for (strings)
 cookie_ids = []
 
@@ -153,6 +157,8 @@ ignore_sleep = false
 id_replacements = []
 # check old online status field for basket check
 check_online_status = false
+# check the new replacment field for the basket check
+check_in_assortment = true
 # IDs of products you want to generate cookies for (strings)
 cookie_ids = []
 

@@ -14,6 +14,7 @@ export class TwitterNotifier implements Notifier {
     private readonly productHelper = new ProductHelper();
     private readonly shoppingCartAlerts: boolean = true;
     private readonly checkOnlineStatus: boolean;
+    private readonly checkInAssortment: boolean;
     private readonly store: Store;
     private readonly tags: string[];
     private readonly replacements = new Map<string, string>();
@@ -23,6 +24,7 @@ export class TwitterNotifier implements Notifier {
         this.store = store;
         this.shoppingCartAlerts = storeConfig.shopping_cart_alerts ?? true;
         this.checkOnlineStatus = storeConfig.check_online_status ?? false;
+        this.checkInAssortment = storeConfig.check_in_assortment ?? true;
         this.logger = logger;
         this.tags = storeConfig.twitter_tags ?? [];
         if (
@@ -68,7 +70,7 @@ export class TwitterNotifier implements Notifier {
         }
 
         let message: string;
-        const fullAlert = this.productHelper.isProductBuyable(item, this.checkOnlineStatus);
+        const fullAlert = this.productHelper.isProductBuyable(item, this.checkOnlineStatus, this.checkInAssortment);
         if (fullAlert) {
             message = this.addTimestamp(
                 this.decorateMessageWithTags(
@@ -81,7 +83,7 @@ export class TwitterNotifier implements Notifier {
                     )} \uFF0A`
                 )
             );
-        } else if (this.productHelper.canProductBeAddedToBasket(item, this.checkOnlineStatus)) {
+        } else if (this.productHelper.canProductBeAddedToBasket(item, this.checkOnlineStatus, this.checkInAssortment)) {
             if (!this.shoppingCartAlerts) {
                 return;
             }

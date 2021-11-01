@@ -14,6 +14,7 @@ export class WebSocketNotifier implements Notifier {
     private heartBeatPing: NodeJS.Timeout | undefined;
     private readonly logger: Logger;
     private readonly checkOnlineStatus: boolean;
+    private readonly checkInAssortment: boolean;
     private readonly productHelper = new ProductHelper();
     private readonly wss: WebSocket.Server | null;
     private readonly fallbackPrice = 0;
@@ -23,6 +24,7 @@ export class WebSocketNotifier implements Notifier {
     constructor(storeConfig: StoreConfiguration, logger: Logger) {
         this.logger = logger;
         this.checkOnlineStatus = storeConfig.check_online_status ?? false;
+        this.checkInAssortment = storeConfig.check_in_assortment ?? true;
 
         this.sleepTime = storeConfig.ping_sleep_time ?? this.fallbackSleepTime;
         this.wss = this.setupWebSocketServer(storeConfig);
@@ -44,10 +46,10 @@ export class WebSocketNotifier implements Notifier {
         if (!item) {
             return undefined;
         }
-        const fullAlert = this.productHelper.isProductBuyable(item, this.checkOnlineStatus);
+        const fullAlert = this.productHelper.isProductBuyable(item, this.checkOnlineStatus, this.checkInAssortment);
         if (fullAlert) {
             await this.notifyWebSocketClients(item, true);
-        } else if (!this.productHelper.canProductBeAddedToBasket(item, this.checkOnlineStatus)) {
+        } else if (!this.productHelper.canProductBeAddedToBasket(item, this.checkOnlineStatus, this.checkInAssortment)) {
             await this.notifyWebSocketClients(item, false);
         }
         return undefined;
