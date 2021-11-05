@@ -30,13 +30,16 @@ export class ProductHelper {
             return true;
         }
 
-        switch (item.availability.delivery.availabilityType) {
+        switch (item.availability.delivery?.availabilityType) {
             case "IN_STORE":
                 return true;
             case "IN_WAREHOUSE":
             case "LONG_TAIL":
                 return item.availability.delivery.quantity > this.fallbackAmount;
             case "NONE": {
+                return false;
+            }
+            case undefined: {
                 return false;
             }
         }
@@ -54,13 +57,16 @@ export class ProductHelper {
         }
 
         if (onlineStatus && inAssortmentStatus) {
-            switch (item.availability.delivery.availabilityType) {
+            switch (item.availability.delivery?.availabilityType) {
                 case "IN_STORE":
                     return true;
                 case "IN_WAREHOUSE":
                 case "LONG_TAIL":
                     return item.availability.delivery.quantity > this.fallbackAmount;
                 case "NONE": {
+                    return false;
+                }
+                case undefined: {
                     return false;
                 }
             }

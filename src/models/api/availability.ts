@@ -5,6 +5,6 @@ export interface Availability {
         quantity: number;
         earliest: string | null; // Date compatible string
         latest: string | null; // Date compatible string
-    };
+    } | null;
     pickup?: unknown;
 }
