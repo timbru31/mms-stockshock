@@ -73,7 +73,7 @@ export class BrowserManager {
             throw new Error(`Puppeteer context not initialized! ${!this.page ? "Page" : "Browser"} is undefined.`);
         }
 
-        let res: { status: number; body: LoginResponse | string | null; retryAfterHeader?: string | null };
+        let res: { status: number; body: LoginResponse | null; retryAfterHeader?: string | null };
         try {
             res = await Promise.race([
                 this.page.evaluate(
@@ -119,26 +119,16 @@ export class BrowserManager {
                                 },
                             }),
                         })
-                            .then(
-                                async (loginResponse) =>
-                                    // eslint-disable-next-line @typescript-eslint/no-magic-numbers
-                                    loginResponse.status === 200
-                                        ? /* eslint-disable @typescript-eslint/indent */
-                                          loginResponse
-                                              .json()
-                                              .then((data: LoginResponse) => ({ status: loginResponse.status, body: data }))
-                                              // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                                              .catch((_) => ({
-                                                  status: loginResponse.status,
-                                                  body: null,
-                                                  retryAfterHeader: loginResponse.headers.get("Retry-After"),
-                                              }))
-                                        : loginResponse.text().then((data) => ({
-                                              status: loginResponse.status,
-                                              body: data,
-                                              retryAfterHeader: loginResponse.headers.get("Retry-After"),
-                                          }))
-                                /* eslint-enable @typescript-eslint/indent */
+                            .then(async (loginResponse) =>
+                                loginResponse
+                                    .json()
+                                    .then((data: LoginResponse) => ({ status: loginResponse.status, body: data }))
+                                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                                    .catch((_) => ({
+                                        status: loginResponse.status,
+                                        body: null,
+                                        retryAfterHeader: loginResponse.headers.get("Retry-After"),
+                                    }))
                             )
                             // eslint-disable-next-line @typescript-eslint/no-unused-vars
                             .catch((_) => ({ status: -2, body: null })),
@@ -158,16 +148,9 @@ export class BrowserManager {
             res = { status: HTTPStatusCode.Error, body: null };
             this.logger.error("Error, %O", e);
         }
-        if (res.status !== HTTPStatusCode.OK || !res.body || (res.body as LoginResponse).errors) {
+        if (res.status !== HTTPStatusCode.OK || !res.body || res.body.errors) {
             if (headless) {
-                this.logger.error(`Login did not succeed. Status ${res.status}`);
-                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-                if ((res.body as LoginResponse)?.errors) {
-                    this.logger.error("Errors: %O", res.body);
-                }
-                if (res.retryAfterHeader) {
-                    this.logger.error("Retry after: %O", res.retryAfterHeader);
-                }
+                await this.handleResponseError("Login", res);
                 for (const notifier of this.notifiers) {
                     await notifier.notifyAdmin(`😵 [${this.store.getName()}] Login did not succeed. Status ${res.status}`);
                 }
