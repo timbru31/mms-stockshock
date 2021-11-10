@@ -36,6 +36,8 @@ async function reLoginIfRequired(
             }
         }
         if (!(await browserManager.createIncognitoContext())) {
+            browserManager.reLoginRequired = true;
+            browserManager.reLaunchRequired = true;
             throw new Error("Incognito context could not be created!");
         }
         logger.info("New incognito context created!");
@@ -149,6 +151,8 @@ void (async function () {
             cooldownManager.saveCooldowns();
             void browserManager.shutdown();
             shouldRun = false;
+            const failure = 1;
+            process.exit(failure);
         });
     });
 
