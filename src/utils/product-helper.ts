@@ -1,4 +1,3 @@
-import type { Logger } from "winston";
 import type { CooldownManager } from "../core/cooldown-manager";
 import type { DatabaseConnection } from "../databases/database-connection";
 import type { Item } from "../models/api/item";
@@ -108,7 +107,6 @@ export class ProductHelper {
         cooldownManager: CooldownManager,
         database: DatabaseConnection | undefined,
         notifiers: Notifier[],
-        logger: Logger,
         checkOnlineStatus: boolean,
         checkInAssortment: boolean,
         cookieIds: string[]
@@ -123,7 +121,6 @@ export class ProductHelper {
                     cooldownManager,
                     database,
                     notifiers,
-                    logger,
                     checkOnlineStatus,
                     checkInAssortment,
                     cookieIds
@@ -139,7 +136,6 @@ export class ProductHelper {
         cooldownManager: CooldownManager,
         database: DatabaseConnection | undefined,
         notifiers: Notifier[],
-        logger: Logger,
         checkOnlineStatus: boolean,
         checkInAssortment: boolean,
         cookieIds: string[]

@@ -66,7 +66,6 @@ export class WishlistChecker {
                 this.cooldownManager,
                 this.database,
                 this.notifiers,
-                this.logger,
                 this.storeConfiguration.check_online_status ?? false,
                 this.storeConfiguration.check_in_assortment ?? true,
                 this.storeConfiguration.cookie_ids ?? []
@@ -91,7 +90,6 @@ export class WishlistChecker {
                             this.cooldownManager,
                             this.database,
                             this.notifiers,
-                            this.logger,
                             this.storeConfiguration.check_online_status ?? false,
                             this.storeConfiguration.check_in_assortment ?? true,
                             this.storeConfiguration.cookie_ids ?? []
