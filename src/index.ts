@@ -8,8 +8,7 @@ import type { Product } from "./models/api/product";
 import type { CliArguments } from "./models/cli";
 import type { Notifier } from "./models/notifier";
 import type { Store } from "./models/stores/store";
-import { DiscordNotifier, TwitterNotifier, WebSocketNotifier } from "./notifiers";
-import { TelegramNotifier } from "./notifiers/telegram-notifier";
+import { DiscordNotifier, LoggerNotifier, TelegramNotifier, TwitterNotifier, WebSocketNotifier } from "./notifiers";
 import { CategoryChecker } from "./stock-checkers/category-checker";
 import { WishlistChecker } from "./stock-checkers/wishlist-checker";
 import { getStoreAndStoreConfig } from "./utils/cli-helper";
@@ -96,7 +95,7 @@ void (async function () {
         cookieStore = new DynamoDBStore(store, storeConfig);
     }
 
-    const notifiers: Notifier[] = [];
+    const notifiers: Notifier[] = [new LoggerNotifier(store, storeConfig, logger)];
     if (storeConfig.discord_bot_token) {
         const discordNotifier = new DiscordNotifier(store, storeConfig, logger);
         notifiers.push(discordNotifier);

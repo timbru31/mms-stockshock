@@ -5,7 +5,7 @@ export interface Notifier {
     notifyAdmin: (message?: string) => Promise<void>;
     notifyRateLimit: (seconds?: number) => Promise<void>;
     notifyCookies: (product?: Product, cookies?: string[]) => Promise<void>;
-    notifyStock: (item?: Item, cookiesAmount?: number) => Promise<string | undefined>;
+    notifyStock: (item?: Item, cookiesAmount?: number) => Promise<void>;
     notifyPriceChange: (item?: Item, oldPrice?: number) => Promise<void>;
     shutdown: () => void;
 }

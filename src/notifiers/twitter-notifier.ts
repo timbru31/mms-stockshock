@@ -64,7 +64,7 @@ export class TwitterNotifier implements Notifier {
         await noopPromise();
     }
 
-    async notifyStock(item: Item | undefined): Promise<string | undefined> {
+    async notifyStock(item: Item | undefined): Promise<void> {
         if (!this.twitterClient || !item?.product) {
             return;
         }
@@ -117,7 +117,6 @@ export class TwitterNotifier implements Notifier {
         } catch (e: unknown) {
             this.logger.error("Error creating tweet, %O", e);
         }
-        return message;
     }
 
     async notifyPriceChange(): Promise<void> {

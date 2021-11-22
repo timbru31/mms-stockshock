@@ -39,7 +39,7 @@ export class WebSocketNotifier implements Notifier {
         await noopPromise();
     }
 
-    async notifyStock(item: Item | undefined): Promise<string | undefined> {
+    async notifyStock(item: Item | undefined): Promise<void> {
         if (!item) {
             return Promise.resolve(undefined);
         }
@@ -49,7 +49,6 @@ export class WebSocketNotifier implements Notifier {
         } else if (!this.productHelper.canProductBeAddedToBasket(item, this.checkOnlineStatus, this.checkInAssortment)) {
             this.notifyWebSocketClients(item, false);
         }
-        return Promise.resolve(undefined);
     }
 
     async notifyPriceChange(): Promise<void> {

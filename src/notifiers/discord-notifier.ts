@@ -112,11 +112,11 @@ export class DiscordNotifier implements Notifier {
         }
     }
 
-    async notifyStock(item?: Item, cookiesAmount?: number): Promise<string | undefined> {
+    async notifyStock(item?: Item, cookiesAmount?: number): Promise<void> {
         if (!item?.product) {
             return;
         }
-        let plainMessage: string;
+
         const fullAlert = this.productHelper.isProductBuyable(item, this.checkInAssortment, this.checkInAssortment);
         let emoji: string;
         const embed = this.createEmbed(item);
@@ -154,18 +154,6 @@ export class DiscordNotifier implements Notifier {
             embed.setDescription("🟢 Item **available**");
             embed.setColor("#7ab05e");
             emoji = "🟢";
-
-            plainMessage = this.decorateMessageWithRoles(
-                `🟢 Item **available**: ${item.product.id}, ${
-                    item.product.title
-                } for ${price} ${currency}! Go check it out: ${this.productHelper.getProductURL(
-                    item,
-                    this.store,
-                    this.replacements,
-                    true
-                )}`,
-                this.getRolePingsForTitle(item.product.title)
-            );
         } else if (this.productHelper.canProductBeAddedToBasket(item, this.checkOnlineStatus, this.checkInAssortment)) {
             if (!this.shoppingCartAlerts) {
                 return;
@@ -173,29 +161,10 @@ export class DiscordNotifier implements Notifier {
             embed.setDescription("🛒 Item **can be added to basket**");
             embed.setColor("#60696f");
             emoji = "🛒";
-
-            plainMessage = this.decorateMessageWithRoles(
-                `🛒 Item **can be added to basket**: ${item.product.id}, ${
-                    item.product.title
-                } for ${price} ${currency}! Go check it out: ${this.productHelper.getProductURL(
-                    item,
-                    this.store,
-                    this.replacements,
-                    true
-                )}`,
-                this.getRolePingsForTitle(item.product.title)
-            );
         } else {
             embed.setDescription("🟡 Item for **basket parker**");
             embed.setColor("#fcca62");
             emoji = "🟡";
-
-            plainMessage = this.decorateMessageWithRoles(
-                `🟡 Item for **basket parker**: ${item.product.id}, ${
-                    item.product.title
-                } for ${price} ${currency}! Go check it out: ${this.productHelper.getProductURL(item, this.store, this.replacements)}`,
-                this.getRolePingsForTitle(item.product.title)
-            );
         }
 
         const stockChannelForItem = this.getChannelForTitle(item.product.title);
@@ -212,7 +181,6 @@ export class DiscordNotifier implements Notifier {
                 this.logger.error("Error sending message, error: %O", e);
             }
         }
-        return plainMessage;
     }
 
     async notifyPriceChange(item?: Item, oldPrice?: number): Promise<void> {

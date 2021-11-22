@@ -54,7 +54,7 @@ export class TelegramNotifier implements Notifier {
         await noopPromise();
     }
 
-    async notifyStock(item: Item | undefined): Promise<string | undefined> {
+    async notifyStock(item: Item | undefined): Promise<void> {
         if (!this.telegramBot || !item?.product) {
             return;
         }
@@ -90,7 +90,6 @@ export class TelegramNotifier implements Notifier {
         } catch (e: unknown) {
             this.logger.error("Error sending message, %O", e);
         }
-        return message;
     }
 
     async notifyPriceChange(): Promise<void> {

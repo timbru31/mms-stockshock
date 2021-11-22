@@ -174,10 +174,7 @@ export class ProductHelper {
             if (!cooldownManager.hasCooldown(itemId)) {
                 const cookiesAmount = database ? await database.getCookiesAmount(item.product) : this.fallbackAmount;
                 for (const notifier of notifiers) {
-                    const message = await notifier.notifyStock(item, cookiesAmount);
-                    if (message) {
-                        logger.info(message);
-                    }
+                    await notifier.notifyStock(item, cookiesAmount);
                 }
                 cooldownManager.addToCooldownMap(isProductBuyable, item, checkOnlineStatus, checkInAssortment, Boolean(cookiesAmount));
             }
