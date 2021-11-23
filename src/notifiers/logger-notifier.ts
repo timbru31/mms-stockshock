@@ -24,10 +24,9 @@ export class LoggerNotifier implements Notifier {
         this.logger = logger;
     }
 
-    async notifyAdmin(message?: string): Promise<void> {
-        if (message) {
-            this.logger.info(message);
-        }
+    async notifyAdmin(message: string, error?: unknown): Promise<void> {
+        this.logger.info(message + (error ? ", %O" : ""), error);
+
         return Promise.resolve(undefined);
     }
 

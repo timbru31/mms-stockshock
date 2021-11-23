@@ -7,7 +7,6 @@ import { DynamoDBStore } from "./databases/dynamodb-store";
 import type { Product } from "./models/api/product";
 import type { CliArguments } from "./models/cli";
 import type { Notifier } from "./models/notifier";
-import type { Store } from "./models/stores/store";
 import { DiscordNotifier, LoggerNotifier, TelegramNotifier, TwitterNotifier, WebSocketNotifier } from "./notifiers";
 import { CategoryChecker } from "./stock-checkers/category-checker";
 import { WishlistChecker } from "./stock-checkers/wishlist-checker";
@@ -20,7 +19,6 @@ async function reLoginIfRequired(
     email: string,
     password: string,
     notifiers: Notifier[],
-    store: Store,
     logger: Logger
 ) {
     if (browserManager.reLoginRequired) {
@@ -29,7 +27,7 @@ async function reLoginIfRequired(
             logger.info("Re-Launch required!");
             if (!(await browserManager.launchPuppeteer(args.headless, args.sandbox, args.shmUsage))) {
                 for (const notifier of notifiers) {
-                    await notifier.notifyAdmin(`⚡️ [${store.getName()}] Puppeteer could not be launched, restarting!`);
+                    await notifier.notifyAdmin("⚡️ Puppeteer could not be launched, restarting!");
                 }
                 process.kill(process.pid, "SIGINT");
             }
@@ -42,9 +40,8 @@ async function reLoginIfRequired(
         logger.info("New incognito context created!");
         await browserManager.logIn(email, password, args.headless);
         for (const notifier of notifiers) {
-            await notifier.notifyAdmin(`🤖 [${store.getName()}] (Re-)Login succeeded, let's hunt`);
+            await notifier.notifyAdmin("🤖 (Re-)Login succeeded, let's hunt");
         }
-        logger.info("Re-Login succeeded, let's hunt!");
     }
 }
 
@@ -52,7 +49,6 @@ async function reLaunchIfRequired(
     browserManager: BrowserManager,
     args: CliArguments,
     logger: Logger,
-    store: Store,
     notifiers: Notifier[],
     createNewContext?: boolean
 ) {
@@ -61,7 +57,7 @@ async function reLaunchIfRequired(
         logger.info("Re-Launch required!");
         if (!(await browserManager.launchPuppeteer(args.headless, args.sandbox, args.shmUsage))) {
             for (const notifier of notifiers) {
-                await notifier.notifyAdmin(`⚡️ [${store.getName()}] Puppeteer could not be launched, restarting!`);
+                await notifier.notifyAdmin("⚡️ Puppeteer could not be launched, restarting!");
             }
             process.kill(process.pid, "SIGINT");
         }
@@ -157,7 +153,7 @@ void (async function () {
 
     if (!(await browserManager.launchPuppeteer(args.headless, args.sandbox, args.shmUsage))) {
         for (const notifier of notifiers) {
-            await notifier.notifyAdmin(`⚡️ [${store.getName()}] Puppeteer could not be launched, restarting!`);
+            await notifier.notifyAdmin("⚡️ Puppeteer could not be launched, restarting!");
         }
         process.kill(process.pid, "SIGINT");
     }
@@ -178,13 +174,12 @@ void (async function () {
                 logger.info(`💌 Checking wishlist items for account ${email}`);
                 try {
                     await Promise.race([
-                        reLoginIfRequired(browserManager, args, email, password, notifiers, store, logger),
+                        reLoginIfRequired(browserManager, args, email, password, notifiers, logger),
                         sleep(loginRaceTimeout),
                     ]);
                 } catch (e: unknown) {
-                    logger.info(`⚡️ Boop, I'm alive but checking wishlist for ${email} errored, %O`, e);
                     for (const notifier of notifiers) {
-                        await notifier.notifyAdmin(`⚡️ [${store.getName()}] Boop, I'm alive but checking wishlist for ${email} errored`);
+                        await notifier.notifyAdmin(`⚡️ Boop, I'm alive but checking wishlist for ${email} errored`, e);
                     }
                     continue;
                 }
@@ -198,10 +193,10 @@ void (async function () {
             if (storeConfig.categories?.length) {
                 // eslint-disable-next-line @typescript-eslint/no-magic-numbers
                 if (storeConfig.accounts.length > 1) {
-                    await reLaunchIfRequired(browserManager, args, logger, store, notifiers, true);
+                    await reLaunchIfRequired(browserManager, args, logger, notifiers, true);
                 }
                 for (const categoryId of storeConfig.categories) {
-                    await reLaunchIfRequired(browserManager, args, logger, store, notifiers);
+                    await reLaunchIfRequired(browserManager, args, logger, notifiers);
                     logger.info(`📄 Checking category ${categoryId}`);
                     await sleep(store.getSleepTime());
                     const basketProducts = await Promise.race([
@@ -219,9 +214,8 @@ void (async function () {
             cooldownManager.cleanupCooldowns();
             await sleep(store.getSleepTime());
         } catch (e: unknown) {
-            logger.info("⚡️ Boop, I'm alive but checking your stock errored: %O", e);
             for (const notifier of notifiers) {
-                await notifier.notifyAdmin(`⚡️ [${store.getName()}] Boop, I'm alive but checking your stock errored!`);
+                await notifier.notifyAdmin("⚡️ Boop, I'm alive but checking your stock errored!", e);
             }
             browserManager.reLoginRequired = true;
             browserManager.reLaunchRequired = true;

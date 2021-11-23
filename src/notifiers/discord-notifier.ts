@@ -63,9 +63,12 @@ export class DiscordNotifier implements Notifier {
         }
     }
 
-    async notifyAdmin(message?: string): Promise<void> {
-        if (this.adminChannel && message) {
-            const decoratedMessage = this.decorateMessageWithRoles(message, this.adminRolePing);
+    async notifyAdmin(message: string): Promise<void> {
+        if (this.adminChannel) {
+            const storeName = ` [${this.store.getName()}]`;
+            // eslint-disable-next-line @typescript-eslint/no-magic-numbers
+            const storeEnrichedMessage = [message.slice(0, 1), storeName, message.slice(1)].join("");
+            const decoratedMessage = this.decorateMessageWithRoles(storeEnrichedMessage, this.adminRolePing);
             try {
                 await this.adminChannel.send(decoratedMessage);
             } catch (e: unknown) {

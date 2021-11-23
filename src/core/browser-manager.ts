@@ -152,7 +152,7 @@ export class BrowserManager {
             if (headless) {
                 await this.handleResponseError("Login", res);
                 for (const notifier of this.notifiers) {
-                    await notifier.notifyAdmin(`😵 [${this.store.getName()}] Login did not succeed. Status ${res.status}`);
+                    await notifier.notifyAdmin(`😵 Login did not succeed. Status ${res.status}`);
                 }
                 throw new Error(`Login did not succeed. Status ${res.status}`);
             }
