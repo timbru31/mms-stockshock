@@ -67,7 +67,7 @@ export class DiscordNotifier implements Notifier {
         if (this.adminChannel) {
             const storeName = ` [${this.store.getName()}]`;
             // eslint-disable-next-line @typescript-eslint/no-magic-numbers
-            const storeEnrichedMessage = [message.slice(0, 1), storeName, message.slice(1)].join("");
+            const storeEnrichedMessage = [message.slice(0, 2), storeName, message.slice(2)].join("");
             const decoratedMessage = this.decorateMessageWithRoles(storeEnrichedMessage, this.adminRolePing);
             try {
                 await this.adminChannel.send(decoratedMessage);
