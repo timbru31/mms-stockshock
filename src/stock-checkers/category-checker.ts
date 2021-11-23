@@ -153,9 +153,10 @@ export class CategoryChecker {
                         wcsId: string,
                         flowId: string,
                         graphQLClientVersion: string,
-                        categorySHA256: string
+                        categorySHA256: string,
+                        queryString: string
                     ) =>
-                        fetch(`${store.baseUrl}/api/v1/graphql?${query}`, {
+                        fetch(`${store.baseUrl}/api/v1/graphql?${queryString}`, {
                             credentials: "include",
                             headers: {
                                 "content-type": "application/json",
@@ -211,7 +212,8 @@ export class CategoryChecker {
                     category,
                     v4(),
                     GRAPHQL_CLIENT_VERSION,
-                    this.storeConfiguration.categorySHA256
+                    this.storeConfiguration.categorySHA256,
+                    query
                 ),
                 sleep(this.categoryRaceTimeout, {
                     status: HTTPStatusCode.Timeout,
@@ -240,8 +242,15 @@ export class CategoryChecker {
         try {
             return await Promise.race([
                 this.browserManager.page.evaluate(
-                    async (store: Store, id: string, flowId: string, graphQLClientVersion: string, getProductSHA256: string) =>
-                        fetch(`${store.baseUrl}/api/v1/graphql?${query}`, {
+                    async (
+                        store: Store,
+                        id: string,
+                        flowId: string,
+                        graphQLClientVersion: string,
+                        getProductSHA256: string,
+                        queryString: string
+                    ) =>
+                        fetch(`${store.baseUrl}/api/v1/graphql?${queryString}`, {
                             credentials: "include",
                             headers: {
                                 "content-type": "application/json",
@@ -294,7 +303,8 @@ export class CategoryChecker {
                     productId,
                     v4(),
                     GRAPHQL_CLIENT_VERSION,
-                    this.storeConfiguration.getProductSHA256
+                    this.storeConfiguration.getProductSHA256,
+                    query
                 ),
                 sleep(this.getProductRaceTimeout, {
                     status: HTTPStatusCode.Timeout,

@@ -89,9 +89,10 @@ export class BrowserManager {
                         password: string,
                         flowId: string,
                         graphQLClientVersion: string,
-                        loginSHA256: string
+                        loginSHA256: string,
+                        queryString: string
                     ) =>
-                        fetch(`${store.baseUrl}/api/v1/graphql?${query}`, {
+                        fetch(`${store.baseUrl}/api/v1/graphql?${queryString}`, {
                             credentials: "include",
                             headers: {
                                 "content-type": "application/json",
@@ -141,7 +142,8 @@ export class BrowserManager {
                     password,
                     v4(),
                     GRAPHQL_CLIENT_VERSION,
-                    this.storeConfiguration.loginSHA256
+                    this.storeConfiguration.loginSHA256,
+                    query
                 ),
                 sleep(this.loginRaceTimeout, {
                     status: HTTPStatusCode.Timeout,

@@ -118,8 +118,15 @@ export class WishlistChecker {
         try {
             return await Promise.race([
                 this.browserManager.page.evaluate(
-                    async (store: Store, pageOffset: number, flowId: string, graphQLClientVersion: string, wishlistSHA256: string) =>
-                        fetch(`${store.baseUrl}/api/v1/graphql?${query}`, {
+                    async (
+                        store: Store,
+                        pageOffset: number,
+                        flowId: string,
+                        graphQLClientVersion: string,
+                        wishlistSHA256: string,
+                        queryString: string
+                    ) =>
+                        fetch(`${store.baseUrl}/api/v1/graphql?${queryString}`, {
                             credentials: "include",
                             headers: {
                                 "content-type": "application/json",
@@ -169,7 +176,8 @@ export class WishlistChecker {
                     offset,
                     v4(),
                     GRAPHQL_CLIENT_VERSION,
-                    this.storeConfiguration.wishlistSHA256
+                    this.storeConfiguration.wishlistSHA256,
+                    query
                 ),
                 sleep(this.wishlistRaceTimeout, {
                     status: HTTPStatusCode.Timeout,

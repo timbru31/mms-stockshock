@@ -95,9 +95,10 @@ export class BasketAdder {
                                     productId: string,
                                     flowId: string,
                                     graphQLClientVersion: string,
-                                    addProductSHA256: string
+                                    addProductSHA256: string,
+                                    queryString: string
                                 ) =>
-                                    fetch(`${store.baseUrl}/api/v1/graphql?${query}`, {
+                                    fetch(`${store.baseUrl}/api/v1/graphql?${queryString}`, {
                                         credentials: "include",
                                         headers: {
                                             "content-type": "application/json",
@@ -166,7 +167,8 @@ export class BasketAdder {
                                 id,
                                 v4(),
                                 GRAPHQL_CLIENT_VERSION,
-                                this.storeConfiguration.addProductSHA256
+                                this.storeConfiguration.addProductSHA256,
+                                query
                             ),
                             sleep(this.addProductRaceTimeout, {
                                 success: false,
