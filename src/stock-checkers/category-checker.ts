@@ -140,6 +140,10 @@ export class CategoryChecker {
             this.logger.error("Unable to perform category query: page is undefined!");
             return Promise.resolve({ status: 0, body: null });
         }
+        let query = "";
+        if (this.storeConfiguration.cache_busting ?? true) {
+            query = `anti-cache=${new Date().getTime()}`;
+        }
         try {
             return await Promise.race([
                 this.browserManager.page.evaluate(
@@ -151,7 +155,7 @@ export class CategoryChecker {
                         graphQLClientVersion: string,
                         categorySHA256: string
                     ) =>
-                        fetch(`${store.baseUrl}/api/v1/graphql?anti-cache=${new Date().getTime()}`, {
+                        fetch(`${store.baseUrl}/api/v1/graphql?${query}`, {
                             credentials: "include",
                             headers: {
                                 "content-type": "application/json",
@@ -229,11 +233,15 @@ export class CategoryChecker {
             this.logger.error("Unable to perform get product: page is undefined!");
             return Promise.resolve({ status: 0, body: null });
         }
+        let query = "";
+        if (this.storeConfiguration.cache_busting ?? true) {
+            query = `anti-cache=${new Date().getTime()}`;
+        }
         try {
             return await Promise.race([
                 this.browserManager.page.evaluate(
                     async (store: Store, id: string, flowId: string, graphQLClientVersion: string, getProductSHA256: string) =>
-                        fetch(`${store.baseUrl}/api/v1/graphql?anti-cache=${new Date().getTime()}`, {
+                        fetch(`${store.baseUrl}/api/v1/graphql?${query}`, {
                             credentials: "include",
                             headers: {
                                 "content-type": "application/json",

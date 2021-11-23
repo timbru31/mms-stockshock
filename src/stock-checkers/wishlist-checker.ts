@@ -111,11 +111,15 @@ export class WishlistChecker {
             this.logger.error("Unable to perform wishlist query: page is undefined!");
             return Promise.resolve({ status: 0, body: null });
         }
+        let query = "";
+        if (this.storeConfiguration.cache_busting ?? true) {
+            query = `anti-cache=${new Date().getTime()}`;
+        }
         try {
             return await Promise.race([
                 this.browserManager.page.evaluate(
                     async (store: Store, pageOffset: number, flowId: string, graphQLClientVersion: string, wishlistSHA256: string) =>
-                        fetch(`${store.baseUrl}/api/v1/graphql?anti-cache=${new Date().getTime()}`, {
+                        fetch(`${store.baseUrl}/api/v1/graphql?${query}`, {
                             credentials: "include",
                             headers: {
                                 "content-type": "application/json",

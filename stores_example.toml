@@ -13,6 +13,8 @@ check_online_status = false
 check_in_assortment = true
 # IDs of products you want to generate cookies for (strings)
 cookie_ids = []
+# Enable a cache busting mechansim by adding a query parameter
+cache_busting = true
 
 # Beware that >10 can cause issues with Discord's 2000 characters limit!
 cookies = 10
@@ -87,6 +89,8 @@ check_online_status = false
 check_in_assortment = true
 # IDs of products you want to generate cookies for (strings)
 cookie_ids = []
+# Enable a cache busting mechansim by adding a query parameter
+cache_busting = true
 
 # Beware that >10 can cause issues with Discord's 2000 characters limit!
 cookies = 10
@@ -161,6 +165,8 @@ check_online_status = false
 check_in_assortment = true
 # IDs of products you want to generate cookies for (strings)
 cookie_ids = []
+# Enable a cache busting mechansim by adding a query parameter
+cache_busting = true
 
 # Beware that >10 can cause issues with Discord's 2000 characters limit!
 cookies = 10

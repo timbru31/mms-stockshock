@@ -23,7 +23,7 @@ export class BrowserManager {
     private browser: Browser | undefined;
     private context: BrowserContext | undefined;
     private readonly store: Store;
-    private readonly storeConfig: StoreConfiguration;
+    private readonly storeConfiguration: StoreConfiguration;
     private readonly logger: Logger;
     private readonly notifiers: Notifier[] = [];
     private readonly proxies: string[] = [];
@@ -39,14 +39,14 @@ export class BrowserManager {
 
     private readonly millisecondsFactor = 1000;
 
-    constructor(store: Store, storeConfig: StoreConfiguration, logger: Logger, notifiers: Notifier[]) {
+    constructor(store: Store, storeConfiguration: StoreConfiguration, logger: Logger, notifiers: Notifier[]) {
         this.logger = logger;
         this.store = store;
-        this.storeConfig = storeConfig;
+        this.storeConfiguration = storeConfiguration;
         this.notifiers = notifiers;
 
-        if (this.storeConfig.proxy_urls?.length) {
-            this.proxies = shuffle(this.storeConfig.proxy_urls);
+        if (this.storeConfiguration.proxy_urls?.length) {
+            this.proxies = shuffle(this.storeConfiguration.proxy_urls);
         }
     }
 
@@ -74,6 +74,10 @@ export class BrowserManager {
         }
 
         let res: { status: number; body: LoginResponse | null; retryAfterHeader?: string | null };
+        let query = "";
+        if (this.storeConfiguration.cache_busting ?? true) {
+            query = `anti-cache=${new Date().getTime()}`;
+        }
         try {
             res = await Promise.race([
                 this.page.evaluate(
@@ -87,7 +91,7 @@ export class BrowserManager {
                         graphQLClientVersion: string,
                         loginSHA256: string
                     ) =>
-                        fetch(`${store.baseUrl}/api/v1/graphql?anti-cache=${new Date().getTime()}`, {
+                        fetch(`${store.baseUrl}/api/v1/graphql?${query}`, {
                             credentials: "include",
                             headers: {
                                 "content-type": "application/json",
@@ -137,7 +141,7 @@ export class BrowserManager {
                     password,
                     v4(),
                     GRAPHQL_CLIENT_VERSION,
-                    this.storeConfig.loginSHA256
+                    this.storeConfiguration.loginSHA256
                 ),
                 sleep(this.loginRaceTimeout, {
                     status: HTTPStatusCode.Timeout,
@@ -186,7 +190,7 @@ export class BrowserManager {
                 this.rotateProxy();
                 this.reLoginRequired = true;
             }
-            if (!this.storeConfig.ignore_sleep && res.retryAfterHeader) {
+            if (!this.storeConfiguration.ignore_sleep && res.retryAfterHeader) {
                 let cooldown = Number(res.retryAfterHeader);
                 this.logger.error(`Too many requests, we need to cooldown and sleep ${cooldown} seconds`);
                 for (const notifier of this.notifiers) {
@@ -218,7 +222,7 @@ export class BrowserManager {
             args.push("--disable-dev-shm-usage");
         }
 
-        if (this.storeConfig.proxy_urls?.length) {
+        if (this.storeConfiguration.proxy_urls?.length) {
             if (!this.proxyServer) {
                 this.proxyServer = new Server({
                     port: 0,
@@ -233,8 +237,8 @@ export class BrowserManager {
                 await this.proxyServer.listen();
             }
             args.push(`--proxy-server=http://127.0.0.1:${this.proxyServer.port}`);
-        } else if (this.storeConfig.proxy_url) {
-            args.push(`--proxy-server=${this.storeConfig.proxy_url}`);
+        } else if (this.storeConfiguration.proxy_url) {
+            args.push(`--proxy-server=${this.storeConfiguration.proxy_url}`);
         }
 
         this.browser = await puppeteer.launch({
@@ -268,8 +272,11 @@ export class BrowserManager {
         await this.page.setUserAgent(new UserAgent().toString());
         await this.patchHairlineDetection();
 
-        if (this.storeConfig.proxy_url && this.storeConfig.proxy_username && this.storeConfig.proxy_password) {
-            await this.page.authenticate({ username: this.storeConfig.proxy_username, password: this.storeConfig.proxy_password });
+        if (this.storeConfiguration.proxy_url && this.storeConfiguration.proxy_username && this.storeConfiguration.proxy_password) {
+            await this.page.authenticate({
+                username: this.storeConfiguration.proxy_username,
+                password: this.storeConfiguration.proxy_password,
+            });
         }
 
         const client = await this.page.target().createCDPSession();
@@ -282,12 +289,12 @@ export class BrowserManager {
             height: this.baseHeight + Math.floor(Math.random() * this.randomFactor),
         });
         try {
-            await this.page.goto(this.storeConfig.start_url ?? `${this.store.baseUrl}/404`, {
+            await this.page.goto(this.storeConfiguration.start_url ?? `${this.store.baseUrl}/404`, {
                 waitUntil: "networkidle0",
                 timeout: 5000,
             });
         } catch (e: unknown) {
-            this.logger.error("Unable to visit start page...");
+            this.logger.error("Unable to visit start page..., %O", e);
             this.rotateProxy();
             return false;
         }

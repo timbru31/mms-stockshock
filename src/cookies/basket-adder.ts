@@ -82,6 +82,10 @@ export class BasketAdder {
                         }
                     }
                     let res: { status: number; success: boolean; body: AddProductResponse | null; retryAfterHeader?: string | null };
+                    let query = "";
+                    if (this.storeConfiguration.cache_busting ?? true) {
+                        query = `anti-cache=${new Date().getTime()}`;
+                    }
                     try {
                         res = await Promise.race([
                             this.browserManager.page.evaluate(
@@ -93,7 +97,7 @@ export class BasketAdder {
                                     graphQLClientVersion: string,
                                     addProductSHA256: string
                                 ) =>
-                                    fetch(`${store.baseUrl}/api/v1/graphql?anti-cache=${new Date().getTime()}`, {
+                                    fetch(`${store.baseUrl}/api/v1/graphql?${query}`, {
                                         credentials: "include",
                                         headers: {
                                             "content-type": "application/json",
