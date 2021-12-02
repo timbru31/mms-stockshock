@@ -120,7 +120,7 @@ export class DiscordNotifier implements Notifier {
             return;
         }
 
-        const fullAlert = this.productHelper.isProductBuyable(item, this.checkInAssortment, this.checkInAssortment);
+        const fullAlert = this.productHelper.isProductBuyable(item, this.checkOnlineStatus, this.checkInAssortment);
         let emoji: string;
         const embed = this.createEmbed(item);
 

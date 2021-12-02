@@ -59,7 +59,7 @@ export class LoggerNotifier implements Notifier {
             return;
         }
         let message: string;
-        const fullAlert = this.productHelper.isProductBuyable(item, this.checkInAssortment, this.checkInAssortment);
+        const fullAlert = this.productHelper.isProductBuyable(item, this.checkOnlineStatus, this.checkInAssortment);
 
         const price = item.price?.price ?? "0";
         const currency = item.price?.currency ?? "𑿠";
