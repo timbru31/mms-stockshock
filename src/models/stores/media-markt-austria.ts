@@ -8,6 +8,7 @@ export class MediaMarktAustria extends CommonStore implements Store {
     readonly salesLine = "Media";
     readonly shortCode = "mmat";
     readonly loginSleepTime = 2500;
+    readonly thumbnail = "https://www.mediamarkt.at/public/manifest/splashscreen-Media-512x512.png";
 
     getName(): string {
         return "MediaMarkt Austria";

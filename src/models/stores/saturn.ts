@@ -7,6 +7,7 @@ export class Saturn extends CommonStore implements Store {
     readonly languageCode = "de";
     readonly salesLine = "Saturn";
     readonly shortCode = "saturn";
+    readonly thumbnail = "https://www.saturn.de/public/manifest/splashscreen-Saturn-512x512.png";
 
     getName(): string {
         return "Saturn";

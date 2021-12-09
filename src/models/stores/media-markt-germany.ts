@@ -7,6 +7,7 @@ export class MediaMarktGermany extends CommonStore implements Store {
     readonly languageCode = "de";
     readonly salesLine = "Media";
     readonly shortCode = "mmde";
+    readonly thumbnail = "https://www.mediamarkt.de/public/manifest/splashscreen-Media-512x512.png";
 
     getName(): string {
         return "MediaMarkt Germany";

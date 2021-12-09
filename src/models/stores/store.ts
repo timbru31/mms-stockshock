@@ -5,6 +5,7 @@ export interface Store {
     salesLine: string;
     shortCode: string;
     loginSleepTime?: number;
+    thumbnail: string;
 
     getSleepTime: () => number;
     setSleepTimes: (minSleepTime: number | undefined, maxSleepTime: number | undefined) => void;

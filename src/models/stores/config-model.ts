@@ -34,6 +34,7 @@ export interface StoreConfiguration {
     discord_bot_token?: string;
     discord_nocookie_emoji?: string;
     discord_activity_message?: string;
+    show_thumbnails?: boolean;
     discord_channel?: string;
     stock_discord_channel?: string;
     stock_discord_regex_channel?: string[][];

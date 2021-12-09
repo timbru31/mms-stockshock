@@ -11,6 +11,7 @@ export abstract class CommonStore implements Store {
     abstract languageCode: string;
     abstract salesLine: string;
     abstract shortCode: string;
+    abstract thumbnail: string;
 
     setSleepTimes(minSleepTime: number | undefined, maxSleepTime: number | undefined): void {
         if (minSleepTime) {

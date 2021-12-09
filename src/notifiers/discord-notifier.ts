@@ -30,6 +30,7 @@ export class DiscordNotifier implements Notifier {
     private readonly announceCookies: boolean = true;
     private readonly shoppingCartAlerts: boolean = true;
     private readonly showCookiesAmount: boolean = true;
+    private readonly showThumbnails: boolean = true;
     private readonly showMagicianLink: boolean = true;
     private readonly store: Store;
     private readonly logger: Logger;
@@ -49,6 +50,7 @@ export class DiscordNotifier implements Notifier {
         this.showMagicianLink = storeConfig.show_magician_link ?? true;
         this.checkOnlineStatus = storeConfig.check_online_status ?? false;
         this.checkInAssortment = storeConfig.check_in_assortment ?? true;
+        this.showThumbnails = storeConfig.show_thumbnails ?? false;
 
         this.logger = logger;
 
@@ -127,15 +129,15 @@ export class DiscordNotifier implements Notifier {
         const price = item.price?.price ?? "0";
         const currency = item.price?.currency ?? "𑿠";
         embed.addFields([
-            { name: "ProductID", value: item.product.id },
-            {
-                name: "Price",
-                value: `${price} ${currency}`,
-                inline: true,
-            },
             {
                 name: "Store",
                 value: this.store.getName(),
+                inline: true,
+            },
+            { name: "ProductID", value: item.product.id, inline: true },
+            {
+                name: "Price",
+                value: `${price} ${currency}`,
                 inline: true,
             },
         ]);
@@ -144,6 +146,9 @@ export class DiscordNotifier implements Notifier {
         }
         if (this.showCookiesAmount) {
             embed.addField("Cookies", cookiesAmount ? `${cookiesAmount} 🍪` : `${this.noCookieEmoji ?? "👎"}`, true);
+        }
+        if (this.showThumbnails) {
+            embed.setThumbnail(this.store.thumbnail);
         }
         if (item.availability.delivery?.earliest && item.availability.delivery.latest) {
             embed.addField(
