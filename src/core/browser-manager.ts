@@ -47,6 +47,8 @@ export class BrowserManager {
         if (this.storeConfiguration.proxy_urls?.length) {
             this.proxies = shuffle(this.storeConfiguration.proxy_urls);
         }
+
+        puppeteer.use(StealthPlugin());
     }
 
     rotateProxy(): void {
@@ -256,8 +258,6 @@ export class BrowserManager {
             this.logger.error("Unable to create fresh context, browser is undefined!");
             return false;
         }
-
-        puppeteer.use(StealthPlugin());
 
         if (this.page) {
             await this.page.close();
