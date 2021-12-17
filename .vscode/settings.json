@@ -1,16 +1,14 @@
 {
     "cSpell.words": [
-        "Boop",
-        "Markt",
-        "Salesline",
-        "Serializable",
-        "Stockshock",
         "apollographql",
+        "Boop",
         "cacheable",
         "contentful",
         "cooldown",
         "cooldowns",
         "errored",
+        "hcaptcha",
+        "Markt",
         "mediamarkt",
         "mediamarktaustria",
         "mediamarktgermany",
@@ -21,6 +19,9 @@
         "networkidle",
         "nocookie",
         "printf",
+        "Salesline",
+        "Serializable",
+        "Stockshock",
         "timbru",
         "userid"
     ]
