@@ -147,6 +147,8 @@ export class DiscordNotifier implements Notifier {
         if (this.showCookiesAmount) {
             embed.addField("Cookies", cookiesAmount ? `${cookiesAmount} 🍪` : `${this.noCookieEmoji ?? "👎"}`, true);
         }
+        embed.addField("Availability State", item.availability.delivery?.availabilityType ?? "UNKNOWN", true);
+
         if (this.showThumbnails) {
             embed.setThumbnail(this.store.thumbnail);
         }
