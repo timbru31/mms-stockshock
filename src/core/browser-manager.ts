@@ -1,6 +1,6 @@
 import { prompt } from "inquirer";
 import { Server } from "proxy-chain";
-import type { Browser, BrowserContext, Page, PuppeteerNodeLaunchOptions, SerializableOrJSHandle } from "puppeteer";
+import type { Browser, Page, PuppeteerNodeLaunchOptions, SerializableOrJSHandle } from "puppeteer";
 import puppeteer from "puppeteer-extra";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import UserAgent from "user-agents";
@@ -21,7 +21,6 @@ export class BrowserManager {
     page: Page | undefined;
 
     private browser: Browser | undefined;
-    private context: BrowserContext | undefined;
     private readonly store: Store;
     private readonly storeConfiguration: StoreConfiguration;
     private readonly logger: Logger;
@@ -32,7 +31,7 @@ export class BrowserManager {
     private proxyServer: Server | undefined;
     private readonly launchRaceTimeout = 15000;
     private readonly loginRaceTimeout = 10000;
-    private readonly incognitoRaceTimeout = 6000;
+    private readonly freshContextRaceTimeout = 6000;
     private readonly baseWidth = 1024;
     private readonly baseHeight = 768;
     private readonly randomFactor = 100;
@@ -171,8 +170,8 @@ export class BrowserManager {
         this.reLoginRequired = false;
     }
 
-    async createIncognitoContext(): Promise<boolean> {
-        return Promise.race([this._createIncognitoContext(), sleep(this.incognitoRaceTimeout, false)]);
+    async createFreshContext(): Promise<boolean> {
+        return Promise.race([this._createFreshContext(), sleep(this.freshContextRaceTimeout, false)]);
     }
 
     async handleResponseError(
@@ -252,18 +251,12 @@ export class BrowserManager {
         return true;
     }
 
-    private async _createIncognitoContext() {
+    private async _createFreshContext() {
         if (!this.browser) {
-            this.logger.error("Unable to create incognito context, browser is undefined!");
+            this.logger.error("Unable to create fresh context, browser is undefined!");
             return false;
         }
 
-        if (this.context) {
-            await this.context.close();
-            this.context = undefined;
-        }
-
-        this.context = await this.browser.createIncognitoBrowserContext();
         puppeteer.use(StealthPlugin());
 
         if (this.page) {
@@ -341,15 +334,6 @@ export class BrowserManager {
                 this.logger.error("Unable to close page, %O", e);
             } finally {
                 this.page = undefined;
-            }
-        }
-        if (this.context) {
-            try {
-                await this.context.close();
-            } catch (e: unknown) {
-                this.logger.error("Unable to close context, %O", e);
-            } finally {
-                this.context = undefined;
             }
         }
         if (this.browser) {

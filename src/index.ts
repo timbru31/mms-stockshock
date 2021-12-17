@@ -32,12 +32,14 @@ async function reLoginIfRequired(
                 process.kill(process.pid, "SIGINT");
             }
         }
-        if (!(await browserManager.createIncognitoContext())) {
+        if (!(await browserManager.createFreshContext())) {
             browserManager.reLoginRequired = true;
             browserManager.reLaunchRequired = true;
-            throw new Error("Incognito context could not be created!");
+            throw new Error("Fresh context could not be created!");
         }
-        logger.info("New incognito context created!");
+        browserManager.reLoginRequired = false;
+        browserManager.reLaunchRequired = false;
+        logger.info("Fresh context created!");
         await browserManager.logIn(email, password, args.headless);
         for (const notifier of notifiers) {
             await notifier.notifyAdmin("🤖 (Re-)Login succeeded, let's hunt");
@@ -64,10 +66,10 @@ async function reLaunchIfRequired(
         relaunched = true;
     }
     if (createNewContext || relaunched) {
-        if (!(await browserManager.createIncognitoContext())) {
-            throw new Error("Incognito context could not be created!");
+        if (!(await browserManager.createFreshContext())) {
+            throw new Error("Fresh context could not be created!");
         }
-        logger.info("New incognito context created!");
+        logger.info("Fresh context created!");
     }
 }
 void (async function () {

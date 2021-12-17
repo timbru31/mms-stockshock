@@ -65,13 +65,13 @@ export class BasketAdder {
                 const cookies: string[] = [];
                 for (let i = 0; i < cookieAmount; i++) {
                     if (newSession) {
-                        let contextCreated = false;
+                        let freshContextCreated = false;
                         try {
-                            contextCreated = await this.browserManager.createIncognitoContext();
+                            freshContextCreated = await this.browserManager.createFreshContext();
                         } catch (e: unknown) {
                             this.logger.error("Context creation failed, error %O", e);
                         }
-                        if (!contextCreated) {
+                        if (!freshContextCreated) {
                             this.logger.error(`Unable to create new context for ${id} try ${i} of ${cookieAmount}. Skipping`);
                             await sleep(this.store.getSleepTime());
                             continue;
