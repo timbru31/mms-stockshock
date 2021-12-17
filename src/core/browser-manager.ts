@@ -161,6 +161,8 @@ export class BrowserManager {
                 for (const notifier of this.notifiers) {
                     await notifier.notifyAdmin(`😵 Login did not succeed. Status ${res.status}`);
                 }
+                this.loggedIn = false;
+                this.reLoginRequired = true;
                 throw new Error(`Login did not succeed. Status ${res.status}`);
             }
             await prompt({
