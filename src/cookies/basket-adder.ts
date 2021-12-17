@@ -23,7 +23,6 @@ export class BasketAdder {
     private readonly database: DatabaseConnection | undefined;
     private readonly defaultCookieAmount = 10;
     private readonly oneCookie = 1;
-    private readonly incognitoRaceTimeout = 6000;
     private readonly addProductRaceTimeout = 2000;
 
     constructor(
@@ -58,7 +57,7 @@ export class BasketAdder {
             return;
         }
 
-        if (this.basketProducts.size) {
+        if (this.basketProducts.size && cookieAmount) {
             if (!newSession) {
                 cookieAmount = this.oneCookie;
             }
@@ -68,10 +67,7 @@ export class BasketAdder {
                     if (newSession) {
                         let contextCreated = false;
                         try {
-                            contextCreated = await Promise.race([
-                                this.browserManager.createIncognitoContext(),
-                                sleep(this.incognitoRaceTimeout, false),
-                            ]);
+                            contextCreated = await this.browserManager.createIncognitoContext();
                         } catch (e: unknown) {
                             this.logger.error("Context creation failed, error %O", e);
                         }
