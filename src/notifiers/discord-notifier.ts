@@ -15,7 +15,7 @@ export class DiscordNotifier implements Notifier {
     discordBotReady = false;
     private discordBot: Client | undefined;
     private stockChannel: TextChannel | undefined;
-    private readonly stockRegexChannel = new Map<RegExp, TextChannel>();
+    private readonly stockRegexChannel = new Map<RegExp, TextChannel[]>();
     private stockRolePing: string | undefined;
     private readonly stockRegexRolePing = new Map<RegExp, string[]>();
     private cookieChannel: TextChannel | undefined;
@@ -177,18 +177,20 @@ export class DiscordNotifier implements Notifier {
             emoji = "🟡";
         }
 
-        const stockChannelForItem = this.getChannelForTitle(item.product.title);
-        if (stockChannelForItem) {
-            try {
-                await stockChannelForItem.send({
-                    embeds: [embed],
-                    content: this.decorateMessageWithRoles(
-                        `${emoji} ${item.product.title} [${item.product.id}] for ${price} ${currency}`,
-                        this.getRolePingsForTitle(item.product.title)
-                    ),
-                });
-            } catch (e: unknown) {
-                this.logger.error("Error sending message, error: %O", e);
+        const stockChannelsForItem = this.getChannelsForTitle(item.product.title);
+        for (const stockChannelForItem of stockChannelsForItem) {
+            if (stockChannelForItem) {
+                try {
+                    await stockChannelForItem.send({
+                        embeds: [embed],
+                        content: this.decorateMessageWithRoles(
+                            `${emoji} ${item.product.title} [${item.product.id}] for ${price} ${currency}`,
+                            await this.getRolePingsForTitle(item.product.title, stockChannelForItem)
+                        ),
+                    });
+                } catch (e: unknown) {
+                    this.logger.error("Error sending message, error: %O", e);
+                }
             }
         }
     }
@@ -283,12 +285,16 @@ export class DiscordNotifier implements Notifier {
             if (storeConfig.stock_discord_regex_channel) {
                 storeConfig.stock_discord_regex_channel.map(async (pair) => {
                     const regexpStr = pair[key];
-                    const channelId = pair[value];
-                    const tempChannel = await this.discordBot?.channels.fetch(channelId);
-                    if (((channel): channel is TextChannel => channel?.type === "GUILD_TEXT")(tempChannel)) {
-                        const regexp = new RegExp(regexpStr, "i");
-                        this.stockRegexChannel.set(regexp, tempChannel);
+                    const channelIds = pair[value].split(",");
+                    const tempChannels: TextChannel[] = [];
+                    for (const channelId of channelIds) {
+                        const tempChannel = await this.discordBot?.channels.fetch(channelId);
+                        if (((channel): channel is TextChannel => channel?.type === "GUILD_TEXT")(tempChannel)) {
+                            tempChannels.push(tempChannel);
+                        }
                     }
+                    const regexp = new RegExp(regexpStr, "i");
+                    this.stockRegexChannel.set(regexp, tempChannels);
                 });
             }
 
@@ -357,18 +363,20 @@ export class DiscordNotifier implements Notifier {
         });
     }
 
-    private getRolePingsForTitle(title: string) {
+    private async getRolePingsForTitle(title: string, stockChannel: TextChannel) {
         if (this.stockRegexRolePing.size) {
             let threshold = 1;
             const rolePings: string[] = [];
             for (const [regexp, ids] of this.stockRegexRolePing.entries()) {
                 if (regexp.test(title)) {
                     for (const id of ids) {
-                        // In case we have the wildcard role active, increase the threshold for the fallback
-                        if (regexp.toString() === "/.*/i") {
-                            threshold++;
+                        if (await stockChannel.guild.roles.fetch(id)) {
+                            // In case we have the wildcard role active, increase the threshold for the fallback
+                            if (regexp.toString() === "/.*/i") {
+                                threshold++;
+                            }
+                            rolePings.push(id);
                         }
-                        rolePings.push(id);
                     }
                 }
             }
@@ -380,7 +388,7 @@ export class DiscordNotifier implements Notifier {
         return this.stockRolePing?.split(",");
     }
 
-    private getChannelForTitle(title: string) {
+    private getChannelsForTitle(title: string) {
         if (this.stockRegexChannel.size) {
             for (const [regexp, channel] of this.stockRegexChannel.entries()) {
                 if (regexp.test(title)) {
@@ -388,7 +396,7 @@ export class DiscordNotifier implements Notifier {
                 }
             }
         }
-        return this.stockChannel;
+        return [this.stockChannel];
     }
 
     private decorateMessageWithRoles(message: string, webhookRolePings: string[] | string | undefined) {
