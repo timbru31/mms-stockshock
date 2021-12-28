@@ -252,7 +252,7 @@ export class BrowserManager {
             args,
         } as unknown as PuppeteerNodeLaunchOptions);
         this.reLaunchRequired = false;
-        return true;
+        return Boolean(this.browser);
     }
 
     private async _createFreshContext() {
@@ -299,7 +299,7 @@ export class BrowserManager {
         if (this.store.loginSleepTime) {
             await sleep(this.store.loginSleepTime);
         }
-        return true;
+        return Boolean(this.page);
     }
 
     // See https://intoli.com/blog/making-chrome-headless-undetectable/

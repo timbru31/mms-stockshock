@@ -133,8 +133,7 @@ void (async function () {
         process.on(evt, (reason, promise) => {
             logger.error("⚡️ Unhandled Rejection at: %O", promise);
             logger.error("⚡️ Unhandled Rejection reason: %O", reason);
-            browserManager.reLaunchRequired = true;
-            browserManager.reLoginRequired = true;
+            process.kill(process.pid, "SIGINT");
         });
     });
 
@@ -219,8 +218,12 @@ void (async function () {
             for (const notifier of notifiers) {
                 await notifier.notifyAdmin("⚡️ Boop, I'm alive but checking your stock errored!", e);
             }
-            browserManager.reLoginRequired = true;
-            browserManager.reLaunchRequired = true;
+            if (e instanceof Error && e.message.includes("Failed to launch the browser process")) {
+                process.kill(process.pid, "SIGINT");
+            } else {
+                browserManager.reLoginRequired = true;
+                browserManager.reLaunchRequired = true;
+            }
         }
     }
 })();
