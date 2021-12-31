@@ -4,7 +4,7 @@
     "parserOptions": {
         "project": "./tsconfig.json"
     },
-    "plugins": ["@typescript-eslint"],
+    "plugins": ["@typescript-eslint", "deprecation"],
     "extends": ["eslint:recommended", "plugin:@typescript-eslint/eslint-recommended", "plugin:@typescript-eslint/all"],
     "rules": {
         "@typescript-eslint/no-floating-promises": 2,
@@ -20,6 +20,7 @@
         "@typescript-eslint/init-declarations": 0,
         "@typescript-eslint/no-extra-parens": 0,
         "@typescript-eslint/no-unnecessary-condition": ["error", { "allowConstantLoopConditions": true }],
-        "@typescript-eslint/no-type-alias": ["error", { "allowAliases": "in-unions" }]
+        "@typescript-eslint/no-type-alias": ["error", { "allowAliases": "in-unions" }],
+        "deprecation/deprecation": "error"
     }
 }
