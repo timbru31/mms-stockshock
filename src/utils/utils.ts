@@ -1,4 +1,4 @@
-import colors from "colors/safe";
+import colors from "@colors/colors/safe";
 import { readFile } from "fs/promises";
 import { parse } from "toml";
 import type { Logger } from "winston";
