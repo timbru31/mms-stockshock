@@ -14,7 +14,7 @@ export interface GetBasketResponse extends Response {
                     } | null;
                     mp: unknown[];
                     addresses: {
-                        additionalInfo: unknown | null;
+                        additionalInfo: unknown;
                         city: string;
                         country: string;
                         firstname: string;
@@ -71,7 +71,7 @@ export interface GetBasketResponse extends Response {
                     price: number;
                 };
                 storedPaymentMethods: unknown[];
-                paymentId: unknown | null;
+                paymentId: unknown;
             };
 
             coupons: unknown[];
