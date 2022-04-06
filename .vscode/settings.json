@@ -24,5 +24,7 @@
         "Stockshock",
         "timbru",
         "userid"
-    ]
+    ],
+    "editor.formatOnPaste": true,
+    "editor.formatOnSave": true
 }

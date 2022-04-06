@@ -155,7 +155,12 @@ export class WishlistChecker {
                                     offset: pageOffset,
                                 },
                                 extensions: {
-                                    pwa: { salesLine: store.salesLine, country: store.countryCode, language: store.languageCode },
+                                    pwa: {
+                                        salesLine: store.salesLine,
+                                        country: store.countryCode,
+                                        language: store.languageCode,
+                                        ccr: true,
+                                    },
                                     persistedQuery: {
                                         version: 1,
                                         sha256Hash: wishlistSHA256,

@@ -132,6 +132,7 @@ export class BasketAdder {
                                                     salesLine: store.salesLine,
                                                     country: store.countryCode,
                                                     language: store.languageCode,
+                                                    ccr: true,
                                                 },
                                                 persistedQuery: {
                                                     version: 1,
