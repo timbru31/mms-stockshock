@@ -97,12 +97,12 @@ export class BasketAdder {
                                     fetch(`${store.baseUrl}/api/v1/graphql?${queryString}`, {
                                         credentials: "include",
                                         headers: {
+                                            /* eslint-disable @typescript-eslint/naming-convention */
                                             "content-type": "application/json",
                                             "apollographql-client-name": "pwa-client",
                                             "apollographql-client-version": graphQLClientVersion,
                                             "x-operation": "AddProduct",
                                             "x-cacheable": "false",
-                                            /* eslint-disable @typescript-eslint/naming-convention */
                                             "x-mms-language": store.languageCode,
                                             "x-mms-country": store.countryCode,
                                             "x-mms-salesline": store.salesLine,

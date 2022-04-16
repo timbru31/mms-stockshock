@@ -96,6 +96,7 @@ export class BrowserManager {
                         fetch(`${store.baseUrl}/api/v1/graphql?${queryString}`, {
                             credentials: "include",
                             headers: {
+                                /* eslint-disable @typescript-eslint/naming-convention */
                                 "content-type": "application/json",
                                 "apollographql-client-name": "pwa-client",
                                 "apollographql-client-version": graphQLClientVersion,
@@ -105,7 +106,6 @@ export class BrowserManager {
                                 "x-mms-country": store.countryCode,
                                 "x-mms-salesline": store.salesLine,
                                 "x-flow-id": flowId,
-                                /* eslint-disable @typescript-eslint/naming-convention */
                                 Pragma: "no-cache",
                                 "Cache-Control": "no-cache",
                                 /* eslint-enable @typescript-eslint/naming-convention */
