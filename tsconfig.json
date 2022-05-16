@@ -17,7 +17,7 @@
         "resolveJsonModule": true,
         "experimentalDecorators": true,
         "esModuleInterop": true,
-        "typeRoots": ["node_modules/@types", "types"]
+        "typeRoots": ["node_modules/@types"]
     },
     "include": ["src/"],
     "compileOnSave": false
