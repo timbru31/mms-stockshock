@@ -1,79 +1,4 @@
-[saturn]
-# You can define multiple accounts. Make sure to use the first string for the e-mail the second for the password
-accounts = [["", ""]]
-start_url = ""
-
-categories = []
-category_regex = ""
-ignore_sleep = false
-id_replacements = []
-# check old online status field for basket check
-check_online_status = false
-# check the new replacment field for the basket check
-check_in_assortment = true
-# IDs of products you want to generate cookies for (strings)
-cookie_ids = []
-# Enable a cache busting mechansim by adding a query parameter
-cache_busting = true
-
-# Beware that >10 can cause issues with Discord's 2000 characters limit!
-cookies = 10
-announce_cookies = true
-
-# Discord integration (optional)
-# You can set the same channel or role for all the types or a dedicated one for each type
-discord_bot_token = ""
-discord_nocookie_emoji = ""
-discord_activity_message = ""
-discord_channel = ""
-stock_discord_channel = ""
-stock_discord_regex_channel = []
-cookie_discord_channel = ""
-admin_discord_channel = ""
-price_change_discord_channel = ""
-discord_role_ping = ""
-stock_discord_role_ping = ""
-stock_discord_regex_role_ping = []
-cookie_discord_role_ping = ""
-admin_discord_role_ping = ""
-price_change_discord_role_ping = ""
-
-# Twitter integration (optional)
-twitter_bearer_token = ""
-twitter_tags = []
-
-# Telegram integration (optional)
-telegram_bot_api_key = ""
-telegram_channel_id = ""
-
-# Important!
-# If you use multiple proxies, use the basic auth format: http://user:pass@foo.bar:8080
-# Set only proxy_urls or proxy_url NOT both
-proxy_urls = []
-proxy_url = ""
-proxy_username = ""
-proxy_password = ""
-
-dynamo_db_region = ""
-dynamo_db_table_name = ""
-dynamo_db_access_key = ""
-dynamo_db_secret_access_key = ""
-
-# WebSocket config
-use_websocket = false
-websocket_passwords = [""]
-websocket_port = 8080
-websocket_https = false
-websocket_cert_path = ""
-websocket_key_path = ""
-
-# The hashes from the queries. Tend to change often
-loginSHA256 = ""
-categorySHA256 = ""
-wishlistSHA256 = ""
-addProductSHA256 = ""
-getProductSHA256 = ""
-
+# Valid stores are Saturn (saturn), MediaMarkt Germany (mmde), MediaMarkt Austria (mmat) and MediaMarkt Spain (mmes)
 [mmde]
 # You can define multiple accounts. Make sure to use the first string for the e-mail the second for the password
 accounts = [["", ""]]
@@ -81,7 +6,13 @@ start_url = ""
 
 categories = []
 category_regex = ""
+
+# Sleep times in milliseconds between the API calls
 ignore_sleep = false
+min_sleep_time = 100
+max_sleep_time = 500
+
+# Replace PIDs with different URLs (e.g., Affiliate)
 id_replacements = []
 # check old online status field for basket check
 check_online_status = false
@@ -91,21 +22,29 @@ check_in_assortment = true
 cookie_ids = []
 # Enable a cache busting mechansim by adding a query parameter
 cache_busting = true
-
+# Show alerts that item can be added to the cart
+shopping_cart_alerts = true
 # Beware that >10 can cause issues with Discord's 2000 characters limit!
 cookies = 10
+# Announces if cookies are made
 announce_cookies = true
+# Show cookies available (amount) in Discord notification
+show_cookies_amount = true
+# Show the magician (ATC) link in the notification
+show_magician_link = true
 
 # Discord integration (optional)
 # You can set the same channel or role for all the types or a dedicated one for each type
 discord_bot_token = ""
 discord_nocookie_emoji = ""
 discord_activity_message = ""
+show_thumbnails = false
 discord_channel = ""
 stock_discord_channel = ""
 stock_discord_regex_channel = []
 cookie_discord_channel = ""
 admin_discord_channel = ""
+
 price_change_discord_channel = ""
 discord_role_ping = ""
 stock_discord_role_ping = ""
@@ -115,7 +54,10 @@ admin_discord_role_ping = ""
 price_change_discord_role_ping = ""
 
 # Twitter integration (optional)
-twitter_bearer_token = ""
+twitter_api_key = ""
+twitter_api_key_secret = ""
+twitter_access_token = ""
+twitter_access_token_secret = ""
 twitter_tags = []
 
 # Telegram integration (optional)
@@ -130,6 +72,7 @@ proxy_url = ""
 proxy_username = ""
 proxy_password = ""
 
+# Cookie storage config (DynamoDB)
 dynamo_db_region = ""
 dynamo_db_table_name = ""
 dynamo_db_access_key = ""
@@ -142,82 +85,7 @@ websocket_port = 8080
 websocket_https = false
 websocket_cert_path = ""
 websocket_key_path = ""
-
-# The hashes from the queries. Tend to change often
-loginSHA256 = ""
-categorySHA256 = ""
-wishlistSHA256 = ""
-addProductSHA256 = ""
-getProductSHA256 = ""
-
-[mmat]
-# You can define multiple accounts. Make sure to use the first string for the e-mail the second for the password
-accounts = [["", ""]]
-start_url = ""
-
-categories = []
-category_regex = ""
-ignore_sleep = false
-id_replacements = []
-# check old online status field for basket check
-check_online_status = false
-# check the new replacment field for the basket check
-check_in_assortment = true
-# IDs of products you want to generate cookies for (strings)
-cookie_ids = []
-# Enable a cache busting mechansim by adding a query parameter
-cache_busting = true
-
-# Beware that >10 can cause issues with Discord's 2000 characters limit!
-cookies = 10
-announce_cookies = true
-
-# Discord integration (optional)
-# You can set the same channel or role for all the types or a dedicated one for each type
-discord_bot_token = ""
-discord_nocookie_emoji = ""
-discord_activity_message = ""
-discord_channel = ""
-stock_discord_channel = ""
-stock_discord_regex_channel = []
-cookie_discord_channel = ""
-admin_discord_channel = ""
-price_change_discord_channel = ""
-discord_role_ping = ""
-stock_discord_role_ping = ""
-stock_discord_regex_role_ping = []
-cookie_discord_role_ping = ""
-admin_discord_role_ping = ""
-price_change_discord_role_ping = ""
-
-# Twitter integration (optional)
-twitter_bearer_token = ""
-twitter_tags = []
-
-# Telegram integration (optional)
-telegram_bot_api_key = ""
-telegram_channel_id = ""
-
-# Important!
-# If you use multiple proxies, use the basic auth format: http://user:pass@foo.bar:8080
-# Set only proxy_urls or proxy_url NOT both
-proxy_urls = []
-proxy_url = ""
-proxy_username = ""
-proxy_password = ""
-
-dynamo_db_region = ""
-dynamo_db_table_name = ""
-dynamo_db_access_key = ""
-dynamo_db_secret_access_key = ""
-
-# WebSocket config
-use_websocket = false
-websocket_passwords = [""]
-websocket_port = 8080
-websocket_https = false
-websocket_cert_path = ""
-websocket_key_path = ""
+log_passwords = false
 
 # The hashes from the queries. Tend to change often
 loginSHA256 = ""
