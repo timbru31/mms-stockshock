@@ -1,11 +1,11 @@
-import type { Item } from "./item";
 import type { Response } from "./response";
+import type { WishlistItem } from "./wishlist-item";
 
 export interface WishlistResponse extends Response {
     data?: {
         wishlistItems?: {
             total: number;
-            items: Item[];
+            items: WishlistItem[];
         };
     };
 }

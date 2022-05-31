@@ -62,7 +62,7 @@ export class WishlistChecker {
                 throw new Error("Nothing on wishlist!");
             }
             let items = await this.productHelper.checkItems(
-                res.body.data?.wishlistItems?.items,
+                res.body.data?.wishlistItems?.items.map((item) => item.productAggregate),
                 this.cooldownManager,
                 this.database,
                 this.notifiers,
@@ -86,7 +86,7 @@ export class WishlistChecker {
                         }
                     } else {
                         items = await this.productHelper.checkItems(
-                            innerResponse.body.data?.wishlistItems?.items,
+                            innerResponse.body.data?.wishlistItems?.items.map((item) => item.productAggregate),
                             this.cooldownManager,
                             this.database,
                             this.notifiers,
