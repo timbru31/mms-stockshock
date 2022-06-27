@@ -1,13 +1,14 @@
+import { prompt } from "inquirer";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
+import type { CliArguments } from "../models/cli";
 import type { ConfigModel, StoreConfiguration } from "../models/stores/config-model";
+import { MediaMarktAustria } from "../models/stores/media-markt-austria";
+import { MediaMarktGermany } from "../models/stores/media-markt-germany";
+import { MediaMarktNetherlands } from "../models/stores/media-markt-netherlands";
+import { MediaMarktSpain } from "../models/stores/media-markt-spain";
 import { Saturn } from "../models/stores/saturn";
 import type { Store } from "../models/stores/store";
-import { prompt } from "inquirer";
-import { MediaMarktGermany } from "../models/stores/media-markt-germany";
-import { MediaMarktAustria } from "../models/stores/media-markt-austria";
-import type { CliArguments } from "../models/cli";
-import { MediaMarktSpain } from "../models/stores/media-markt-spain";
 
 export async function getStoreAndStoreConfig(config: ConfigModel): Promise<{
     store: Store;
@@ -29,20 +30,24 @@ export async function getStoreAndStoreConfig(config: ConfigModel): Promise<{
             message: "Please choose the desired store...",
             choices: [
                 {
-                    name: "Saturn",
-                    value: "saturn",
+                    name: "MediaMarkt Austria",
+                    value: "mediamarkt austria",
                 },
                 {
                     name: "MediaMarkt Germany",
                     value: "mediamarkt germany",
                 },
                 {
-                    name: "MediaMarkt Austria",
-                    value: "mediamarkt austria",
+                    name: "MediaMarkt Netherlands",
+                    value: "mediamarkt netherlands",
                 },
                 {
                     name: "MediaMarkt Spain",
                     value: "mediamarkt spain",
+                },
+                {
+                    name: "Saturn",
+                    value: "saturn",
                 },
             ],
         });
@@ -52,9 +57,11 @@ export async function getStoreAndStoreConfig(config: ConfigModel): Promise<{
     }
     let store: Store;
     switch (storeArgument.toLowerCase()) {
-        case "saturn":
-            store = new Saturn();
-            storeConfig = config.saturn;
+        case "mmat":
+        case "mediamarktaustria":
+        case "mediamarkt austria":
+            store = new MediaMarktAustria();
+            storeConfig = config.mmat;
             store.setSleepTimes(storeConfig.min_sleep_time, storeConfig.max_sleep_time);
             break;
         case "mmde":
@@ -64,11 +71,11 @@ export async function getStoreAndStoreConfig(config: ConfigModel): Promise<{
             storeConfig = config.mmde;
             store.setSleepTimes(storeConfig.min_sleep_time, storeConfig.max_sleep_time);
             break;
-        case "mmat":
-        case "mediamarktaustria":
-        case "mediamarkt austria":
-            store = new MediaMarktAustria();
-            storeConfig = config.mmat;
+        case "mmnl":
+        case "mediamarktnetherlands":
+        case "mediamarkt netherlands":
+            store = new MediaMarktNetherlands();
+            storeConfig = config.mmnl;
             store.setSleepTimes(storeConfig.min_sleep_time, storeConfig.max_sleep_time);
             break;
         case "mmes":
@@ -76,6 +83,11 @@ export async function getStoreAndStoreConfig(config: ConfigModel): Promise<{
         case "mediamarkt spain":
             store = new MediaMarktSpain();
             storeConfig = config.mmes;
+            store.setSleepTimes(storeConfig.min_sleep_time, storeConfig.max_sleep_time);
+            break;
+        case "saturn":
+            store = new Saturn();
+            storeConfig = config.saturn;
             store.setSleepTimes(storeConfig.min_sleep_time, storeConfig.max_sleep_time);
             break;
         default:

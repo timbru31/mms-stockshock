@@ -1,8 +1,9 @@
 export interface ConfigModel {
-    saturn: StoreConfiguration;
-    mmde: StoreConfiguration;
     mmat: StoreConfiguration;
+    mmde: StoreConfiguration;
     mmes: StoreConfiguration;
+    mmnl: StoreConfiguration;
+    saturn: StoreConfiguration;
 }
 
 /* eslint-disable @typescript-eslint/naming-convention */
