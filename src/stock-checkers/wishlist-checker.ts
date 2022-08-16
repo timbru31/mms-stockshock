@@ -1,4 +1,3 @@
-import type { SerializableOrJSHandle } from "puppeteer";
 import { v4 } from "uuid";
 import type { Logger } from "winston";
 import type { BrowserManager } from "../core/browser-manager";
@@ -177,7 +176,7 @@ export class WishlistChecker {
                             )
                             // eslint-disable-next-line @typescript-eslint/no-unused-vars
                             .catch((_) => ({ status: -2, body: null })),
-                    this.store as SerializableOrJSHandle,
+                    this.store,
                     offset,
                     v4(),
                     GRAPHQL_CLIENT_VERSION,

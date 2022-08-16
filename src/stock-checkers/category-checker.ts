@@ -1,4 +1,3 @@
-import type { SerializableOrJSHandle } from "puppeteer";
 import { v4 } from "uuid";
 import type { Logger } from "winston";
 import type { BrowserManager } from "../core/browser-manager";
@@ -207,7 +206,7 @@ export class CategoryChecker {
                             )
                             // eslint-disable-next-line @typescript-eslint/no-unused-vars
                             .catch((_) => ({ status: -2, body: null })),
-                    this.store as SerializableOrJSHandle,
+                    this.store,
                     page,
                     category,
                     v4(),
@@ -299,7 +298,7 @@ export class CategoryChecker {
                             )
                             // eslint-disable-next-line @typescript-eslint/no-unused-vars
                             .catch((_) => ({ status: -2, body: null })),
-                    this.store as SerializableOrJSHandle,
+                    this.store,
                     productId,
                     v4(),
                     GRAPHQL_CLIENT_VERSION,

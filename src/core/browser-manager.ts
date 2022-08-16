@@ -1,6 +1,6 @@
 import { prompt } from "inquirer";
 import { Server } from "proxy-chain";
-import type { Browser, Page, PuppeteerNodeLaunchOptions, SerializableOrJSHandle } from "puppeteer";
+import type { Browser, Page, PuppeteerNodeLaunchOptions } from "puppeteer";
 import puppeteer from "puppeteer-extra";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import UserAgent from "user-agents";
@@ -143,7 +143,7 @@ export class BrowserManager {
                             )
                             // eslint-disable-next-line @typescript-eslint/no-unused-vars
                             .catch((_) => ({ status: -2, body: null })),
-                    this.store as SerializableOrJSHandle,
+                    this.store,
                     email,
                     password,
                     v4(),
