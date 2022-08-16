@@ -1,4 +1,3 @@
-import type { SerializableOrJSHandle } from "puppeteer";
 import { v4 } from "uuid";
 import type { Logger } from "winston";
 import type { BrowserManager } from "../core/browser-manager";
@@ -160,7 +159,7 @@ export class BasketAdder {
                                         )
                                         // eslint-disable-next-line @typescript-eslint/no-unused-vars
                                         .catch((_) => ({ success: false, status: -2, body: null })),
-                                this.store as SerializableOrJSHandle,
+                                this.store,
                                 id,
                                 v4(),
                                 GRAPHQL_CLIENT_VERSION,
