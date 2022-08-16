@@ -33,7 +33,7 @@
         "puppeteer-extra-plugin-stealth": "^2.11.1",
         "telegraf": "^4.8.6",
         "toml": "^3.0.0",
-        "twitter-api-v2": "^1.12.3",
+        "twitter-api-v2": "^1.12.5",
         "user-agents": "^1.0.1108",
         "uuid": "^8.3.2",
         "winston": "^3.8.1",
