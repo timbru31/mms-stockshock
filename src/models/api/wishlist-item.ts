@@ -1,4 +1,4 @@
-import type { Item } from "./item";
+import type { Item } from "./item.js";
 
 export interface WishlistItem {
     id: string;

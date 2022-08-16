@@ -1,13 +1,13 @@
 import { format } from "date-fns";
 import type { TwitterApiReadWrite } from "twitter-api-v2";
-import TwitterApi from "twitter-api-v2";
+import { TwitterApi } from "twitter-api-v2";
 import type { Logger } from "winston";
-import type { Item } from "../models/api/item";
-import type { Notifier } from "../models/notifier";
-import type { StoreConfiguration } from "../models/stores/config-model";
-import type { Store } from "../models/stores/store";
-import { ProductHelper } from "../utils/product-helper";
-import { noop, noopPromise } from "../utils/utils";
+import type { Item } from "../models/api/item.js";
+import type { Notifier } from "../models/notifier.js";
+import type { StoreConfiguration } from "../models/stores/config-model.js";
+import type { Store } from "../models/stores/store.js";
+import { ProductHelper } from "../utils/product-helper.js";
+import { noop, noopPromise } from "../utils/utils.js";
 
 export class TwitterNotifier implements Notifier {
     private readonly logger: Logger;

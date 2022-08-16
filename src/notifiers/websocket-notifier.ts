@@ -4,11 +4,11 @@ import https from "https";
 import type { Socket } from "net";
 import type { Logger } from "winston";
 import WebSocket from "ws";
-import type { Item } from "../models/api/item";
-import type { Notifier } from "../models/notifier";
-import type { StoreConfiguration } from "../models/stores/config-model";
-import { ProductHelper } from "../utils/product-helper";
-import { noopPromise, shuffle } from "../utils/utils";
+import type { Item } from "../models/api/item.js";
+import type { Notifier } from "../models/notifier.js";
+import type { StoreConfiguration } from "../models/stores/config-model.js";
+import { ProductHelper } from "../utils/product-helper.js";
+import { noopPromise, shuffle } from "../utils/utils.js";
 
 export class WebSocketNotifier implements Notifier {
     private heartBeatPing: NodeJS.Timeout | undefined;

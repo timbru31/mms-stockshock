@@ -1,5 +1,5 @@
-import type { Item } from "./api/item";
-import type { Product } from "./api/product";
+import type { Item } from "./api/item.js";
+import type { Product } from "./api/product.js";
 
 export interface Notifier {
     notifyAdmin: (message: string, error?: unknown) => Promise<void>;

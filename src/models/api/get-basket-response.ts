@@ -1,6 +1,6 @@
-import type { Fulfillment } from "./fulfillment";
-import type { LineItem } from "./line-item";
-import type { Response } from "./response";
+import type { Fulfillment } from "./fulfillment.js";
+import type { LineItem } from "./line-item.js";
+import type { Response } from "./response.js";
 
 export interface GetBasketResponse extends Response {
     data?: {

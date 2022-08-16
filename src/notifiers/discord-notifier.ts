@@ -2,14 +2,15 @@ import { format, parseISO } from "date-fns";
 import type { TextChannel } from "discord.js";
 import { Client, MessageEmbed } from "discord.js";
 import type { Logger } from "winston";
-import { version } from "../../package.json";
-import type { Item } from "../models/api/item";
-import type { Product } from "../models/api/product";
-import type { Notifier } from "../models/notifier";
-import type { StoreConfiguration } from "../models/stores/config-model";
-import type { Store } from "../models/stores/store";
-import { ProductHelper } from "../utils/product-helper";
-import { noop } from "../utils/utils";
+// @ts-expect-error Foo
+import x from "../../package.json" assert { type: "json" };
+import type { Item } from "../models/api/item.js";
+import type { Product } from "../models/api/product.js";
+import type { Notifier } from "../models/notifier.js";
+import type { StoreConfiguration } from "../models/stores/config-model.js";
+import type { Store } from "../models/stores/store.js";
+import { ProductHelper } from "../utils/product-helper.js";
+import { noop } from "../utils/utils.js";
 
 export class DiscordNotifier implements Notifier {
     discordBotReady = false;
@@ -414,7 +415,7 @@ export class DiscordNotifier implements Notifier {
     private createEmbed(item: Item) {
         const embed = new MessageEmbed().setTimestamp();
         embed.setFooter({
-            text: `Stockshock v${version} • If you have paid for this, you have been scammed • Links may be affiliate links`,
+            text: `Stockshock v${x.version} • If you have paid for this, you have been scammed • Links may be affiliate links`,
         });
         if (!item.product) {
             return embed;

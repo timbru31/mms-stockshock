@@ -1,11 +1,11 @@
 import type { Logger } from "winston";
-import type { Item } from "../models/api/item";
-import type { Product } from "../models/api/product";
-import type { Notifier } from "../models/notifier";
-import type { StoreConfiguration } from "../models/stores/config-model";
-import type { Store } from "../models/stores/store";
-import { ProductHelper } from "../utils/product-helper";
-import { noop } from "../utils/utils";
+import type { Item } from "../models/api/item.js";
+import type { Product } from "../models/api/product.js";
+import type { Notifier } from "../models/notifier.js";
+import type { StoreConfiguration } from "../models/stores/config-model.js";
+import type { Store } from "../models/stores/store.js";
+import { ProductHelper } from "../utils/product-helper.js";
+import { noop } from "../utils/utils.js";
 
 export class LoggerNotifier implements Notifier {
     private readonly checkOnlineStatus: boolean;

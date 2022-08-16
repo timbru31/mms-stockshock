@@ -1,14 +1,14 @@
-import { prompt } from "inquirer";
+import inquirer from "inquirer";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
-import type { CliArguments } from "../models/cli";
-import type { ConfigModel, StoreConfiguration } from "../models/stores/config-model";
-import { MediaMarktAustria } from "../models/stores/media-markt-austria";
-import { MediaMarktGermany } from "../models/stores/media-markt-germany";
-import { MediaMarktNetherlands } from "../models/stores/media-markt-netherlands";
-import { MediaMarktSpain } from "../models/stores/media-markt-spain";
-import { Saturn } from "../models/stores/saturn";
-import type { Store } from "../models/stores/store";
+import type { CliArguments } from "../models/cli.js";
+import type { ConfigModel, StoreConfiguration } from "../models/stores/config-model.js";
+import { MediaMarktAustria } from "../models/stores/media-markt-austria.js";
+import { MediaMarktGermany } from "../models/stores/media-markt-germany.js";
+import { MediaMarktNetherlands } from "../models/stores/media-markt-netherlands.js";
+import { MediaMarktSpain } from "../models/stores/media-markt-spain.js";
+import { Saturn } from "../models/stores/saturn.js";
+import type { Store } from "../models/stores/store.js";
 
 export async function getStoreAndStoreConfig(config: ConfigModel): Promise<{
     store: Store;
@@ -24,7 +24,7 @@ export async function getStoreAndStoreConfig(config: ConfigModel): Promise<{
     let storeConfig: StoreConfiguration;
     let storeArgument: string;
     if (!args.store) {
-        const storePrompt = await prompt({
+        const storePrompt = await inquirer.prompt({
             type: "list",
             name: "store",
             message: "Please choose the desired store...",

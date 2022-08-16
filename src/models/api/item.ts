@@ -1,5 +1,5 @@
-import type { Availability } from "./availability";
-import type { Product } from "./product";
+import type { Availability } from "./availability.js";
+import type { Product } from "./product.js";
 
 export interface Item {
     product?: Product;

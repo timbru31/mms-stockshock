@@ -1,0 +1,13 @@
+diff --git a/node_modules/telegraf/typings/core/types/typegram.d.ts b/node_modules/telegraf/typings/core/types/typegram.d.ts
+index 639228d..f58f9a7 100644
+--- a/node_modules/telegraf/typings/core/types/typegram.d.ts
++++ b/node_modules/telegraf/typings/core/types/typegram.d.ts
+@@ -2,8 +2,6 @@
+ /// <reference types="node" />
+ import { Typegram } from 'typegram';
+ export * from 'typegram/api';
+-export * from 'typegram/markup';
+-export * from 'typegram/menu-button';
+ export * from 'typegram/inline';
+ export * from 'typegram/manage';
+ export * from 'typegram/message';

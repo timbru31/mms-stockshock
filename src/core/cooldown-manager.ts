@@ -1,9 +1,9 @@
 import { add, isAfter, parseISO } from "date-fns";
 import { existsSync, readFileSync, writeFileSync } from "fs";
-import type { Item } from "../models/api/item";
-import type { Product } from "../models/api/product";
-import type { NotificationCooldown } from "../models/cooldown";
-import { ProductHelper } from "../utils/product-helper";
+import type { Item } from "../models/api/item.js";
+import type { Product } from "../models/api/product.js";
+import type { NotificationCooldown } from "../models/cooldown.js";
+import { ProductHelper } from "../utils/product-helper.js";
 
 export class CooldownManager {
     private readonly cooldowns = new Map<string, NotificationCooldown>();

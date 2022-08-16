@@ -1,5 +1,5 @@
-import { CommonStore } from "./abstract-store";
-import type { Store } from "./store";
+import { CommonStore } from "./abstract-store.js";
+import type { Store } from "./store.js";
 
 export class MediaMarktGermany extends CommonStore implements Store {
     readonly baseUrl = "https://www.mediamarkt.de";

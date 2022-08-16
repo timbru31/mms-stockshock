@@ -1,4 +1,4 @@
-import type { Response } from "./response";
+import type { Response } from "./response.js";
 
 export interface LoginResponse extends Response {
     data?: {

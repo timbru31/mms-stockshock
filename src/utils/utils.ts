@@ -1,14 +1,15 @@
-import colors from "@colors/colors/safe";
-import { readFile } from "fs/promises";
+import colors from "@colors/colors";
+const { stripColors } = colors;
+import { readFile } from "node:fs/promises";
 import { parse } from "toml";
 import type { Logger } from "winston";
 import { createLogger as createWinstonLogger, format, transports } from "winston";
-import type { ConfigModel } from "../models/stores/config-model";
+import type { ConfigModel } from "../models/stores/config-model.js";
 
 export const GRAPHQL_CLIENT_VERSION = "1.79.0";
 
 function getEmojiForLevel(level: string) {
-    switch (colors.stripColors(level)) {
+    switch (stripColors(level)) {
         case "info":
             return "🧚";
         case "error":

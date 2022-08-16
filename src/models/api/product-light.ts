@@ -1,4 +1,4 @@
-import type { Availability } from "./availability";
+import type { Availability } from "./availability.js";
 
 export interface ProductLight {
     productId: string;

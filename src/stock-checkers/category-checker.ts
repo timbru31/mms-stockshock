@@ -1,18 +1,18 @@
 import type { SerializableOrJSHandle } from "puppeteer";
 import { v4 } from "uuid";
 import type { Logger } from "winston";
-import type { BrowserManager } from "../core/browser-manager";
-import type { CooldownManager } from "../core/cooldown-manager";
-import type { DatabaseConnection } from "../databases/database-connection";
-import type { CategoryResponse } from "../models/api/category-response";
-import type { Product } from "../models/api/product";
-import type { SelectedProductResponse } from "../models/api/selected-product-response";
-import type { Notifier } from "../models/notifier";
-import type { StoreConfiguration } from "../models/stores/config-model";
-import type { Store } from "../models/stores/store";
-import { HTTPStatusCode } from "../utils/http";
-import { ProductHelper } from "../utils/product-helper";
-import { GRAPHQL_CLIENT_VERSION, sleep } from "../utils/utils";
+import type { BrowserManager } from "../core/browser-manager.js";
+import type { CooldownManager } from "../core/cooldown-manager.js";
+import type { DatabaseConnection } from "../databases/database-connection.js";
+import type { CategoryResponse } from "../models/api/category-response.js";
+import type { Product } from "../models/api/product.js";
+import type { SelectedProductResponse } from "../models/api/selected-product-response.js";
+import type { Notifier } from "../models/notifier.js";
+import type { StoreConfiguration } from "../models/stores/config-model.js";
+import type { Store } from "../models/stores/store.js";
+import { HTTPStatusCode } from "../utils/http.js";
+import { ProductHelper } from "../utils/product-helper.js";
+import { GRAPHQL_CLIENT_VERSION, sleep } from "../utils/utils.js";
 
 export class CategoryChecker {
     private readonly store: Store;

@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { DynamoDBClientConfig, GetItemCommandInput, UpdateItemCommandInput } from "@aws-sdk/client-dynamodb";
 import { DynamoDBClient, GetItemCommand, UpdateItemCommand } from "@aws-sdk/client-dynamodb";
-import type { Product } from "../models/api/product";
-import type { StoreConfiguration } from "../models/stores/config-model";
-import type { Store } from "../models/stores/store";
-import type { DatabaseConnection } from "./database-connection";
+import type { Product } from "../models/api/product.js";
+import type { StoreConfiguration } from "../models/stores/config-model.js";
+import type { Store } from "../models/stores/store.js";
+import type { DatabaseConnection } from "./database-connection.js";
 
 export class DynamoDBStore implements DatabaseConnection {
     private readonly store: Store;

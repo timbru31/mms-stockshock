@@ -1,4 +1,4 @@
-import { prompt } from "inquirer";
+import inquirer from "inquirer";
 import { Server } from "proxy-chain";
 import type { Browser, Page, PuppeteerNodeLaunchOptions, SerializableOrJSHandle } from "puppeteer";
 import puppeteer from "puppeteer-extra";
@@ -6,13 +6,13 @@ import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import UserAgent from "user-agents";
 import { v4 } from "uuid";
 import type { Logger } from "winston";
-import type { LoginResponse } from "../models/api/login-response";
-import type { Response } from "../models/api/response";
-import type { Notifier } from "../models/notifier";
-import type { StoreConfiguration } from "../models/stores/config-model";
-import type { Store } from "../models/stores/store";
-import { HTTPStatusCode } from "../utils/http";
-import { GRAPHQL_CLIENT_VERSION, shuffle, sleep } from "../utils/utils";
+import type { LoginResponse } from "../models/api/login-response.js";
+import type { Response } from "../models/api/response.js";
+import type { Notifier } from "../models/notifier.js";
+import type { StoreConfiguration } from "../models/stores/config-model.js";
+import type { Store } from "../models/stores/store.js";
+import { HTTPStatusCode } from "../utils/http.js";
+import { GRAPHQL_CLIENT_VERSION, shuffle, sleep } from "../utils/utils.js";
 
 export class BrowserManager {
     reLoginRequired = true;
@@ -48,6 +48,7 @@ export class BrowserManager {
             this.proxies = shuffle(this.storeConfiguration.proxy_urls);
         }
 
+        // @ts-expect-error Foo
         puppeteer.use(StealthPlugin());
     }
 
@@ -170,7 +171,7 @@ export class BrowserManager {
                 this.reLoginRequired = true;
                 throw new Error(`Login did not succeed. Status ${res.status}`);
             }
-            await prompt({
+            await inquirer.prompt({
                 name: "noop",
                 message: "Login did not succeed, please check browser for captcha and log in manually. Then hit enter...",
             });
@@ -251,6 +252,7 @@ export class BrowserManager {
             args.push(`--proxy-server=${this.storeConfiguration.proxy_url}`);
         }
 
+        // @ts-expect-error Foo
         this.browser = await puppeteer.launch({
             headless,
             defaultViewport: null,

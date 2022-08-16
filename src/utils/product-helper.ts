@@ -1,9 +1,9 @@
-import type { CooldownManager } from "../core/cooldown-manager";
-import type { DatabaseConnection } from "../databases/database-connection";
-import type { Item } from "../models/api/item";
-import type { Product } from "../models/api/product";
-import type { Notifier } from "../models/notifier";
-import type { Store } from "../models/stores/store";
+import type { CooldownManager } from "../core/cooldown-manager.js";
+import type { DatabaseConnection } from "../databases/database-connection.js";
+import type { Item } from "../models/api/item.js";
+import type { Product } from "../models/api/product.js";
+import type { Notifier } from "../models/notifier.js";
+import type { Store } from "../models/stores/store.js";
 
 export class ProductHelper {
     private readonly fallbackAmount = 0;
@@ -42,6 +42,7 @@ export class ProductHelper {
                 return false;
             }
         }
+        return false;
     }
 
     isProductBuyable(item: Item, checkOnlineStatus: boolean, checkInAssortment: boolean): boolean {

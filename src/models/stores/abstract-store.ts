@@ -1,4 +1,4 @@
-import type { Store } from "./store";
+import type { Store } from "./store.js";
 
 export abstract class CommonStore implements Store {
     private readonly defaultMinSleepTime = 100;

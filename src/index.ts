@@ -1,17 +1,17 @@
 import type { Logger } from "winston";
-import { BasketAdder } from "./cookies/basket-adder";
-import { BrowserManager } from "./core/browser-manager";
-import { CooldownManager } from "./core/cooldown-manager";
-import type { DatabaseConnection } from "./databases/database-connection";
-import { DynamoDBStore } from "./databases/dynamodb-store";
-import type { Product } from "./models/api/product";
-import type { CliArguments } from "./models/cli";
-import type { Notifier } from "./models/notifier";
-import { DiscordNotifier, LoggerNotifier, TelegramNotifier, TwitterNotifier, WebSocketNotifier } from "./notifiers";
-import { CategoryChecker } from "./stock-checkers/category-checker";
-import { WishlistChecker } from "./stock-checkers/wishlist-checker";
-import { getStoreAndStoreConfig } from "./utils/cli-helper";
-import { createLogger, loadConfig, sleep } from "./utils/utils";
+import { BasketAdder } from "./cookies/basket-adder.js";
+import { BrowserManager } from "./core/browser-manager.js";
+import { CooldownManager } from "./core/cooldown-manager.js";
+import type { DatabaseConnection } from "./databases/database-connection.js";
+import { DynamoDBStore } from "./databases/dynamodb-store.js";
+import type { Product } from "./models/api/product.js";
+import type { CliArguments } from "./models/cli.js";
+import type { Notifier } from "./models/notifier.js";
+import { DiscordNotifier, LoggerNotifier, TelegramNotifier, TwitterNotifier, WebSocketNotifier } from "./notifiers/index.js";
+import { CategoryChecker } from "./stock-checkers/category-checker.js";
+import { WishlistChecker } from "./stock-checkers/wishlist-checker.js";
+import { getStoreAndStoreConfig } from "./utils/cli-helper.js";
+import { createLogger, loadConfig, sleep } from "./utils/utils.js";
 
 async function reLoginIfRequired(
     browserManager: BrowserManager,
