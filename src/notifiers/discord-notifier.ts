@@ -1,6 +1,6 @@
 import { format, parseISO } from "date-fns";
 import type { TextChannel } from "discord.js";
-import { Client, MessageEmbed } from "discord.js";
+import { ActivityType, ChannelType, Client, EmbedBuilder } from "discord.js";
 import type { Logger } from "winston";
 import { version } from "../../package.json";
 import type { Item } from "../models/api/item";
@@ -142,23 +142,30 @@ export class DiscordNotifier implements Notifier {
             },
         ]);
         if (this.showMagicianLink) {
-            embed.addField("Magician", `${this.productHelper.getProductURL(item, this.store, this.replacements, true)}`);
+            embed.addFields([
+                { name: "Magician", value: `${this.productHelper.getProductURL(item, this.store, this.replacements, true)}` },
+            ]);
         }
         if (this.showCookiesAmount) {
-            embed.addField("Cookies", cookiesAmount ? `${cookiesAmount} 🍪` : `${this.noCookieEmoji ?? "👎"}`, true);
+            embed.addFields([
+                { name: "Cookies", value: cookiesAmount ? `${cookiesAmount} 🍪` : `${this.noCookieEmoji ?? "👎"}`, inline: true },
+            ]);
         }
-        embed.addField("Availability State", item.availability.delivery?.availabilityType ?? "UNKNOWN", true);
+        embed.addFields([{ name: "Availability State", value: item.availability.delivery?.availabilityType ?? "UNKNOWN", inline: true }]);
 
         if (this.showThumbnails) {
             embed.setThumbnail(this.store.thumbnail);
         }
         if (item.availability.delivery?.earliest && item.availability.delivery.latest) {
-            embed.addField(
-                "Delivery",
-                format(parseISO(item.availability.delivery.earliest), "dd.MM.yyyy") +
-                    " - " +
-                    format(parseISO(item.availability.delivery.latest), "dd.MM.yyyy")
-            );
+            embed.addFields([
+                {
+                    name: "Delivery",
+                    value:
+                        format(parseISO(item.availability.delivery.earliest), "dd.MM.yyyy") +
+                        " - " +
+                        format(parseISO(item.availability.delivery.latest), "dd.MM.yyyy"),
+                },
+            ]);
         }
         if (fullAlert) {
             embed.setDescription("🟢 Item **available**");
@@ -268,7 +275,7 @@ export class DiscordNotifier implements Notifier {
             this.discordBot?.user?.setStatus("online");
             this.discordBot?.user?.setActivity({
                 name: storeConfig.discord_activity_message ?? "eating your cookies. 🍪",
-                type: "PLAYING",
+                type: ActivityType.Playing,
             });
             const key = 0;
             const value = 1;
@@ -278,7 +285,7 @@ export class DiscordNotifier implements Notifier {
                     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                     (storeConfig.stock_discord_channel ?? storeConfig.discord_channel)!
                 );
-                if (((channel): channel is TextChannel => channel?.type === "GUILD_TEXT")(tempChannel)) {
+                if (((channel): channel is TextChannel => channel?.type === ChannelType.GuildText)(tempChannel)) {
                     this.stockChannel = tempChannel;
                 }
             }
@@ -289,7 +296,7 @@ export class DiscordNotifier implements Notifier {
                     const tempChannels: TextChannel[] = [];
                     for (const channelId of channelIds) {
                         const tempChannel = await this.discordBot?.channels.fetch(channelId);
-                        if (((channel): channel is TextChannel => channel?.type === "GUILD_TEXT")(tempChannel)) {
+                        if (((channel): channel is TextChannel => channel?.type === ChannelType.GuildText)(tempChannel)) {
                             tempChannels.push(tempChannel);
                         }
                     }
@@ -315,7 +322,7 @@ export class DiscordNotifier implements Notifier {
                     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                     (storeConfig.cookie_discord_channel ?? storeConfig.discord_channel)!
                 );
-                if (((channel): channel is TextChannel => channel?.type === "GUILD_TEXT")(tempChannel)) {
+                if (((channel): channel is TextChannel => channel?.type === ChannelType.GuildText)(tempChannel)) {
                     this.cookieChannel = tempChannel;
                 }
             }
@@ -328,7 +335,7 @@ export class DiscordNotifier implements Notifier {
                     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                     (storeConfig.admin_discord_channel ?? storeConfig.discord_channel)!
                 );
-                if (((channel): channel is TextChannel => channel?.type === "GUILD_TEXT")(tempChannel)) {
+                if (((channel): channel is TextChannel => channel?.type === ChannelType.GuildText)(tempChannel)) {
                     this.adminChannel = tempChannel;
                 }
             }
@@ -341,7 +348,7 @@ export class DiscordNotifier implements Notifier {
                     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                     (storeConfig.price_change_discord_channel ?? storeConfig.discord_channel)!
                 );
-                if (((channel): channel is TextChannel => channel?.type === "GUILD_TEXT")(tempChannel)) {
+                if (((channel): channel is TextChannel => channel?.type === ChannelType.GuildText)(tempChannel)) {
                     this.priceChangeChannel = tempChannel;
                 }
             }
@@ -412,7 +419,7 @@ export class DiscordNotifier implements Notifier {
     }
 
     private createEmbed(item: Item) {
-        const embed = new MessageEmbed().setTimestamp();
+        const embed = new EmbedBuilder().setTimestamp();
         embed.setFooter({
             text: `Stockshock v${version} • If you have paid for this, you have been scammed • Links may be affiliate links`,
         });
