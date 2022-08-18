@@ -2,6 +2,7 @@ export interface ConfigModel {
     mmat: StoreConfiguration;
     mmde: StoreConfiguration;
     mmes: StoreConfiguration;
+    mmit: StoreConfiguration;
     mmnl: StoreConfiguration;
     saturn: StoreConfiguration;
 }
