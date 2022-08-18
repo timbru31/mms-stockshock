@@ -7,6 +7,7 @@ import { MediaMarktAustria } from "../models/stores/media-markt-austria";
 import { MediaMarktGermany } from "../models/stores/media-markt-germany";
 import { MediaMarktNetherlands } from "../models/stores/media-markt-netherlands";
 import { MediaMarktSpain } from "../models/stores/media-markt-spain";
+import { MediaWorldItaly } from "../models/stores/media-world-italy";
 import { Saturn } from "../models/stores/saturn";
 import type { Store } from "../models/stores/store";
 
@@ -36,6 +37,10 @@ export async function getStoreAndStoreConfig(config: ConfigModel): Promise<{
                 {
                     name: "MediaMarkt Germany",
                     value: "mediamarkt germany",
+                },
+                {
+                    name: "MediaWorld Italy",
+                    value: "mediaworld italy",
                 },
                 {
                     name: "MediaMarkt Netherlands",
@@ -69,6 +74,16 @@ export async function getStoreAndStoreConfig(config: ConfigModel): Promise<{
         case "mediamarkt germany":
             store = new MediaMarktGermany();
             storeConfig = config.mmde;
+            store.setSleepTimes(storeConfig.min_sleep_time, storeConfig.max_sleep_time);
+            break;
+        case "mmit":
+        case "mwit":
+        case "mediaworlditaly":
+        case "mediamarktitaly":
+        case "mediaworld italy":
+        case "mediamarkt italy":
+            store = new MediaWorldItaly();
+            storeConfig = config.mmit;
             store.setSleepTimes(storeConfig.min_sleep_time, storeConfig.max_sleep_time);
             break;
         case "mmnl":
