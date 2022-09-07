@@ -29,7 +29,9 @@ You need to put products on your wishlist in order to have this bot working or h
 
 -   MediaMarkt Austria
 -   MediaMarkt Germany
+-   MediaMarkt Netherlands
 -   MediaMarkt Spain
+-   MediaWorld Italy
 -   Saturn
 
 ## Installation
