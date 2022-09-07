@@ -75,10 +75,6 @@ export class BrowserManager {
         }
 
         let res: { status: number; body: LoginResponse | null; retryAfterHeader?: string | null };
-        let query = "";
-        if (this.storeConfiguration.cache_busting ?? true) {
-            query = `anti-cache=${new Date().getTime()}`;
-        }
         try {
             res = await Promise.race([
                 this.page.evaluate(
@@ -90,10 +86,9 @@ export class BrowserManager {
                         password: string,
                         flowId: string,
                         graphQLClientVersion: string,
-                        loginSHA256: string,
-                        queryString: string
+                        loginSHA256: string
                     ) =>
-                        fetch(`${store.baseUrl}/api/v1/graphql?${queryString}`, {
+                        fetch(`${store.baseUrl}/api/v1/graphql`, {
                             credentials: "include",
                             headers: {
                                 /* eslint-disable @typescript-eslint/naming-convention */
@@ -148,8 +143,7 @@ export class BrowserManager {
                     password,
                     v4(),
                     GRAPHQL_CLIENT_VERSION,
-                    this.storeConfiguration.loginSHA256,
-                    query
+                    this.storeConfiguration.loginSHA256
                 ),
                 sleep(this.loginRaceTimeout, {
                     status: HTTPStatusCode.Timeout,

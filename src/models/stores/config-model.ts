@@ -30,7 +30,6 @@ export interface StoreConfiguration {
     check_in_assortment?: boolean;
     id_replacements?: string[][];
     cookie_ids?: string[];
-    cache_busting?: boolean;
 
     // Discord channels for notifications
     discord_bot_token?: string;

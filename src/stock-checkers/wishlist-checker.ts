@@ -110,10 +110,6 @@ export class WishlistChecker {
             this.logger.error("Unable to perform wishlist query: page is undefined!");
             return Promise.resolve({ status: 0, body: null });
         }
-        let query = "";
-        if (this.storeConfiguration.cache_busting ?? true) {
-            query = `anti-cache=${new Date().getTime()}`;
-        }
         try {
             return await Promise.race([
                 this.browserManager.page.evaluate(
@@ -122,10 +118,9 @@ export class WishlistChecker {
                         pageOffset: number,
                         flowId: string,
                         graphQLClientVersion: string,
-                        wishlistSHA256: string,
-                        queryString: string
+                        wishlistSHA256: string
                     ) =>
-                        fetch(`${store.baseUrl}/api/v1/graphql?${queryString}`, {
+                        fetch(`${store.baseUrl}/api/v1/graphql`, {
                             credentials: "include",
                             headers: {
                                 /* eslint-disable @typescript-eslint/naming-convention */
@@ -180,8 +175,7 @@ export class WishlistChecker {
                     offset,
                     v4(),
                     GRAPHQL_CLIENT_VERSION,
-                    this.storeConfiguration.wishlistSHA256,
-                    query
+                    this.storeConfiguration.wishlistSHA256
                 ),
                 sleep(this.wishlistRaceTimeout, {
                     status: HTTPStatusCode.Timeout,

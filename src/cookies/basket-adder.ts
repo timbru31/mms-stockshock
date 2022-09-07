@@ -77,10 +77,6 @@ export class BasketAdder {
                         }
                     }
                     let res: { status: number; success: boolean; body: AddProductResponse | null; retryAfterHeader?: string | null };
-                    let query = "";
-                    if (this.storeConfiguration.cache_busting ?? true) {
-                        query = `anti-cache=${new Date().getTime()}`;
-                    }
                     try {
                         res = await Promise.race([
                             this.browserManager.page.evaluate(
@@ -90,10 +86,9 @@ export class BasketAdder {
                                     productId: string,
                                     flowId: string,
                                     graphQLClientVersion: string,
-                                    addProductSHA256: string,
-                                    queryString: string
+                                    addProductSHA256: string
                                 ) =>
-                                    fetch(`${store.baseUrl}/api/v1/graphql?${queryString}`, {
+                                    fetch(`${store.baseUrl}/api/v1/graphql`, {
                                         credentials: "include",
                                         headers: {
                                             /* eslint-disable @typescript-eslint/naming-convention */
@@ -163,8 +158,7 @@ export class BasketAdder {
                                 id,
                                 v4(),
                                 GRAPHQL_CLIENT_VERSION,
-                                this.storeConfiguration.addProductSHA256,
-                                query
+                                this.storeConfiguration.addProductSHA256
                             ),
                             sleep(this.addProductRaceTimeout, {
                                 success: false,

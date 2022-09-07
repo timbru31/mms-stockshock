@@ -139,10 +139,6 @@ export class CategoryChecker {
             this.logger.error("Unable to perform category query: page is undefined!");
             return Promise.resolve({ status: 0, body: null });
         }
-        let query = "";
-        if (this.storeConfiguration.cache_busting ?? true) {
-            query = `anti-cache=${new Date().getTime()}`;
-        }
         try {
             return await Promise.race([
                 this.browserManager.page.evaluate(
@@ -152,10 +148,9 @@ export class CategoryChecker {
                         wcsId: string,
                         flowId: string,
                         graphQLClientVersion: string,
-                        categorySHA256: string,
-                        queryString: string
+                        categorySHA256: string
                     ) =>
-                        fetch(`${store.baseUrl}/api/v1/graphql?${queryString}`, {
+                        fetch(`${store.baseUrl}/api/v1/graphql`, {
                             credentials: "include",
                             headers: {
                                 /* eslint-disable @typescript-eslint/naming-convention */
@@ -211,8 +206,7 @@ export class CategoryChecker {
                     category,
                     v4(),
                     GRAPHQL_CLIENT_VERSION,
-                    this.storeConfiguration.categorySHA256,
-                    query
+                    this.storeConfiguration.categorySHA256
                 ),
                 sleep(this.categoryRaceTimeout, {
                     status: HTTPStatusCode.Timeout,
@@ -234,10 +228,6 @@ export class CategoryChecker {
             this.logger.error("Unable to perform get product: page is undefined!");
             return Promise.resolve({ status: 0, body: null });
         }
-        let query = "";
-        if (this.storeConfiguration.cache_busting ?? true) {
-            query = `anti-cache=${new Date().getTime()}`;
-        }
         try {
             return await Promise.race([
                 this.browserManager.page.evaluate(
@@ -246,10 +236,9 @@ export class CategoryChecker {
                         id: string,
                         flowId: string,
                         graphQLClientVersion: string,
-                        getProductSHA256: string,
-                        queryString: string
+                        getProductSHA256: string
                     ) =>
-                        fetch(`${store.baseUrl}/api/v1/graphql?${queryString}`, {
+                        fetch(`${store.baseUrl}/api/v1/graphql`, {
                             credentials: "include",
                             headers: {
                                 /* eslint-disable @typescript-eslint/naming-convention */
@@ -302,8 +291,7 @@ export class CategoryChecker {
                     productId,
                     v4(),
                     GRAPHQL_CLIENT_VERSION,
-                    this.storeConfiguration.getProductSHA256,
-                    query
+                    this.storeConfiguration.getProductSHA256
                 ),
                 sleep(this.getProductRaceTimeout, {
                     status: HTTPStatusCode.Timeout,

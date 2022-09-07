@@ -20,8 +20,6 @@ check_online_status = false
 check_in_assortment = true
 # IDs of products you want to generate cookies for (strings)
 cookie_ids = []
-# Enable a cache busting mechansim by adding a query parameter
-cache_busting = true
 # Show alerts that item can be added to the cart
 shopping_cart_alerts = true
 # Beware that >10 can cause issues with Discord's 2000 characters limit!
