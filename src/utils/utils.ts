@@ -39,7 +39,7 @@ export async function loadConfig(logger: Logger): Promise<ConfigModel | null> {
 
 export function createLogger(): Logger {
     const customLogFormat = format.printf((info) => {
-        return `${info.timestamp as string} [${getEmojiForLevel(info.level)}] ${info.level}: ${info.message} `;
+        return `${info.timestamp as string} [${getEmojiForLevel(info.level)}] ${info.level}: ${info.message as string} `;
     });
 
     return createWinstonLogger({
@@ -94,7 +94,7 @@ export function shuffle<T>(array: T[]): T[] {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
-export function noop(): void {}
+export function noop(): void { }
 
 export async function noopPromise(): Promise<void> {
     return Promise.resolve();
