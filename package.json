@@ -22,12 +22,12 @@
         "node": ">=16"
     },
     "dependencies": {
-        "@aws-sdk/client-dynamodb": "^3.178.0",
+        "@aws-sdk/client-dynamodb": "^3.183.0",
         "@types/uuid": "^8.3.4",
         "date-fns": "^2.29.3",
         "discord.js": "^14.5.0",
         "inquirer": "^8.2.4",
-        "proxy-chain": "^2.0.7",
+        "proxy-chain": "^2.1.0",
         "puppeteer": "^18.0.5",
         "puppeteer-extra": "^3.3.4",
         "puppeteer-extra-plugin-stealth": "^2.11.1",
