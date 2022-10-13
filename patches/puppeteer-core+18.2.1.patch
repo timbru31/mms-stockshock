@@ -1,0 +1,14 @@
+diff --git a/node_modules/puppeteer-core/lib/cjs/puppeteer/node/ProductLauncher.js b/node_modules/puppeteer-core/lib/cjs/puppeteer/node/ProductLauncher.js
+index 5de4968..3ec2249 100644
+--- a/node_modules/puppeteer-core/lib/cjs/puppeteer/node/ProductLauncher.js
++++ b/node_modules/puppeteer-core/lib/cjs/puppeteer/node/ProductLauncher.js
+@@ -98,7 +98,8 @@ exports.executablePathForChannel = executablePathForChannel;
+  * @internal
+  */
+ function resolveExecutablePath(launcher) {
+-    const { product, _isPuppeteerCore, _projectRoot, _preferredRevision } = launcher;
++    let { product, _isPuppeteerCore, _projectRoot, _preferredRevision } = launcher;
++    _isPuppeteerCore = false;
+     let downloadPath;
+     // puppeteer-core doesn't take into account PUPPETEER_* env variables.
+     if (!_isPuppeteerCore) {

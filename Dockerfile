@@ -9,12 +9,13 @@ RUN mkdir -p /opt/mms-stockshock \
 
 COPY package*.json /opt/mms-stockshock/
 COPY dist /opt/mms-stockshock/dist
-COPY tsconfig.json /opt/mms-stockshock
+COPY patches /opt/mms-stockshock/patches
 RUN  chown -R stonks:stonks /opt/mms-stockshock
 
 USER stonks
 WORKDIR /opt/mms-stockshock
 
-RUN npm install --ignore-scripts
+RUN npm ci --omit dev --ignore-scripts
+RUN npx patch-package
 EXPOSE 8080
 CMD ["sh", "-c", "node --unhandled-rejections=strict dist/src/index.js --store ${STORE} --sandbox false --shmUsage false"]
