@@ -15,7 +15,7 @@ RUN  chown -R stonks:stonks /opt/mms-stockshock
 USER stonks
 WORKDIR /opt/mms-stockshock
 
-RUN npm ci --omit dev --ignore-scripts
-RUN npx patch-package
+RUN npm ci --omit dev --ignore-scripts \
+    && npx patch-package
 EXPOSE 8080
 CMD ["sh", "-c", "node --unhandled-rejections=strict dist/src/index.js --store ${STORE} --sandbox false --shmUsage false"]
