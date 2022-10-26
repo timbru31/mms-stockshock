@@ -15,9 +15,14 @@ export interface StoreConfiguration {
     // Categories to check
     categories?: string[];
     category_regex: string;
-    start_url?: string;
+
+    // Search to check
+    searches?: string[];
+    search_regex?: string;
+    search_price_range?: number[];
 
     // Misc config settings
+    start_url?: string;
     ignore_sleep?: boolean;
     min_sleep_time?: number;
     max_sleep_time?: number;
@@ -30,6 +35,12 @@ export interface StoreConfiguration {
     check_in_assortment?: boolean;
     id_replacements?: string[][];
     cookie_ids?: string[];
+
+    // Cooldown config
+    cooldown_in_stock_minutes?: number;
+    cooldown_can_be_added_to_basket_minutes?: number;
+    cooldown_stock_with_cookies_minutes?: number;
+    cooldown_stock_no_cookies_minutes?: number;
 
     // Discord channels for notifications
     discord_bot_token?: string;
@@ -85,6 +96,7 @@ export interface StoreConfiguration {
     // SHA256 hashes for queries
     loginSHA256: string;
     categorySHA256: string;
+    searchSHA256: string;
     wishlistSHA256: string;
     addProductSHA256: string;
 }

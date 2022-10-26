@@ -1,6 +1,6 @@
 {
     "name": "stockshock",
-    "version": "5.14.1",
+    "version": "5.15.",
     "private": true,
     "description": "A simple bot for MediaMarkt and Saturn to check if tracked items are available",
     "main": "dist/index.js",
