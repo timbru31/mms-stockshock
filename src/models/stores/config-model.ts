@@ -87,6 +87,5 @@ export interface StoreConfiguration {
     categorySHA256: string;
     wishlistSHA256: string;
     addProductSHA256: string;
-    getProductSHA256: string;
 }
 /* eslint-enable @typescript-eslint/naming-convention */
