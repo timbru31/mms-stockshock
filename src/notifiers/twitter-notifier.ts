@@ -74,7 +74,7 @@ export class TwitterNotifier implements Notifier {
         if (fullAlert) {
             message = this.addTimestamp(
                 this.decorateMessageWithTags(
-                    `\uD83D\uDFE2 Produkt bei ${this.store.getShortName()} verfügbar: ${item.product.title} für ${
+                    `\uD83D\uDFE2 Produkt bei ${this.store.getShortName()} verfügbar: ${item.product.title ?? item.product.id} für ${
                         item.price?.price ?? "0"
                     } ${item.price?.currency ?? "𑿠"}! Jetzt kaufen: ${this.productHelper.getProductURL(
                         item,
@@ -90,7 +90,7 @@ export class TwitterNotifier implements Notifier {
             message = this.addTimestamp(
                 this.decorateMessageWithTags(
                     `\uD83D\uDED2 Produkt bei ${this.store.getShortName()} kann zum Warenkorb hinzugefügt werden: ${
-                        item.product.title
+                        item.product.title ?? item.product.id
                     } für ${item.price?.price ?? "0"} ${item.price?.currency ?? "𑿠"}! Jetzt anschauen: ${this.productHelper.getProductURL(
                         item,
                         this.store,
@@ -101,9 +101,9 @@ export class TwitterNotifier implements Notifier {
         } else {
             message = this.addTimestamp(
                 this.decorateMessageWithTags(
-                    `\uD83D\uDFE1 Produkt bei ${this.store.getShortName()} für Warenkorb-Parker: ${item.product.title} für ${
-                        item.price?.price ?? "0"
-                    } ${item.price?.currency ?? "𑿠"}! Jetzt anschauen: ${this.productHelper.getProductURL(
+                    `\uD83D\uDFE1 Produkt bei ${this.store.getShortName()} für Warenkorb-Parker: ${
+                        item.product.title ?? item.product.id
+                    } für ${item.price?.price ?? "0"} ${item.price?.currency ?? "𑿠"}! Jetzt anschauen: ${this.productHelper.getProductURL(
                         item,
                         this.store,
                         this.replacements

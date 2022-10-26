@@ -47,7 +47,7 @@ export class LoggerNotifier implements Notifier {
     async notifyCookies(product?: Product, cookies?: string[]): Promise<void> {
         if (product && cookies) {
             const message = `🍪 ${cookies.length} basket cookies were made for **${product.id}**, **${
-                product.title
+                product.title ?? product.id
             }** for ${this.store.getName()}`;
             this.logger.info(message);
         }
@@ -65,15 +65,15 @@ export class LoggerNotifier implements Notifier {
         const currency = item.price?.currency ?? "𑿠";
         if (fullAlert) {
             message = `🟢 Item **available**: ${item.product.id}, ${
-                item.product.title
+                item.product.title ?? item.product.id
             } for ${price} ${currency}! Go check it out: ${this.productHelper.getProductURL(item, this.store, undefined, true)}`;
         } else if (this.productHelper.canProductBeAddedToBasket(item, this.checkOnlineStatus, this.checkInAssortment)) {
             message = `🛒 Item **can be added to basket**: ${item.product.id}, ${
-                item.product.title
+                item.product.title ?? item.product.id
             } for ${price} ${currency}! Go check it out: ${this.productHelper.getProductURL(item, this.store, undefined, true)}`;
         } else {
             message = `🟡 Item for **basket parker**: ${item.product.id}, ${
-                item.product.title
+                item.product.title ?? item.product.id
             } for ${price} ${currency}! Go check it out: ${this.productHelper.getProductURL(item, this.store)}`;
         }
         this.logger.info(message);
@@ -91,7 +91,7 @@ export class LoggerNotifier implements Notifier {
 
             const emoji = delta > this.zero ? "⏫" : "⏬";
 
-            const message = `${emoji} ${item.product.title} [${
+            const message = `${emoji} ${item.product.title ?? item.product.id} [${
                 item.product.id
             }] changed the price from ${oldPrice} ${currency} to ${newPrice} ${currency} (${deltaPercentage.toFixed(precision)}%)`;
 
