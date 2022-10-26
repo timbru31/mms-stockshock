@@ -1,7 +1,7 @@
 export interface Product {
     id: string;
-    title: string;
+    title: string | null;
     url: string;
     onlineStatus: boolean;
-    titleImageId: string;
+    titleImageId: string | null;
 }

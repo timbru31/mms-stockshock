@@ -1,5 +1,5 @@
 import { format, parseISO } from "date-fns";
-import type { TextChannel } from "discord.js";
+import type { APIEmbedField, TextChannel } from "discord.js";
 import { ActivityType, ChannelType, Client, EmbedBuilder } from "discord.js";
 import type { Logger } from "winston";
 import { version } from "../../package.json";
@@ -101,7 +101,7 @@ export class DiscordNotifier implements Notifier {
     async notifyCookies(product?: Product, cookies?: string[]): Promise<void> {
         if (product && cookies) {
             let rawMessage = `🍪 ${cookies.length} basket cookies were made for **${product.id}**, **${
-                product.title
+                product.title ?? ""
             }** for ${this.store.getName()}`;
             if (this.announceCookies) {
                 rawMessage += `:\n\`${cookies.map((cookie) => `${this.store.baseUrl}?cookie=${cookie}`).join("\n")}\`\n`;
@@ -184,15 +184,15 @@ export class DiscordNotifier implements Notifier {
             emoji = "🟡";
         }
 
-        const stockChannelsForItem = this.getChannelsForTitle(item.product.title);
+        const stockChannelsForItem = this.getChannelsForTitle(item.product.title ?? "");
         for (const stockChannelForItem of stockChannelsForItem) {
             if (stockChannelForItem) {
                 try {
                     await stockChannelForItem.send({
                         embeds: [embed],
                         content: this.decorateMessageWithRoles(
-                            `${emoji} ${item.product.title} [${item.product.id}] for ${price} ${currency}`,
-                            await this.getRolePingsForTitle(item.product.title, stockChannelForItem)
+                            `${emoji} ${item.product.title ?? ""} [${item.product.id}] for ${price} ${currency}`,
+                            await this.getRolePingsForTitle(item.product.title ?? "", stockChannelForItem)
                         ),
                     });
                 } catch (e: unknown) {
@@ -203,20 +203,20 @@ export class DiscordNotifier implements Notifier {
     }
 
     async notifyPriceChange(item?: Item, oldPrice?: number): Promise<void> {
-        if (item?.product && oldPrice) {
+        if (item?.product) {
             const embed = this.createEmbed(item);
             const currency = item.price?.currency ?? "𑿠";
             const newPrice = item.price?.price ?? this.zero;
-            const delta = newPrice - oldPrice;
+            const delta = oldPrice ? newPrice - oldPrice : newPrice;
             const percentageFactor = 100;
             const precision = 2;
-            const deltaPercentage = ((newPrice - oldPrice) / oldPrice) * percentageFactor;
+            const deltaPercentage = oldPrice ? ((newPrice - oldPrice) / oldPrice) * percentageFactor : percentageFactor;
 
-            embed.addFields([
+            const fields: APIEmbedField[] = [
                 { name: "ProductID", value: item.product.id },
                 {
                     name: "Old Price",
-                    value: `${oldPrice} ${currency}`,
+                    value: oldPrice ? `${oldPrice} ${currency}` : "New product! 😉",
                     inline: true,
                 },
                 {
@@ -225,19 +225,23 @@ export class DiscordNotifier implements Notifier {
                     inline: true,
                 },
                 {
-                    name: "Delta",
-                    value: `${delta.toFixed(precision)} ${currency} (${deltaPercentage.toFixed(precision)}%)`,
-                    inline: true,
-                },
-                {
                     name: "Store",
                     value: this.store.getName(),
                     inline: true,
                 },
-            ]);
+            ];
+            embed.addFields(fields);
 
-            const emoji = delta > this.zero ? "⏫" : "⏬";
-            embed.setDescription(`${emoji} Price change`);
+            if (oldPrice) {
+                fields.push({
+                    name: "Delta",
+                    value: `${delta.toFixed(precision)} ${currency} (${deltaPercentage.toFixed(precision)}%)`,
+                    inline: true,
+                });
+            }
+
+            const emoji = oldPrice ? (delta > this.zero ? "⏫" : "⏬") : "🚨";
+            embed.setDescription(oldPrice ? `${emoji} Price change` : `${emoji} New product detected`);
             embed.setColor(delta > this.zero ? "#c31515" : "#7ab05e");
 
             if (this.priceChangeChannel) {
@@ -245,11 +249,15 @@ export class DiscordNotifier implements Notifier {
                     await this.priceChangeChannel.send({
                         embeds: [embed],
                         content: this.decorateMessageWithRoles(
-                            `${emoji} ${item.product.title} [${
-                                item.product.id
-                            }] changed the price from ${oldPrice} ${currency} to ${newPrice} ${currency} (${deltaPercentage.toFixed(
-                                precision
-                            )}%)`,
+                            oldPrice
+                                ? /* eslint-disable @typescript-eslint/indent */
+                                  `${emoji} ${item.product.title ?? "(No title yet)"} [${
+                                      item.product.id
+                                  }] changed the price from ${oldPrice} ${currency} to ${newPrice} ${currency} (${deltaPercentage.toFixed(
+                                      precision
+                                  )}%)`
+                                : `${emoji} ${item.product.title ?? "(No title yet)"} [${item.product.id}] has been added!`,
+                            /* eslint-enable @typescript-eslint/indent */
                             this.priceChangeRolePing
                         ),
                     });
@@ -426,9 +434,13 @@ export class DiscordNotifier implements Notifier {
         if (!item.product) {
             return embed;
         }
-        embed.setImage(`https://assets.mmsrg.com/isr/166325/c1/-/${item.product.titleImageId}/mobile_200_200.png`);
-        embed.setTitle(item.product.title);
-        embed.setURL(`${this.productHelper.getProductURL(item, this.store, this.replacements)}`);
+        if (item.product.titleImageId) {
+            embed.setImage(`https://assets.mmsrg.com/isr/166325/c1/-/${item.product.titleImageId}/mobile_200_200.png`);
+        }
+
+        const url = this.productHelper.getProductURL(item, this.store, this.replacements);
+        embed.setTitle(item.product.title ?? url);
+        embed.setURL(url);
         return embed;
     }
 }

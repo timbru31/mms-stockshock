@@ -43,7 +43,7 @@ export class DynamoDBStore implements DatabaseConnection {
                     L: [],
                 },
                 ":title": {
-                    S: product.title,
+                    S: product.title ?? "",
                 },
             },
         };
@@ -64,7 +64,7 @@ export class DynamoDBStore implements DatabaseConnection {
                     N: price.toString(),
                 },
                 ":title": {
-                    S: product.title,
+                    S: product.title ?? "",
                 },
                 ":empty_list": {
                     L: [],

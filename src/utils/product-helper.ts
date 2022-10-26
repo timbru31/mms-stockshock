@@ -144,21 +144,10 @@ export class ProductHelper {
             return basketProducts;
         }
 
-        if (item.product && this.isProductAvailable(item, checkOnlineStatus, checkInAssortment)) {
-            const itemId = item.product.id;
-            if (!itemId) {
-                return basketProducts;
-            }
-            const isProductBuyable = this.isProductBuyable(item, checkOnlineStatus, checkInAssortment);
-
-            // Delete the cooldown in case the stock changes to really available
-            if (!cooldownManager.getItem(itemId)?.isProductBuyable && isProductBuyable) {
-                cooldownManager.deleteCooldown(itemId);
-            }
-
+        if (item.product) {
             const lastKnownPrice = database ? await database.getLastKnownPrice(item.product) : NaN;
             const price = item.price?.price ?? NaN;
-            if (price && lastKnownPrice && price !== lastKnownPrice) {
+            if (price && price !== lastKnownPrice) {
                 for (const notifier of notifiers) {
                     await notifier.notifyPriceChange(item, lastKnownPrice);
                 }
@@ -167,20 +156,33 @@ export class ProductHelper {
                 await database?.storePrice(item.product, price);
             }
 
-            if (!cooldownManager.hasCooldown(itemId)) {
-                const cookiesAmount = database ? await database.getCookiesAmount(item.product) : this.fallbackAmount;
-                for (const notifier of notifiers) {
-                    await notifier.notifyStock(item, cookiesAmount);
+            if (this.isProductAvailable(item, checkOnlineStatus, checkInAssortment)) {
+                const itemId = item.product.id;
+                if (!itemId) {
+                    return basketProducts;
                 }
-                cooldownManager.addToCooldownMap(isProductBuyable, item, checkOnlineStatus, checkInAssortment, Boolean(cookiesAmount));
-            }
+                const isProductBuyable = this.isProductBuyable(item, checkOnlineStatus, checkInAssortment);
 
-            if (
-                this.canProductBeAddedToBasket(item, checkOnlineStatus, checkInAssortment) &&
-                !cooldownManager.hasBasketCooldown(itemId) &&
-                (!cookieIds.length || cookieIds.includes(itemId))
-            ) {
-                basketProducts.set(itemId, item.product);
+                // Delete the cooldown in case the stock changes to really available
+                if (!cooldownManager.getItem(itemId)?.isProductBuyable && isProductBuyable) {
+                    cooldownManager.deleteCooldown(itemId);
+                }
+
+                if (!cooldownManager.hasCooldown(itemId)) {
+                    const cookiesAmount = database ? await database.getCookiesAmount(item.product) : this.fallbackAmount;
+                    for (const notifier of notifiers) {
+                        await notifier.notifyStock(item, cookiesAmount);
+                    }
+                    cooldownManager.addToCooldownMap(isProductBuyable, item, checkOnlineStatus, checkInAssortment, Boolean(cookiesAmount));
+                }
+
+                if (
+                    this.canProductBeAddedToBasket(item, checkOnlineStatus, checkInAssortment) &&
+                    !cooldownManager.hasBasketCooldown(itemId) &&
+                    (!cookieIds.length || cookieIds.includes(itemId))
+                ) {
+                    basketProducts.set(itemId, item.product);
+                }
             }
         }
         return basketProducts;
