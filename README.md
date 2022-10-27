@@ -103,7 +103,7 @@ Do **not** close the browser window. You can minimize it though.
 You can launch the bot directly with a store by supplying the store as an argument
 
 ```sh
-npm start -- --store <mmat|mmde|mmes|saturn>
+npm start -- --store <mmat|mmde|mmes|mmit|mmnl|saturn>
 ```
 
 ### Docker

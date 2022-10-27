@@ -9,7 +9,6 @@ RUN mkdir -p /opt/mms-stockshock \
 
 COPY package*.json /opt/mms-stockshock/
 COPY dist /opt/mms-stockshock/dist
-COPY patches /opt/mms-stockshock/patches
 RUN  chown -R stonks:stonks /opt/mms-stockshock
 
 USER stonks
