@@ -78,7 +78,7 @@ export interface StoreConfiguration {
     proxy_password?: string;
     proxy_urls?: string[];
 
-    // Cookie Jar
+    // Cookie jar and price information storage
     dynamo_db_region?: string;
     dynamo_db_table_name?: string;
     dynamo_db_access_key?: string;

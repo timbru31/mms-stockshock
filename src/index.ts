@@ -86,7 +86,7 @@ void (async function () {
         throw new Error("Can't use proxy_url and proxy_urls together, choose one!");
     }
 
-    const cooldownManager = new CooldownManager();
+    const cooldownManager = new CooldownManager(storeConfig);
     cooldownManager.cleanupCooldowns();
 
     let cookieStore: DatabaseConnection | undefined;
