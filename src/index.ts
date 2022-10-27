@@ -9,6 +9,7 @@ import type { CliArguments } from "./models/cli";
 import type { Notifier } from "./models/notifier";
 import { DiscordNotifier, LoggerNotifier, TelegramNotifier, TwitterNotifier, WebSocketNotifier } from "./notifiers";
 import { CategoryChecker } from "./stock-checkers/category-checker";
+import { SearchChecker } from "./stock-checkers/search-checker";
 import { WishlistChecker } from "./stock-checkers/wishlist-checker";
 import { getStoreAndStoreConfig } from "./utils/cli-helper";
 import { createLogger, loadConfig, sleep } from "./utils/utils";
@@ -85,7 +86,7 @@ void (async function () {
         throw new Error("Can't use proxy_url and proxy_urls together, choose one!");
     }
 
-    const cooldownManager = new CooldownManager();
+    const cooldownManager = new CooldownManager(storeConfig);
     cooldownManager.cleanupCooldowns();
 
     let cookieStore: DatabaseConnection | undefined;
@@ -127,6 +128,7 @@ void (async function () {
     const browserManager = new BrowserManager(store, storeConfig, logger, notifiers);
     const wishlistChecker = new WishlistChecker(store, storeConfig, logger, browserManager, cooldownManager, notifiers, cookieStore);
     const categoryChecker = new CategoryChecker(store, storeConfig, logger, browserManager, cooldownManager, notifiers, cookieStore);
+    const searchChecker = new SearchChecker(store, storeConfig, logger, browserManager, cooldownManager, notifiers, cookieStore);
     const basketAdder = new BasketAdder(store, storeConfig, logger, browserManager, cooldownManager, notifiers, cookieStore);
 
     ["unhandledRejection", "uncaughtException"].forEach((evt) => {
@@ -202,6 +204,23 @@ void (async function () {
                     await sleep(store.getSleepTime());
                     const basketProducts = await Promise.race([
                         categoryChecker.checkCategory(categoryId, storeConfig.category_regex),
+                        sleep(categoryRaceTimeout, new Map<string, Product>()),
+                    ]);
+                    basketAdder.addNewProducts(basketProducts);
+                }
+            }
+
+            if (storeConfig.searches?.length) {
+                // eslint-disable-next-line @typescript-eslint/no-magic-numbers
+                if (storeConfig.accounts.length > 1) {
+                    await reLaunchIfRequired(browserManager, args, logger, notifiers, true);
+                }
+                for (const search of storeConfig.searches) {
+                    await reLaunchIfRequired(browserManager, args, logger, notifiers);
+                    logger.info(`📄 Checking search "${search}"`);
+                    await sleep(store.getSleepTime());
+                    const basketProducts = await Promise.race([
+                        searchChecker.checkSearch(search, storeConfig.search_regex, storeConfig.search_price_range),
                         sleep(categoryRaceTimeout, new Map<string, Product>()),
                     ]);
                     basketAdder.addNewProducts(basketProducts);

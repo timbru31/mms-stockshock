@@ -1,18 +1,28 @@
-# Valid stores are Saturn (saturn), MediaMarkt Germany (mmde), MediaMarkt Austria (mmat) and MediaMarkt Spain (mmes)
+# Valid stores are Saturn (saturn), MediaMarkt Germany (mmde), MediaMarkt Austria (mmat), MediaMarkt Spain (mmes), MediaMarkt Netherlands (mmnl) and MediaWorld Italy (mmit)
 [mmde]
 # You can define multiple accounts. Make sure to use the first string for the e-mail the second for the password
 accounts = [["", ""]]
+# Recommended to leave as is, the 404 page will be used as the entrypoint (has very little JS etc to load)
 start_url = ""
 
+# Check for categories (pimCode)
 categories = []
+# Optionally check a title against a given regular expression
 category_regex = ""
+
+# Check products via the search API
+searches = []
+# Supply two numbers as the min or max price rang
+search_price_range = []
+# Optionally check a title against a given regular expression
+search_regex = ""
 
 # Sleep times in milliseconds between the API calls
 ignore_sleep = false
 min_sleep_time = 100
 max_sleep_time = 500
 
-# Replace PIDs with different URLs (e.g., Affiliate)
+# Replace PIDs with different URLs (e.g., affiliate)
 id_replacements = []
 # check old online status field for basket check
 check_online_status = false
@@ -31,6 +41,12 @@ show_cookies_amount = true
 # Show the magician (ATC) link in the notification
 show_magician_link = true
 
+# Cooldown config
+cooldown_in_stock_minutes = 10
+cooldown_can_be_added_to_basket_minutes = 720
+cooldown_stock_with_cookies_minutes = 120
+cooldown_stock_no_cookies_minutes = 1440
+
 # Discord integration (optional)
 # You can set the same channel or role for all the types or a dedicated one for each type
 discord_bot_token = ""
@@ -42,8 +58,8 @@ stock_discord_channel = ""
 stock_discord_regex_channel = []
 cookie_discord_channel = ""
 admin_discord_channel = ""
-
 price_change_discord_channel = ""
+
 discord_role_ping = ""
 stock_discord_role_ping = ""
 stock_discord_regex_role_ping = []
@@ -70,7 +86,7 @@ proxy_url = ""
 proxy_username = ""
 proxy_password = ""
 
-# Cookie storage config (DynamoDB)
+# Cookie and price information storage config (DynamoDB)
 dynamo_db_region = ""
 dynamo_db_table_name = ""
 dynamo_db_access_key = ""
@@ -90,4 +106,4 @@ loginSHA256 = ""
 categorySHA256 = ""
 wishlistSHA256 = ""
 addProductSHA256 = ""
-getProductSHA256 = ""
+searchSHA256 = ""

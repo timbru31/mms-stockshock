@@ -6,6 +6,7 @@
 
 -   Category tracking of products
 -   Wishlist tracking
+-   Search tracking
 -   Price watching/comparison
 -   Automatic basket cookie generation
 -   Rich notifications for

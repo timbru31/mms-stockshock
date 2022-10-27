@@ -3,7 +3,7 @@ import type { Logger } from "winston";
 import type { BrowserManager } from "../core/browser-manager";
 import type { CooldownManager } from "../core/cooldown-manager";
 import type { DatabaseConnection } from "../databases/database-connection";
-import type { CategoryResponse } from "../models/api/category-response";
+import type { SearchResponse } from "../models/api/search-response";
 import type { Product } from "../models/api/product";
 import type { Notifier } from "../models/notifier";
 import type { StoreConfiguration } from "../models/stores/config-model";
@@ -12,7 +12,7 @@ import { HTTPStatusCode } from "../utils/http";
 import { ProductHelper } from "../utils/product-helper";
 import { GRAPHQL_CLIENT_VERSION, sleep } from "../utils/utils";
 
-export class CategoryChecker {
+export class SearchChecker {
     private readonly store: Store;
     private readonly storeConfiguration: StoreConfiguration;
     private readonly logger: Logger;
@@ -22,7 +22,7 @@ export class CategoryChecker {
     private readonly productHelper = new ProductHelper();
     private readonly database: DatabaseConnection | undefined;
     private readonly defaultPage = 0;
-    private readonly categoryRaceTimeout = 5000;
+    private readonly searchRaceTimeout = 5000;
 
     constructor(
         store: Store,
@@ -42,23 +42,23 @@ export class CategoryChecker {
         this.database = database;
     }
 
-    async checkCategory(category: string, categoryRegex?: string): Promise<Map<string, Product>> {
-        let categoryRegExp: RegExp | null = null;
-        if (categoryRegex) {
-            categoryRegExp = new RegExp(categoryRegex, "i");
+    async checkSearch(search: string, searchRegex?: string, priceRange?: number[]): Promise<Map<string, Product>> {
+        let searchRegexp: RegExp | null = null;
+        if (searchRegex) {
+            searchRegexp = new RegExp(searchRegex, "i");
         }
         let basketProducts = new Map<string, Product>();
 
-        const outerCategoryResponse = await this.performCategoryQuery(category);
+        const outerSearchResponse = await this.performSearchQuery(search, priceRange);
 
-        if (outerCategoryResponse.status !== HTTPStatusCode.OK || !outerCategoryResponse.body || outerCategoryResponse.body.errors) {
-            await this.browserManager.handleResponseError("CategoryV4", outerCategoryResponse);
+        if (outerSearchResponse.status !== HTTPStatusCode.OK || !outerSearchResponse.body || outerSearchResponse.body.errors) {
+            await this.browserManager.handleResponseError("SearchV4", outerSearchResponse);
         } else {
-            const totalPages = outerCategoryResponse.body.data?.categoryV4.paging.pageCount;
+            const totalPages = outerSearchResponse.body.data?.searchV4.paging.pageCount;
 
-            let products = outerCategoryResponse.body.data?.categoryV4.products
+            let products = outerSearchResponse.body.data?.searchV4.products
                 ?.map((item) => item.productAggregate)
-                .filter((item) => !categoryRegExp || categoryRegExp.test(item.product?.title ?? ""));
+                .filter((item) => !searchRegexp || searchRegexp.test(item.product?.title ?? ""));
             let items = await this.productHelper.checkItems(
                 products,
                 this.cooldownManager,
@@ -75,20 +75,16 @@ export class CategoryChecker {
                 // eslint-disable-next-line @typescript-eslint/no-magic-numbers
                 for (let additionalQueryCalls = 2; additionalQueryCalls <= totalPages; additionalQueryCalls += 1) {
                     await sleep(this.store.getSleepTime());
-                    const innerCategoryResponse = await this.performCategoryQuery(category, additionalQueryCalls);
-                    if (
-                        innerCategoryResponse.status !== HTTPStatusCode.OK ||
-                        !innerCategoryResponse.body ||
-                        innerCategoryResponse.body.errors
-                    ) {
-                        await this.browserManager.handleResponseError("CategoryV4", innerCategoryResponse);
+                    const innerSearchResponse = await this.performSearchQuery(search, priceRange, additionalQueryCalls);
+                    if (innerSearchResponse.status !== HTTPStatusCode.OK || !innerSearchResponse.body || innerSearchResponse.body.errors) {
+                        await this.browserManager.handleResponseError("SearchV4", innerSearchResponse);
                         if (this.browserManager.reLoginRequired || this.browserManager.reLaunchRequired) {
                             break;
                         }
                     } else {
-                        products = innerCategoryResponse.body.data?.categoryV4.products
+                        products = innerSearchResponse.body.data?.searchV4.products
                             ?.map((item) => item.productAggregate)
-                            .filter((item) => !categoryRegExp || categoryRegExp.test(item.product?.title ?? ""));
+                            .filter((item) => !searchRegexp || searchRegexp.test(item.product?.title ?? ""));
                         items = await this.productHelper.checkItems(
                             products,
                             this.cooldownManager,
@@ -107,18 +103,19 @@ export class CategoryChecker {
         return basketProducts;
     }
 
-    private async performCategoryQuery(
-        category: string,
+    private async performSearchQuery(
+        searchQuery: string,
+        priceRange?: number[],
         page = this.defaultPage
     ): Promise<{
         /* eslint-disable @typescript-eslint/indent */
         status: number;
-        body: CategoryResponse | null;
+        body: SearchResponse | null;
         retryAfterHeader?: string | null;
     }> {
         /* eslint-enable @typescript-eslint/indent */
         if (!this.browserManager.page) {
-            this.logger.error("Unable to perform category query: page is undefined!");
+            this.logger.error("Unable to perform search query: page is undefined!");
             return Promise.resolve({ status: 0, body: null });
         }
         try {
@@ -127,10 +124,11 @@ export class CategoryChecker {
                     async (
                         store: Store,
                         pageOffset: number,
-                        pimCode: string,
+                        query: string,
+                        range: number[],
                         flowId: string,
                         graphQLClientVersion: string,
-                        categorySHA256: string
+                        searchSHA256: string
                     ) =>
                         fetch(`${store.baseUrl}/api/v1/graphql`, {
                             credentials: "include",
@@ -139,7 +137,7 @@ export class CategoryChecker {
                                 "content-type": "application/json",
                                 "apollographql-client-name": "pwa-client",
                                 "apollographql-client-version": graphQLClientVersion,
-                                "x-operation": "CategoryV4",
+                                "x-operation": "SearchV4",
                                 "x-cacheable": "true",
                                 "x-mms-language": store.languageCode,
                                 "x-mms-country": store.countryCode,
@@ -153,19 +151,22 @@ export class CategoryChecker {
                             method: "POST",
                             mode: "cors",
                             body: JSON.stringify({
-                                operationName: "CategoryV4",
+                                operationName: "SearchV4",
                                 variables: {
                                     hasMarketplace: true,
-                                    maxNumberOfAds: 2,
                                     isCitrus: true,
                                     isDemonstrationModelAvailabilityActive: false,
                                     withMarketingInfos: false,
-                                    filters: [],
-                                    pimCode,
-                                    page: pageOffset,
                                     experiment: "mp",
+                                    // eslint-disable-next-line @typescript-eslint/no-magic-numbers
+                                    filters: range.length === 2 ? [`currentprice:${range[0]}-${range[1]}`] : [],
+                                    page: pageOffset,
+                                    query,
+                                    pageSize: 20,
+                                    // eslint-disable-next-line @typescript-eslint/no-magic-numbers
+                                    productFilters: range.length === 2 ? [[`currentprice:${range[0]}-${range[1]}`]] : [],
+                                    maxNumberOfAds: 2,
                                     pageType: "Search",
-                                    productFilters: [],
                                 },
                                 extensions: {
                                     pwa: {
@@ -176,7 +177,7 @@ export class CategoryChecker {
                                     },
                                     persistedQuery: {
                                         version: 1,
-                                        sha256Hash: categorySHA256,
+                                        sha256Hash: searchSHA256,
                                     },
                                 },
                             }),
@@ -184,7 +185,7 @@ export class CategoryChecker {
                             .then(async (res) =>
                                 res
                                     .json()
-                                    .then((data: CategoryResponse) => ({ status: res.status, body: data }))
+                                    .then((data: SearchResponse) => ({ status: res.status, body: data }))
                                     // eslint-disable-next-line @typescript-eslint/no-unused-vars
                                     .catch((_) => ({ status: res.status, body: null, retryAfterHeader: res.headers.get("Retry-After") }))
                             )
@@ -192,12 +193,13 @@ export class CategoryChecker {
                             .catch((_) => ({ status: -2, body: null })),
                     this.store,
                     page,
-                    category,
+                    searchQuery,
+                    priceRange ?? [],
                     v4(),
                     GRAPHQL_CLIENT_VERSION,
-                    this.storeConfiguration.categorySHA256
+                    this.storeConfiguration.searchSHA256
                 ),
-                sleep(this.categoryRaceTimeout, {
+                sleep(this.searchRaceTimeout, {
                     status: HTTPStatusCode.Timeout,
                     body: { errors: "Timeout" },
                 }),

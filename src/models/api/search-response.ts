@@ -1,29 +1,22 @@
-import type { SearchItem } from "./search-item";
 import type { Response } from "./response";
+import type { SearchItem } from "./search-item";
 
-export interface CategoryResponse extends Response {
+export interface SearchResponse extends Response {
     data?: {
-        categoryV4: {
+        searchV4: {
             searchPage: unknown;
             searchParamsStr: string;
             totalProducts: number;
+            products?: SearchItem[];
             facets: unknown;
             sortItem: unknown;
-            products?: SearchItem[];
             paging: {
                 currentPage: number;
                 pageCount: number;
             };
-            campaigns: unknown;
             meta: unknown;
             decorations: unknown;
             searchResultsAdBeacons: unknown;
-            breadcrumbs: {
-                categoryId: string;
-                wcsId: string;
-                name: string;
-            }[];
-            sponsoredSearch: unknown;
         };
     };
 }
