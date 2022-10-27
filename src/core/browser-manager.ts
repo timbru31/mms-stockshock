@@ -245,11 +245,18 @@ export class BrowserManager {
             args.push(`--proxy-server=${this.storeConfiguration.proxy_url}`);
         }
 
-        this.browser = await puppeteer.launch({
+        const options = {
             headless,
             defaultViewport: null,
             args,
-        } as unknown as PuppeteerNodeLaunchOptions);
+        } as PuppeteerNodeLaunchOptions;
+        if (process.env.PUPPETEER_EXECUTABLE_PATH) {
+            options.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
+        } else {
+            options.channel = "chrome";
+        }
+        this.browser = await puppeteer.launch(options);
+
         this.reLaunchRequired = false;
         return Boolean(this.browser);
     }
