@@ -429,7 +429,7 @@ export class DiscordNotifier implements Notifier {
     private createEmbed(item: Item) {
         const embed = new EmbedBuilder().setTimestamp();
         embed.setFooter({
-            text: `Stockshock v${version} • If you have paid for this, you have been scammed • Links may be affiliate links`,
+            text: `Stockshock v${version} • Links may be affiliate links`,
         });
         if (!item.product) {
             return embed;
