@@ -154,9 +154,10 @@ export class SearchChecker {
                                 operationName: "SearchV4",
                                 variables: {
                                     hasMarketplace: true,
-                                    isCitrus: true,
+                                    isCitrus: false,
                                     isDemonstrationModelAvailabilityActive: false,
                                     withMarketingInfos: false,
+                                    isTeaserV3Active: false,
                                     experiment: "mp",
                                     // eslint-disable-next-line @typescript-eslint/no-magic-numbers
                                     filters: range.length === 2 ? [`currentprice:${range[0]}-${range[1]}`] : [],
@@ -165,8 +166,6 @@ export class SearchChecker {
                                     pageSize: 20,
                                     // eslint-disable-next-line @typescript-eslint/no-magic-numbers
                                     productFilters: range.length === 2 ? [[`currentprice:${range[0]}-${range[1]}`]] : [],
-                                    maxNumberOfAds: 2,
-                                    pageType: "Search",
                                 },
                                 extensions: {
                                     pwa: {

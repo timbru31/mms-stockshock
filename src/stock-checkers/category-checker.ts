@@ -157,15 +157,14 @@ export class CategoryChecker {
                                 variables: {
                                     hasMarketplace: true,
                                     maxNumberOfAds: 2,
-                                    isCitrus: true,
+                                    isCitrus: false,
                                     isDemonstrationModelAvailabilityActive: false,
                                     withMarketingInfos: false,
+                                    isTeaserV3Active: false,
                                     filters: [],
                                     pimCode,
                                     page: pageOffset,
                                     experiment: "mp",
-                                    pageType: "Search",
-                                    productFilters: [],
                                 },
                                 extensions: {
                                     pwa: {
