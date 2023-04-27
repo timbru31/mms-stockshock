@@ -246,7 +246,7 @@ export class BrowserManager {
         }
 
         const options = {
-            headless,
+            headless: headless ? "new" : false,
             defaultViewport: null,
             args,
         } as PuppeteerNodeLaunchOptions;
