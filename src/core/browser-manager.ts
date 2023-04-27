@@ -154,7 +154,7 @@ export class BrowserManager {
             res = { status: HTTPStatusCode.Error, body: null };
             this.logger.error("Error, %O", e);
         }
-        if (res.status !== HTTPStatusCode.OK || !res.body || res.body.errors) {
+        if ((res.status as HTTPStatusCode) !== HTTPStatusCode.OK || !res.body || res.body.errors) {
             if (headless) {
                 await this.handleResponseError("Login", res);
                 for (const notifier of this.notifiers) {
@@ -186,9 +186,9 @@ export class BrowserManager {
             this.logger.error("Error: %O", res.body.errors);
         }
         if (
-            res.status <= HTTPStatusCode.Timeout ||
-            res.status === HTTPStatusCode.Forbidden ||
-            res.status === HTTPStatusCode.TooManyRequests
+            (res.status as HTTPStatusCode) <= HTTPStatusCode.Timeout ||
+            (res.status as HTTPStatusCode) === HTTPStatusCode.Forbidden ||
+            (res.status as HTTPStatusCode) === HTTPStatusCode.TooManyRequests
         ) {
             if (this.proxies.length) {
                 this.rotateProxy();

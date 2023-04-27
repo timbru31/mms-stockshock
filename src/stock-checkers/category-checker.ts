@@ -51,7 +51,11 @@ export class CategoryChecker {
 
         const outerCategoryResponse = await this.performCategoryQuery(category);
 
-        if (outerCategoryResponse.status !== HTTPStatusCode.OK || !outerCategoryResponse.body || outerCategoryResponse.body.errors) {
+        if (
+            (outerCategoryResponse.status as HTTPStatusCode) !== HTTPStatusCode.OK ||
+            !outerCategoryResponse.body ||
+            outerCategoryResponse.body.errors
+        ) {
             await this.browserManager.handleResponseError("CategoryV4", outerCategoryResponse);
         } else {
             const totalPages = outerCategoryResponse.body.data?.categoryV4.paging.pageCount;
@@ -77,7 +81,7 @@ export class CategoryChecker {
                     await sleep(this.store.getSleepTime());
                     const innerCategoryResponse = await this.performCategoryQuery(category, additionalQueryCalls);
                     if (
-                        innerCategoryResponse.status !== HTTPStatusCode.OK ||
+                        (innerCategoryResponse.status as HTTPStatusCode) !== HTTPStatusCode.OK ||
                         !innerCategoryResponse.body ||
                         innerCategoryResponse.body.errors
                     ) {

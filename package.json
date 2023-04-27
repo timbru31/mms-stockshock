@@ -1,6 +1,6 @@
 {
     "name": "stockshock",
-    "version": "5.16.0",
+    "version": "5.17.0",
     "private": true,
     "description": "A simple bot for MediaMarkt and Saturn to check if tracked items are available",
     "main": "dist/index.js",
@@ -45,7 +45,7 @@
         "@types/user-agents": "^1.0.2",
         "@types/ws": "^8.5.4",
         "@types/yargs": "^17.0.24",
-        "@typescript-eslint/eslint-plugin": "^5.57.1",
+        "@typescript-eslint/eslint-plugin": "^5.59.1",
         "@typescript-eslint/parser": "^5.59.1",
         "eslint": "^8.39.0",
         "eslint-plugin-deprecation": "^1.4.1",

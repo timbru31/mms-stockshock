@@ -53,7 +53,7 @@ export class WishlistChecker {
         let basketProducts = new Map<string, Product>();
 
         const res = await this.performWishlistQuery();
-        if (res.status !== HTTPStatusCode.OK || !res.body || res.body.errors) {
+        if ((res.status as HTTPStatusCode) !== HTTPStatusCode.OK || !res.body || res.body.errors) {
             await this.browserManager.handleResponseError("WishlistItems", res);
         } else {
             const totalItems = res.body.data?.wishlistItems?.total;
@@ -78,7 +78,11 @@ export class WishlistChecker {
                     await sleep(this.store.getSleepTime());
                     const newOffset = additionalQueryCalls * this.MAX_ITEMS_PER_QUERY;
                     const innerResponse = await this.performWishlistQuery(newOffset);
-                    if (innerResponse.status !== HTTPStatusCode.OK || !innerResponse.body || innerResponse.body.errors) {
+                    if (
+                        (innerResponse.status as HTTPStatusCode) !== HTTPStatusCode.OK ||
+                        !innerResponse.body ||
+                        innerResponse.body.errors
+                    ) {
                         await this.browserManager.handleResponseError("WishlistItems", innerResponse);
                         if (this.browserManager.reLoginRequired || this.browserManager.reLaunchRequired) {
                             break;
@@ -113,13 +117,7 @@ export class WishlistChecker {
         try {
             return await Promise.race([
                 this.browserManager.page.evaluate(
-                    async (
-                        store: Store,
-                        pageOffset: number,
-                        flowId: string,
-                        graphQLClientVersion: string,
-                        wishlistSHA256: string
-                    ) =>
+                    async (store: Store, pageOffset: number, flowId: string, graphQLClientVersion: string, wishlistSHA256: string) =>
                         fetch(`${store.baseUrl}/api/v1/graphql`, {
                             credentials: "include",
                             headers: {
