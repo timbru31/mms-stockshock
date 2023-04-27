@@ -123,18 +123,16 @@ export class DiscordNotifier implements Notifier {
         }
 
         const fullAlert = this.productHelper.isProductBuyable(item, this.checkOnlineStatus, this.checkInAssortment);
-        let emoji: string;
         const embed = this.createEmbed(item);
 
         const price = item.price?.price ?? "0";
         const currency = item.price?.currency ?? "𑿠";
         embed.addFields([
             {
-                name: "Store",
-                value: this.store.getName(),
+                name: "ProductID",
+                value: item.product.id,
                 inline: true,
             },
-            { name: "ProductID", value: item.product.id, inline: true },
             {
                 name: "Price",
                 value: `${price} ${currency}`,
@@ -154,7 +152,11 @@ export class DiscordNotifier implements Notifier {
         embed.addFields([{ name: "Availability State", value: item.availability.delivery?.availabilityType ?? "UNKNOWN", inline: true }]);
 
         if (this.showThumbnails) {
-            embed.setThumbnail(this.store.thumbnail);
+            embed.setAuthor({
+                name: this.store.getName(),
+                iconURL: this.store.thumbnail,
+                url: this.productHelper.getProductURL(item, this.store, this.replacements),
+            });
         }
         if (item.availability.delivery?.earliest && item.availability.delivery.latest) {
             embed.addFields([
@@ -170,18 +172,15 @@ export class DiscordNotifier implements Notifier {
         if (fullAlert) {
             embed.setDescription("🟢 Item **available**");
             embed.setColor("#7ab05e");
-            emoji = "🟢";
         } else if (this.productHelper.canProductBeAddedToBasket(item, this.checkOnlineStatus, this.checkInAssortment)) {
             if (!this.shoppingCartAlerts) {
                 return;
             }
             embed.setDescription("🛒 Item **can be added to basket**");
             embed.setColor("#60696f");
-            emoji = "🛒";
         } else {
             embed.setDescription("🟡 Item for **basket parker**");
             embed.setColor("#fcca62");
-            emoji = "🟡";
         }
 
         const stockChannelsForItem = this.getChannelsForTitle(item.product.title ?? "");
@@ -191,7 +190,7 @@ export class DiscordNotifier implements Notifier {
                     await stockChannelForItem.send({
                         embeds: [embed],
                         content: this.decorateMessageWithRoles(
-                            `${emoji} ${item.product.title ?? ""} [${item.product.id}] for ${price} ${currency}`,
+                            `**[${this.store.getShortName()}]** ${item.product.title ?? ""} now in stock!`,
                             await this.getRolePingsForTitle(item.product.title ?? "", stockChannelForItem)
                         ),
                     });
@@ -435,7 +434,7 @@ export class DiscordNotifier implements Notifier {
             return embed;
         }
         if (item.product.titleImageId) {
-            embed.setImage(`https://assets.mmsrg.com/isr/166325/c1/-/${item.product.titleImageId}/mobile_200_200.png`);
+            embed.setThumbnail(`https://assets.mmsrg.com/isr/166325/c1/-/${item.product.titleImageId}/mobile_200_200.png`);
         }
 
         const url = this.productHelper.getProductURL(item, this.store, this.replacements);
