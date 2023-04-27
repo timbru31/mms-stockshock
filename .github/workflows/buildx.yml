@@ -47,9 +47,9 @@ jobs:
                     fi
                   done
 
-                  echo ::set-output name=docker_image::${DOCKER_IMAGE}
-                  echo ::set-output name=version::${VERSION}
-                  echo ::set-output name=tags::${TAGS}
+                  echo "docker_image=${DOCKER_IMAGE}" >> $GITHUB_OUTPUT
+                  echo "version=${VERSION}" >> $GITHUB_OUTPUT
+                  echo "tags=${TAGS}" >> $GITHUB_OUTPUT
 
             - name: Set up QEMU
               uses: docker/setup-qemu-action@v2.1.0
