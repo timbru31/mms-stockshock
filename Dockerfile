@@ -1,11 +1,12 @@
-FROM timbru31/node-chrome:gallium-alpine
+FROM timbru31/node-chrome:gallium-slim
 
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
-    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser \
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium \
     NODE_ENV=production
 
 RUN mkdir -p /opt/mms-stockshock \
-    && adduser -D stonks
+    # && adduser -D stonks
+    && useradd -ms /bin/bash stonks
 
 COPY package*.json /opt/mms-stockshock/
 COPY dist /opt/mms-stockshock/dist
