@@ -419,9 +419,14 @@ export class DiscordNotifier implements Notifier {
         }
 
         if (Array.isArray(webhookRolePings) && webhookRolePings.length) {
-            return `${message} ${webhookRolePings.map((webhookRolePing) => `<@&${webhookRolePing}>`).join(" ")}`;
-        } else {
+            return `${message} ${webhookRolePings
+                .filter(Boolean)
+                .map((webhookRolePing) => `<@&${webhookRolePing}>`)
+                .join(" ")}`;
+        } else if (webhookRolePings.toString()) {
             return `${message} <@&${webhookRolePings.toString()}>`;
+        } else {
+            return message;
         }
     }
 
