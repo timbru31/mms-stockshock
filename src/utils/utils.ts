@@ -5,7 +5,7 @@ import type { Logger } from "winston";
 import { createLogger as createWinstonLogger, format, transports } from "winston";
 import type { ConfigModel } from "../models/stores/config-model";
 
-export const GRAPHQL_CLIENT_VERSION = "1.79.0";
+export const GRAPHQL_CLIENT_VERSION = "8.3.1";
 
 function getEmojiForLevel(level: string) {
     switch (colors.stripColors(level)) {
@@ -94,7 +94,7 @@ export function shuffle<T>(array: T[]): T[] {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
-export function noop(): void { }
+export function noop(): void {}
 
 export async function noopPromise(): Promise<void> {
     return Promise.resolve();

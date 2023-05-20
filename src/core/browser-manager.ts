@@ -116,7 +116,8 @@ export class BrowserManager {
                                         salesLine: store.salesLine,
                                         country: store.countryCode,
                                         language: store.languageCode,
-                                        ccr: true,
+                                        globalLoyaltyProgram: true,
+                                        fifaUserCreation: true,
                                     },
                                     persistedQuery: {
                                         version: 1,

@@ -160,11 +160,8 @@ export class CategoryChecker {
                                 operationName: "CategoryV4",
                                 variables: {
                                     hasMarketplace: true,
-                                    maxNumberOfAds: 2,
-                                    isCitrus: false,
                                     isDemonstrationModelAvailabilityActive: false,
                                     withMarketingInfos: false,
-                                    isTeaserV3Active: false,
                                     filters: [],
                                     pimCode,
                                     page: pageOffset,
@@ -175,7 +172,8 @@ export class CategoryChecker {
                                         salesLine: store.salesLine,
                                         country: store.countryCode,
                                         language: store.languageCode,
-                                        ccr: true,
+                                        globalLoyaltyProgram: true,
+                                        fifaUserCreation: true,
                                     },
                                     persistedQuery: {
                                         version: 1,

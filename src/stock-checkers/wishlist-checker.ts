@@ -145,13 +145,15 @@ export class WishlistChecker {
                                     shouldFetchBasket: true,
                                     limit: 24,
                                     offset: pageOffset,
+                                    withMarketingInfos: false,
                                 },
                                 extensions: {
                                     pwa: {
                                         salesLine: store.salesLine,
                                         country: store.countryCode,
                                         language: store.languageCode,
-                                        ccr: true,
+                                        globalLoyaltyProgram: true,
+                                        fifaUserCreation: true,
                                     },
                                     persistedQuery: {
                                         version: 1,
