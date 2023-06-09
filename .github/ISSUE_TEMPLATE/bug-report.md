@@ -29,7 +29,7 @@ If applicable, add screenshots to help explain your problem.
 **Desktop (please complete the following information):**
 - OS: [e.g. Windows 10]
 - Version [e.g. 1803]
-- Node.js version [e.g. v14.16.2]
+- Node.js version [e.g. v18.16.0]
 - Docker version [e.g. 20.10.2]
 - Git Hash
 

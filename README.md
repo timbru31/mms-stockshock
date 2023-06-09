@@ -38,7 +38,7 @@ You need to put products on your wishlist in order to have this bot working or h
 ## Installation
 
 _See below for Docker_  
-Install Node.js v16 or higher.  
+Install Node.js v18 or higher.  
 Download or clone the project then run:
 
 ```sh

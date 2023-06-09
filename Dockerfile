@@ -1,4 +1,4 @@
-FROM timbru31/node-chrome:gallium-slim
+FROM timbru31/node-chrome:hydrogen-slim
 
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
     PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium \
