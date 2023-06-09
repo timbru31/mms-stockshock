@@ -6,7 +6,7 @@ on:
 
 jobs:
     buildx:
-        runs-on: ubuntu-20.04
+        runs-on: ubuntu-latest
         strategy:
             fail-fast: false
             matrix:
@@ -22,7 +22,7 @@ jobs:
             - name: Prepare Node.js
               uses: actions/setup-node@v3.6.0
               with:
-                  node-version: "16"
+                  node-version: "18"
 
             - name: Build
               run: |
