@@ -5,7 +5,7 @@ import type { Logger } from "winston";
 import { createLogger as createWinstonLogger, format, transports } from "winston";
 import type { ConfigModel } from "../models/stores/config-model";
 
-export const GRAPHQL_CLIENT_VERSION = "8.4.1";
+export const GRAPHQL_CLIENT_VERSION = "8.7.0";
 
 function getEmojiForLevel(level: string) {
     switch (colors.stripColors(level)) {
@@ -39,7 +39,7 @@ export async function loadConfig(logger: Logger): Promise<ConfigModel | null> {
 
 export function createLogger(): Logger {
     const customLogFormat = format.printf((info) => {
-        return `${info.timestamp as string} [${getEmojiForLevel(info.level)}] ${info.level}: ${info.message as string} `;
+        return `${info.timestamp as string} [${getEmojiForLevel(info.level)}] ${info.level}: ${info.message} `;
     });
 
     return createWinstonLogger({
