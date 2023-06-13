@@ -1,8 +1,10 @@
 name: buildx
 
 on:
-    pull_request:
     push:
+        branches:
+            - master
+    pull_request:
 
 jobs:
     buildx:
