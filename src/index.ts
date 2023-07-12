@@ -66,7 +66,7 @@ async function reLaunchIfRequired(
         }
         relaunched = true;
     }
-    if (createNewContext || relaunched) {
+    if (createNewContext ?? relaunched) {
         if (!(await browserManager.createFreshContext())) {
             throw new Error("Fresh context could not be created!");
         }
@@ -170,7 +170,6 @@ void (async function () {
             logger.info("🤖 Beep, I'm alive and well checking your stock");
 
             for (const [email, password] of storeConfig.accounts) {
-                // eslint-disable-next-line @typescript-eslint/no-magic-numbers
                 if (storeConfig.accounts.length > 1) {
                     browserManager.reLoginRequired = true;
                 }
@@ -194,7 +193,6 @@ void (async function () {
             }
 
             if (storeConfig.categories?.length) {
-                // eslint-disable-next-line @typescript-eslint/no-magic-numbers
                 if (storeConfig.accounts.length > 1) {
                     await reLaunchIfRequired(browserManager, args, logger, notifiers, true);
                 }
@@ -211,7 +209,6 @@ void (async function () {
             }
 
             if (storeConfig.searches?.length) {
-                // eslint-disable-next-line @typescript-eslint/no-magic-numbers
                 if (storeConfig.accounts.length > 1) {
                     await reLaunchIfRequired(browserManager, args, logger, notifiers, true);
                 }

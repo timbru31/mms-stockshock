@@ -74,7 +74,6 @@ export class SearchChecker {
             );
             basketProducts = new Map([...basketProducts, ...items]);
 
-            // eslint-disable-next-line @typescript-eslint/no-magic-numbers
             if (totalPages && !Number.isNaN(totalPages) && totalPages > 1) {
                 // eslint-disable-next-line @typescript-eslint/no-magic-numbers
                 for (let additionalQueryCalls = 2; additionalQueryCalls <= totalPages; additionalQueryCalls += 1) {
@@ -192,10 +191,8 @@ export class SearchChecker {
                                 res
                                     .json()
                                     .then((data: SearchResponse) => ({ status: res.status, body: data }))
-                                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
                                     .catch((_) => ({ status: res.status, body: null, retryAfterHeader: res.headers.get("Retry-After") }))
                             )
-                            // eslint-disable-next-line @typescript-eslint/no-unused-vars
                             .catch((_) => ({ status: -2, body: null })),
                     this.store,
                     page,
