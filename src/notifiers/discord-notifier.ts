@@ -287,9 +287,8 @@ export class DiscordNotifier implements Notifier {
             const key = 0;
             const value = 1;
 
-            if (storeConfig.stock_discord_channel || storeConfig.discord_channel) {
+            if (storeConfig.stock_discord_channel ?? storeConfig.discord_channel) {
                 const tempChannel = await this.discordBot?.channels.fetch(
-                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                     (storeConfig.stock_discord_channel ?? storeConfig.discord_channel)!
                 );
                 if (((channel): channel is TextChannel => channel?.type === ChannelType.GuildText)(tempChannel)) {
@@ -312,7 +311,7 @@ export class DiscordNotifier implements Notifier {
                 });
             }
 
-            if (storeConfig.stock_discord_role_ping || storeConfig.discord_role_ping) {
+            if (storeConfig.stock_discord_role_ping ?? storeConfig.discord_role_ping) {
                 this.stockRolePing = storeConfig.stock_discord_role_ping ?? storeConfig.discord_role_ping;
             }
             if (storeConfig.stock_discord_regex_role_ping) {
@@ -324,42 +323,39 @@ export class DiscordNotifier implements Notifier {
                 });
             }
 
-            if (storeConfig.cookie_discord_channel || storeConfig.discord_channel) {
+            if (storeConfig.cookie_discord_channel ?? storeConfig.discord_channel) {
                 const tempChannel = await this.discordBot?.channels.fetch(
-                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                     (storeConfig.cookie_discord_channel ?? storeConfig.discord_channel)!
                 );
                 if (((channel): channel is TextChannel => channel?.type === ChannelType.GuildText)(tempChannel)) {
                     this.cookieChannel = tempChannel;
                 }
             }
-            if (storeConfig.cookie_discord_role_ping || storeConfig.discord_role_ping) {
+            if (storeConfig.cookie_discord_role_ping ?? storeConfig.discord_role_ping) {
                 this.cookieRolePing = storeConfig.cookie_discord_role_ping ?? storeConfig.discord_role_ping;
             }
 
-            if (storeConfig.admin_discord_channel || storeConfig.discord_channel) {
+            if (storeConfig.admin_discord_channel ?? storeConfig.discord_channel) {
                 const tempChannel = await this.discordBot?.channels.fetch(
-                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                     (storeConfig.admin_discord_channel ?? storeConfig.discord_channel)!
                 );
                 if (((channel): channel is TextChannel => channel?.type === ChannelType.GuildText)(tempChannel)) {
                     this.adminChannel = tempChannel;
                 }
             }
-            if (storeConfig.admin_discord_role_ping || storeConfig.discord_role_ping) {
+            if (storeConfig.admin_discord_role_ping ?? storeConfig.discord_role_ping) {
                 this.adminRolePing = storeConfig.admin_discord_role_ping ?? storeConfig.discord_role_ping;
             }
 
-            if (storeConfig.price_change_discord_channel || storeConfig.discord_channel) {
+            if (storeConfig.price_change_discord_channel ?? storeConfig.discord_channel) {
                 const tempChannel = await this.discordBot?.channels.fetch(
-                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                     (storeConfig.price_change_discord_channel ?? storeConfig.discord_channel)!
                 );
                 if (((channel): channel is TextChannel => channel?.type === ChannelType.GuildText)(tempChannel)) {
                     this.priceChangeChannel = tempChannel;
                 }
             }
-            if (storeConfig.price_change_discord_role_ping || storeConfig.discord_role_ping) {
+            if (storeConfig.price_change_discord_role_ping ?? storeConfig.discord_role_ping) {
                 this.priceChangeRolePing = storeConfig.price_change_discord_role_ping ?? storeConfig.discord_role_ping;
             }
 

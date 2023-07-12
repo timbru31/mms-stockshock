@@ -80,9 +80,7 @@ export class BrowserManager {
                 this.page.evaluate(
                     async (
                         store: Store,
-                        // eslint-disable-next-line @typescript-eslint/no-shadow
                         email: string,
-                        // eslint-disable-next-line @typescript-eslint/no-shadow
                         password: string,
                         flowId: string,
                         graphQLClientVersion: string,
@@ -130,14 +128,12 @@ export class BrowserManager {
                                 loginResponse
                                     .json()
                                     .then((data: LoginResponse) => ({ status: loginResponse.status, body: data }))
-                                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
                                     .catch((_) => ({
                                         status: loginResponse.status,
                                         body: null,
                                         retryAfterHeader: loginResponse.headers.get("Retry-After"),
                                     }))
                             )
-                            // eslint-disable-next-line @typescript-eslint/no-unused-vars
                             .catch((_) => ({ status: -2, body: null })),
                     this.store,
                     email,

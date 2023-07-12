@@ -13,8 +13,6 @@ export interface Store {
     getName: () => string;
     getShortName: () => string;
 
-    /* eslint-disable @typescript-eslint/indent */
-    // eslint-disable-next-line @typescript-eslint/member-ordering
     [key: string]:
         | number
         | string
@@ -22,5 +20,4 @@ export interface Store {
         | (() => string)
         | ((minSleepTime: number | undefined, maxSleepTime: number | undefined) => void)
         | undefined;
-    /* eslint-enable @typescript-eslint/indent */
 }

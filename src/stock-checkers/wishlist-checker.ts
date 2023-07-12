@@ -14,7 +14,6 @@ import { GRAPHQL_CLIENT_VERSION, sleep } from "../utils/utils";
 
 export class WishlistChecker {
     // This is set by MM/S and a fixed constant
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     readonly MAX_ITEMS_PER_QUERY = 24;
 
     private readonly store: Store;
@@ -73,7 +72,6 @@ export class WishlistChecker {
 
             if (totalItems > this.MAX_ITEMS_PER_QUERY) {
                 const remainingQueryCalls = Math.ceil((totalItems - this.MAX_ITEMS_PER_QUERY) / this.MAX_ITEMS_PER_QUERY);
-                // eslint-disable-next-line @typescript-eslint/no-magic-numbers
                 for (let additionalQueryCalls = 1; additionalQueryCalls <= remainingQueryCalls; additionalQueryCalls += 1) {
                     await sleep(this.store.getSleepTime());
                     const newOffset = additionalQueryCalls * this.MAX_ITEMS_PER_QUERY;
@@ -166,10 +164,8 @@ export class WishlistChecker {
                                 res
                                     .json()
                                     .then((data: WishlistResponse) => ({ status: res.status, body: data }))
-                                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
                                     .catch((_) => ({ status: res.status, body: null, retryAfterHeader: res.headers.get("Retry-After") }))
                             )
-                            // eslint-disable-next-line @typescript-eslint/no-unused-vars
                             .catch((_) => ({ status: -2, body: null })),
                     this.store,
                     offset,

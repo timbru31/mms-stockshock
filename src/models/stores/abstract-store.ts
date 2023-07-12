@@ -29,8 +29,6 @@ export abstract class CommonStore implements Store {
     abstract getName(): string;
     abstract getShortName(): string;
 
-    /* eslint-disable @typescript-eslint/indent */
-    // eslint-disable-next-line @typescript-eslint/member-ordering
     [key: string]:
         | number
         | string
@@ -38,5 +36,4 @@ export abstract class CommonStore implements Store {
         | (() => string)
         | ((minSleepTime: number | undefined, maxSleepTime: number | undefined) => void)
         | undefined;
-    /* eslint-enable @typescript-eslint/indent */
 }

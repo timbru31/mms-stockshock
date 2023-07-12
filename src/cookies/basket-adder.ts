@@ -80,7 +80,6 @@ export class BasketAdder {
                     try {
                         res = await Promise.race([
                             this.browserManager.page.evaluate(
-                                // eslint-disable-next-line @typescript-eslint/no-loop-func
                                 async (
                                     store: Store,
                                     productId: string,
@@ -145,7 +144,6 @@ export class BasketAdder {
                                                     status: addProductResponse.status,
                                                     body: data,
                                                 }))
-                                                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                                                 .catch((_) => ({
                                                     success: false,
                                                     status: addProductResponse.status,
@@ -153,7 +151,6 @@ export class BasketAdder {
                                                     retryAfterHeader: addProductResponse.headers.get("Retry-After"),
                                                 }))
                                         )
-                                        // eslint-disable-next-line @typescript-eslint/no-unused-vars
                                         .catch((_) => ({ success: false, status: -2, body: null })),
                                 this.store,
                                 id,
