@@ -34,7 +34,7 @@ export class WishlistChecker {
         browserManager: BrowserManager,
         cooldownManager: CooldownManager,
         notifiers: Notifier[],
-        database?: DatabaseConnection
+        database?: DatabaseConnection,
     ) {
         this.store = store;
         this.storeConfiguration = storeConfiguration;
@@ -66,7 +66,7 @@ export class WishlistChecker {
                 this.notifiers,
                 this.storeConfiguration.check_online_status ?? false,
                 this.storeConfiguration.check_in_assortment ?? true,
-                this.storeConfiguration.cookie_ids ?? []
+                this.storeConfiguration.cookie_ids ?? [],
             );
             basketProducts = new Map([...basketProducts, ...items]);
 
@@ -93,7 +93,7 @@ export class WishlistChecker {
                             this.notifiers,
                             this.storeConfiguration.check_online_status ?? false,
                             this.storeConfiguration.check_in_assortment ?? true,
-                            this.storeConfiguration.cookie_ids ?? []
+                            this.storeConfiguration.cookie_ids ?? [],
                         );
                         basketProducts = new Map([...basketProducts, ...items]);
                     }
@@ -123,7 +123,7 @@ export class WishlistChecker {
                                 "content-type": "application/json",
                                 "apollographql-client-name": "pwa-client",
                                 "apollographql-client-version": graphQLClientVersion,
-                                "x-operation": "GetUser",
+                                "x-operation": "WishlistItems",
                                 "x-cacheable": "false",
                                 "x-mms-language": store.languageCode,
                                 "x-mms-country": store.countryCode,
@@ -144,6 +144,8 @@ export class WishlistChecker {
                                     limit: 24,
                                     offset: pageOffset,
                                     withMarketingInfos: false,
+                                    salesLine: store.salesLine,
+                                    locale: store.languageCode + "-" + store.countryCode,
                                 },
                                 extensions: {
                                     pwa: {
@@ -164,14 +166,14 @@ export class WishlistChecker {
                                 res
                                     .json()
                                     .then((data: WishlistResponse) => ({ status: res.status, body: data }))
-                                    .catch((_) => ({ status: res.status, body: null, retryAfterHeader: res.headers.get("Retry-After") }))
+                                    .catch((_) => ({ status: res.status, body: null, retryAfterHeader: res.headers.get("Retry-After") })),
                             )
                             .catch((_) => ({ status: -2, body: null })),
                     this.store,
                     offset,
                     v4(),
                     GRAPHQL_CLIENT_VERSION,
-                    this.storeConfiguration.wishlistSHA256
+                    this.storeConfiguration.wishlistSHA256,
                 ),
                 sleep(this.wishlistRaceTimeout, {
                     status: HTTPStatusCode.Timeout,

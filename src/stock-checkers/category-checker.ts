@@ -31,7 +31,7 @@ export class CategoryChecker {
         browserManager: BrowserManager,
         cooldownManager: CooldownManager,
         notifiers: Notifier[],
-        database?: DatabaseConnection
+        database?: DatabaseConnection,
     ) {
         this.store = store;
         this.storeConfiguration = storeConfiguration;
@@ -70,7 +70,7 @@ export class CategoryChecker {
                 this.notifiers,
                 this.storeConfiguration.check_online_status ?? false,
                 this.storeConfiguration.check_in_assortment ?? true,
-                this.storeConfiguration.cookie_ids ?? []
+                this.storeConfiguration.cookie_ids ?? [],
             );
             basketProducts = new Map([...basketProducts, ...items]);
 
@@ -99,7 +99,7 @@ export class CategoryChecker {
                             this.notifiers,
                             this.storeConfiguration.check_online_status ?? false,
                             this.storeConfiguration.check_in_assortment ?? true,
-                            this.storeConfiguration.cookie_ids ?? []
+                            this.storeConfiguration.cookie_ids ?? [],
                         );
                         basketProducts = new Map([...basketProducts, ...items]);
                     }
@@ -112,7 +112,7 @@ export class CategoryChecker {
 
     private async performCategoryQuery(
         category: string,
-        page = this.defaultPage
+        page = this.defaultPage,
     ): Promise<{
         /* eslint-disable @typescript-eslint/indent */
         status: number;
@@ -133,7 +133,7 @@ export class CategoryChecker {
                         pimCode: string,
                         flowId: string,
                         graphQLClientVersion: string,
-                        categorySHA256: string
+                        categorySHA256: string,
                     ) =>
                         fetch(`${store.baseUrl}/api/v1/graphql`, {
                             credentials: "include",
@@ -185,7 +185,7 @@ export class CategoryChecker {
                                 res
                                     .json()
                                     .then((data: CategoryResponse) => ({ status: res.status, body: data }))
-                                    .catch((_) => ({ status: res.status, body: null, retryAfterHeader: res.headers.get("Retry-After") }))
+                                    .catch((_) => ({ status: res.status, body: null, retryAfterHeader: res.headers.get("Retry-After") })),
                             )
                             .catch((_) => ({ status: -2, body: null })),
                     this.store,
@@ -193,7 +193,7 @@ export class CategoryChecker {
                     category,
                     v4(),
                     GRAPHQL_CLIENT_VERSION,
-                    this.storeConfiguration.categorySHA256
+                    this.storeConfiguration.categorySHA256,
                 ),
                 sleep(this.categoryRaceTimeout, {
                     status: HTTPStatusCode.Timeout,

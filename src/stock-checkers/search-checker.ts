@@ -31,7 +31,7 @@ export class SearchChecker {
         browserManager: BrowserManager,
         cooldownManager: CooldownManager,
         notifiers: Notifier[],
-        database?: DatabaseConnection
+        database?: DatabaseConnection,
     ) {
         this.store = store;
         this.storeConfiguration = storeConfiguration;
@@ -70,7 +70,7 @@ export class SearchChecker {
                 this.notifiers,
                 this.storeConfiguration.check_online_status ?? false,
                 this.storeConfiguration.check_in_assortment ?? true,
-                this.storeConfiguration.cookie_ids ?? []
+                this.storeConfiguration.cookie_ids ?? [],
             );
             basketProducts = new Map([...basketProducts, ...items]);
 
@@ -99,7 +99,7 @@ export class SearchChecker {
                             this.notifiers,
                             this.storeConfiguration.check_online_status ?? false,
                             this.storeConfiguration.check_in_assortment ?? true,
-                            this.storeConfiguration.cookie_ids ?? []
+                            this.storeConfiguration.cookie_ids ?? [],
                         );
                         basketProducts = new Map([...basketProducts, ...items]);
                     }
@@ -113,7 +113,7 @@ export class SearchChecker {
     private async performSearchQuery(
         searchQuery: string,
         priceRange?: number[],
-        page = this.defaultPage
+        page = this.defaultPage,
     ): Promise<{
         /* eslint-disable @typescript-eslint/indent */
         status: number;
@@ -135,7 +135,7 @@ export class SearchChecker {
                         range: number[],
                         flowId: string,
                         graphQLClientVersion: string,
-                        searchSHA256: string
+                        searchSHA256: string,
                     ) =>
                         fetch(`${store.baseUrl}/api/v1/graphql`, {
                             credentials: "include",
@@ -191,7 +191,7 @@ export class SearchChecker {
                                 res
                                     .json()
                                     .then((data: SearchResponse) => ({ status: res.status, body: data }))
-                                    .catch((_) => ({ status: res.status, body: null, retryAfterHeader: res.headers.get("Retry-After") }))
+                                    .catch((_) => ({ status: res.status, body: null, retryAfterHeader: res.headers.get("Retry-After") })),
                             )
                             .catch((_) => ({ status: -2, body: null })),
                     this.store,
@@ -200,7 +200,7 @@ export class SearchChecker {
                     priceRange ?? [],
                     v4(),
                     GRAPHQL_CLIENT_VERSION,
-                    this.storeConfiguration.searchSHA256
+                    this.storeConfiguration.searchSHA256,
                 ),
                 sleep(this.searchRaceTimeout, {
                     status: HTTPStatusCode.Timeout,

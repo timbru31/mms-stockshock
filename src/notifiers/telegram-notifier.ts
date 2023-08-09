@@ -65,7 +65,7 @@ export class TelegramNotifier implements Notifier {
             message = this.addTimestamp(
                 `\uD83D\uDFE2 Produkt bei ${this.store.getShortName()} verfügbar: \n\n${item.product.title ?? item.product.id}` +
                     `\nPreis : ${item.price?.price ?? "0"} ${item.price?.currency ?? "𑿠"}!` +
-                    `\n\n${this.productHelper.getProductURL(item, this.store, this.replacements)}`
+                    `\n\n${this.productHelper.getProductURL(item, this.store, this.replacements)}`,
             );
         } else if (this.productHelper.canProductBeAddedToBasket(item, this.checkOnlineStatus, this.checkInAssortment)) {
             if (!this.shoppingCartAlerts) {
@@ -75,7 +75,7 @@ export class TelegramNotifier implements Notifier {
                 `\uD83D\uDED2 Produkt bei ${this.store.getShortName()} kann zum Warenkorb hinzugefügt werden: ` +
                     `\n\n${item.product.title ?? item.product.id} ` +
                     `\nPreis : ${item.price?.price ?? "0"} ${item.price?.currency ?? "𑿠"}!` +
-                    `\n\n${this.productHelper.getProductURL(item, this.store, this.replacements)}`
+                    `\n\n${this.productHelper.getProductURL(item, this.store, this.replacements)}`,
             );
         } else {
             message = this.addTimestamp(
@@ -83,7 +83,7 @@ export class TelegramNotifier implements Notifier {
                     item.product.title ?? item.product.id
                 } ` +
                     `\nPreis : ${item.price?.price ?? "0"} ${item.price?.currency ?? "𑿠"}! ` +
-                    `\n\n${this.productHelper.getProductURL(item, this.store, this.replacements)}`
+                    `\n\n${this.productHelper.getProductURL(item, this.store, this.replacements)}`,
             );
         }
 

@@ -49,7 +49,7 @@ export class CooldownManager {
         item: Item,
         checkOnlineStatus: boolean,
         checkInAssortment: boolean,
-        hasCookies?: boolean
+        hasCookies?: boolean,
     ): void {
         if (!item.product) {
             return;

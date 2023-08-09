@@ -36,7 +36,7 @@ export class LoggerNotifier implements Notifier {
             const precision = 2;
             const minutesFactor = 60;
             const message = `💤 [${this.store.getName()}] Too many requests, we need to pause ${(seconds / minutesFactor).toFixed(
-                precision
+                precision,
             )} minutes... 😴`;
 
             this.logger.info(message);

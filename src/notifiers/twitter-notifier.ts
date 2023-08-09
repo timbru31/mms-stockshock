@@ -37,7 +37,7 @@ export class TwitterNotifier implements Notifier {
                 storeConfig.twitter_api_key,
                 storeConfig.twitter_api_key_secret,
                 storeConfig.twitter_access_token,
-                storeConfig.twitter_access_token_secret
+                storeConfig.twitter_access_token_secret,
             );
         }
 
@@ -79,9 +79,9 @@ export class TwitterNotifier implements Notifier {
                     } ${item.price?.currency ?? "𑿠"}! Jetzt kaufen: ${this.productHelper.getProductURL(
                         item,
                         this.store,
-                        this.replacements
-                    )} \uFF0A`
-                )
+                        this.replacements,
+                    )} \uFF0A`,
+                ),
             );
         } else if (this.productHelper.canProductBeAddedToBasket(item, this.checkOnlineStatus, this.checkInAssortment)) {
             if (!this.shoppingCartAlerts) {
@@ -94,9 +94,9 @@ export class TwitterNotifier implements Notifier {
                     } für ${item.price?.price ?? "0"} ${item.price?.currency ?? "𑿠"}! Jetzt anschauen: ${this.productHelper.getProductURL(
                         item,
                         this.store,
-                        this.replacements
-                    )} \uFF0A`
-                )
+                        this.replacements,
+                    )} \uFF0A`,
+                ),
             );
         } else {
             message = this.addTimestamp(
@@ -106,9 +106,9 @@ export class TwitterNotifier implements Notifier {
                     } für ${item.price?.price ?? "0"} ${item.price?.currency ?? "𑿠"}! Jetzt anschauen: ${this.productHelper.getProductURL(
                         item,
                         this.store,
-                        this.replacements
-                    )} \uFF0A`
-                )
+                        this.replacements,
+                    )} \uFF0A`,
+                ),
             );
         }
 

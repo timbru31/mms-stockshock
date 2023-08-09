@@ -5,7 +5,7 @@ import type { Logger } from "winston";
 import { createLogger as createWinstonLogger, format, transports } from "winston";
 import type { ConfigModel } from "../models/stores/config-model";
 
-export const GRAPHQL_CLIENT_VERSION = "8.11.1";
+export const GRAPHQL_CLIENT_VERSION = "8.14.0";
 
 function getEmojiForLevel(level: string) {
     switch (colors.stripColors(level)) {
@@ -21,7 +21,7 @@ export async function sleep<T>(sleepTime: number, returnValue?: T): Promise<T> {
     return new Promise<T>((resolve) =>
         setTimeout(() => {
             resolve(returnValue ?? ({} as T));
-        }, sleepTime)
+        }, sleepTime),
     );
 }
 
@@ -52,7 +52,7 @@ export function createLogger(): Logger {
                     }),
                     format.errors({ stack: true }),
                     format.splat(),
-                    customLogFormat
+                    customLogFormat,
                 ),
             }),
             new transports.Console({
@@ -63,7 +63,7 @@ export function createLogger(): Logger {
                     }),
                     format.errors({ stack: true }),
                     format.splat(),
-                    customLogFormat
+                    customLogFormat,
                 ),
             }),
         ],

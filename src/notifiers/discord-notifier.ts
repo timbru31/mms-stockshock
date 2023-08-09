@@ -86,9 +86,9 @@ export class DiscordNotifier implements Notifier {
             const minutesFactor = 60;
             const message = this.decorateMessageWithRoles(
                 `💤 [${this.store.getName()}] Too many requests, we need to pause ${(seconds / minutesFactor).toFixed(
-                    precision
+                    precision,
                 )} minutes... 😴`,
-                this.adminRolePing
+                this.adminRolePing,
             );
             try {
                 await this.adminChannel.send(message);
@@ -191,7 +191,7 @@ export class DiscordNotifier implements Notifier {
                         embeds: [embed],
                         content: this.decorateMessageWithRoles(
                             `**[${this.store.getShortName()}]** ${item.product.title ?? ""} now in stock!`,
-                            await this.getRolePingsForTitle(item.product.title ?? "", stockChannelForItem)
+                            await this.getRolePingsForTitle(item.product.title ?? "", stockChannelForItem),
                         ),
                     });
                 } catch (e: unknown) {
@@ -253,11 +253,11 @@ export class DiscordNotifier implements Notifier {
                                   `${emoji} ${item.product.title ?? "(No title yet)"} [${
                                       item.product.id
                                   }] changed the price from ${oldPrice} ${currency} to ${newPrice} ${currency} (${deltaPercentage.toFixed(
-                                      precision
+                                      precision,
                                   )}%)`
                                 : `${emoji} ${item.product.title ?? "(No title yet)"} [${item.product.id}] has been added!`,
                             /* eslint-enable @typescript-eslint/indent */
-                            this.priceChangeRolePing
+                            this.priceChangeRolePing,
                         ),
                     });
                 } catch (e: unknown) {
@@ -289,7 +289,7 @@ export class DiscordNotifier implements Notifier {
 
             if (storeConfig.stock_discord_channel ?? storeConfig.discord_channel) {
                 const tempChannel = await this.discordBot?.channels.fetch(
-                    (storeConfig.stock_discord_channel ?? storeConfig.discord_channel)!
+                    (storeConfig.stock_discord_channel ?? storeConfig.discord_channel)!,
                 );
                 if (((channel): channel is TextChannel => channel?.type === ChannelType.GuildText)(tempChannel)) {
                     this.stockChannel = tempChannel;
@@ -325,7 +325,7 @@ export class DiscordNotifier implements Notifier {
 
             if (storeConfig.cookie_discord_channel ?? storeConfig.discord_channel) {
                 const tempChannel = await this.discordBot?.channels.fetch(
-                    (storeConfig.cookie_discord_channel ?? storeConfig.discord_channel)!
+                    (storeConfig.cookie_discord_channel ?? storeConfig.discord_channel)!,
                 );
                 if (((channel): channel is TextChannel => channel?.type === ChannelType.GuildText)(tempChannel)) {
                     this.cookieChannel = tempChannel;
@@ -337,7 +337,7 @@ export class DiscordNotifier implements Notifier {
 
             if (storeConfig.admin_discord_channel ?? storeConfig.discord_channel) {
                 const tempChannel = await this.discordBot?.channels.fetch(
-                    (storeConfig.admin_discord_channel ?? storeConfig.discord_channel)!
+                    (storeConfig.admin_discord_channel ?? storeConfig.discord_channel)!,
                 );
                 if (((channel): channel is TextChannel => channel?.type === ChannelType.GuildText)(tempChannel)) {
                     this.adminChannel = tempChannel;
@@ -349,7 +349,7 @@ export class DiscordNotifier implements Notifier {
 
             if (storeConfig.price_change_discord_channel ?? storeConfig.discord_channel) {
                 const tempChannel = await this.discordBot?.channels.fetch(
-                    (storeConfig.price_change_discord_channel ?? storeConfig.discord_channel)!
+                    (storeConfig.price_change_discord_channel ?? storeConfig.discord_channel)!,
                 );
                 if (((channel): channel is TextChannel => channel?.type === ChannelType.GuildText)(tempChannel)) {
                     this.priceChangeChannel = tempChannel;

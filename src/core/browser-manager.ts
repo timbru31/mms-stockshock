@@ -84,7 +84,7 @@ export class BrowserManager {
                         password: string,
                         flowId: string,
                         graphQLClientVersion: string,
-                        loginSHA256: string
+                        loginSHA256: string,
                     ) =>
                         fetch(`${store.baseUrl}/api/v1/graphql`, {
                             credentials: "include",
@@ -93,7 +93,7 @@ export class BrowserManager {
                                 "content-type": "application/json",
                                 "apollographql-client-name": "pwa-client",
                                 "apollographql-client-version": graphQLClientVersion,
-                                "x-operation": "LoginProfileUser",
+                                "x-operation": "InitiateLoginTransaction",
                                 "x-cacheable": "false",
                                 "x-mms-language": store.languageCode,
                                 "x-mms-country": store.countryCode,
@@ -107,8 +107,12 @@ export class BrowserManager {
                             method: "POST",
                             mode: "cors",
                             body: JSON.stringify({
-                                operationName: "LoginProfileUser",
-                                variables: { email, password },
+                                operationName: "InitiateLoginTransaction",
+                                variables: {
+                                    email,
+                                    password,
+                                    isLoyaltyTermsVersionCheckRequired: false,
+                                },
                                 extensions: {
                                     pwa: {
                                         salesLine: store.salesLine,
@@ -132,7 +136,7 @@ export class BrowserManager {
                                         status: loginResponse.status,
                                         body: null,
                                         retryAfterHeader: loginResponse.headers.get("Retry-After"),
-                                    }))
+                                    })),
                             )
                             .catch((_) => ({ status: -2, body: null })),
                     this.store,
@@ -140,7 +144,7 @@ export class BrowserManager {
                     password,
                     v4(),
                     GRAPHQL_CLIENT_VERSION,
-                    this.storeConfiguration.loginSHA256
+                    this.storeConfiguration.loginSHA256,
                 ),
                 sleep(this.loginRaceTimeout, {
                     status: HTTPStatusCode.Timeout,
@@ -176,7 +180,7 @@ export class BrowserManager {
 
     async handleResponseError(
         query: string,
-        res: { status: number; body: Response | null; retryAfterHeader?: string | null }
+        res: { status: number; body: Response | null; retryAfterHeader?: string | null },
     ): Promise<void> {
         this.logger.error(`${query} query did not succeed, status code: ${res.status}`);
         if (res.body?.errors) {

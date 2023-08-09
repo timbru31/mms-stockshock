@@ -109,7 +109,7 @@ export class ProductHelper {
         notifiers: Notifier[],
         checkOnlineStatus: boolean,
         checkInAssortment: boolean,
-        cookieIds: string[]
+        cookieIds: string[],
     ): Promise<Map<string, Product>> {
         const basketProducts = new Map<string, Product>();
 
@@ -123,7 +123,7 @@ export class ProductHelper {
                     notifiers,
                     checkOnlineStatus,
                     checkInAssortment,
-                    cookieIds
+                    cookieIds,
                 );
             }
         }
@@ -138,7 +138,7 @@ export class ProductHelper {
         notifiers: Notifier[],
         checkOnlineStatus: boolean,
         checkInAssortment: boolean,
-        cookieIds: string[]
+        cookieIds: string[],
     ): Promise<Map<string, Product>> {
         if (!item) {
             return basketProducts;

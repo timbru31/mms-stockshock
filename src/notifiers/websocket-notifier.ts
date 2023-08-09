@@ -86,7 +86,7 @@ export class WebSocketNotifier implements Notifier {
             this.logger.info(
                 `👌 WebSocket client from ${socket.remoteAddress ?? ""} connected successfully with ${
                     storeConfig.log_passwords ? password : "***"
-                }`
+                }`,
             );
             wss.handleUpgrade(request, socket, head, (ws) => wss.emit("connection", ws, request));
         });
@@ -124,14 +124,14 @@ export class WebSocketNotifier implements Notifier {
                             if (e) {
                                 this.logger.info("😵‍💫 Error sending stock ping, %O", e);
                             }
-                        }
+                        },
                     );
                 }
 
                 this.logger.info(
                     `🏓 Sending stock ping to client (${(client as WebSocketExtended)._socket.remoteAddress ?? ""}) with ready state ${
                         client.readyState
-                    }`
+                    }`,
                 );
             }
         }

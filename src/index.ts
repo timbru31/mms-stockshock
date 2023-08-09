@@ -20,7 +20,7 @@ async function reLoginIfRequired(
     email: string,
     password: string,
     notifiers: Notifier[],
-    logger: Logger
+    logger: Logger,
 ) {
     if (browserManager.reLoginRequired) {
         logger.info("Re-Login required!");
@@ -53,7 +53,7 @@ async function reLaunchIfRequired(
     args: CliArguments,
     logger: Logger,
     notifiers: Notifier[],
-    createNewContext?: boolean
+    createNewContext?: boolean,
 ) {
     let relaunched = false;
     if (browserManager.reLaunchRequired) {

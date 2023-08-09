@@ -31,7 +31,7 @@ export class BasketAdder {
         browserManager: BrowserManager,
         cooldownManager: CooldownManager,
         notifiers: Notifier[],
-        database: DatabaseConnection | undefined
+        database: DatabaseConnection | undefined,
     ) {
         this.store = store;
         this.storeConfiguration = storeConfiguration;
@@ -85,7 +85,7 @@ export class BasketAdder {
                                     productId: string,
                                     flowId: string,
                                     graphQLClientVersion: string,
-                                    addProductSHA256: string
+                                    addProductSHA256: string,
                                 ) =>
                                     fetch(`${store.baseUrl}/api/v1/graphql`, {
                                         credentials: "include",
@@ -149,14 +149,14 @@ export class BasketAdder {
                                                     status: addProductResponse.status,
                                                     body: null,
                                                     retryAfterHeader: addProductResponse.headers.get("Retry-After"),
-                                                }))
+                                                })),
                                         )
                                         .catch((_) => ({ success: false, status: -2, body: null })),
                                 this.store,
                                 id,
                                 v4(),
                                 GRAPHQL_CLIENT_VERSION,
-                                this.storeConfiguration.addProductSHA256
+                                this.storeConfiguration.addProductSHA256,
                             ),
                             sleep(this.addProductRaceTimeout, {
                                 success: false,
@@ -176,7 +176,7 @@ export class BasketAdder {
                             if (basketCookie.value) {
                                 cookies.push(basketCookie.value);
                                 this.logger.info(
-                                    `Made cookie ${basketCookie.value} for product ${id}: ${this.store.baseUrl}?cookie=${basketCookie.value}`
+                                    `Made cookie ${basketCookie.value} for product ${id}: ${this.store.baseUrl}?cookie=${basketCookie.value}`,
                                 );
                             }
                         } catch (e: unknown) {
