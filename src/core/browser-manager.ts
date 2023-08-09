@@ -93,7 +93,7 @@ export class BrowserManager {
                                 "content-type": "application/json",
                                 "apollographql-client-name": "pwa-client",
                                 "apollographql-client-version": graphQLClientVersion,
-                                "x-operation": "InitiateLoginTransaction",
+                                "x-operation": "LoginProfileUser",
                                 "x-cacheable": "false",
                                 "x-mms-language": store.languageCode,
                                 "x-mms-country": store.countryCode,
@@ -107,7 +107,7 @@ export class BrowserManager {
                             method: "POST",
                             mode: "cors",
                             body: JSON.stringify({
-                                operationName: "InitiateLoginTransaction",
+                                operationName: "LoginProfileUser",
                                 variables: {
                                     email,
                                     password,
