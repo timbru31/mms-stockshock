@@ -1,4 +1,4 @@
-# Valid stores are Saturn (saturn), MediaMarkt Germany (mmde), MediaMarkt Austria (mmat), MediaMarkt Spain (mmes), MediaMarkt Netherlands (mmnl) and MediaWorld Italy (mmit)
+# Valid stores are Saturn (saturn), MediaMarkt Germany (mmde), MediaMarkt Austria (mmat), MediaMarkt Belgium (mmbe), MediaMarkt Spain (mmes), MediaMarkt Netherlands (mmnl) and MediaWorld Italy (mmit)
 [mmde]
 # You can define multiple accounts. Make sure to use the first string for the e-mail the second for the password
 accounts = [["", ""]]

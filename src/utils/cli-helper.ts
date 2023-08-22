@@ -5,6 +5,7 @@ import { hideBin } from "yargs/helpers";
 import type { CliArguments } from "../models/cli";
 import type { ConfigModel, StoreConfiguration } from "../models/stores/config-model";
 import { MediaMarktAustria } from "../models/stores/media-markt-austria";
+import { MediaMarktBelgium } from "../models/stores/media-markt-belgium";
 import { MediaMarktGermany } from "../models/stores/media-markt-germany";
 import { MediaMarktNetherlands } from "../models/stores/media-markt-netherlands";
 import { MediaMarktSpain } from "../models/stores/media-markt-spain";
@@ -68,6 +69,13 @@ export async function getStoreAndStoreConfig(config: ConfigModel): Promise<{
         case "mediamarkt austria":
             store = new MediaMarktAustria();
             storeConfig = config.mmat;
+            store.setSleepTimes(storeConfig.min_sleep_time, storeConfig.max_sleep_time);
+            break;
+        case "mmbe":
+        case "mediamarktbelgium":
+        case "mediamarkt belgium":
+            store = new MediaMarktBelgium();
+            storeConfig = config.mmbe;
             store.setSleepTimes(storeConfig.min_sleep_time, storeConfig.max_sleep_time);
             break;
         case "mmde":

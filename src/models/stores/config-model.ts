@@ -1,5 +1,6 @@
 export interface ConfigModel {
     mmat: StoreConfiguration;
+    mmbe: StoreConfiguration;
     mmde: StoreConfiguration;
     mmes: StoreConfiguration;
     mmit: StoreConfiguration;
