@@ -21,6 +21,7 @@ async function reLoginIfRequired(
     password: string,
     notifiers: Notifier[],
     logger: Logger,
+    newLoginMethod: boolean,
 ) {
     if (browserManager.reLoginRequired) {
         logger.info("Re-Login required!");
@@ -41,7 +42,11 @@ async function reLoginIfRequired(
         browserManager.reLoginRequired = false;
         browserManager.reLaunchRequired = false;
         logger.info("Fresh context created!");
-        await browserManager.logIn(email, password, args.headless);
+        if (newLoginMethod) {
+            await browserManager.logInV2(email, password, args.headless);
+        } else {
+            await browserManager.logIn(email, password, args.headless);
+        }
         for (const notifier of notifiers) {
             await notifier.notifyAdmin("🤖 (Re-)Login succeeded, let's hunt");
         }
@@ -176,7 +181,7 @@ void (async function () {
                 logger.info(`💌 Checking wishlist items for account ${email}`);
                 try {
                     await Promise.race([
-                        reLoginIfRequired(browserManager, args, email, password, notifiers, logger),
+                        reLoginIfRequired(browserManager, args, email, password, notifiers, logger, storeConfig.use_new_login ?? false),
                         sleep(loginRaceTimeout),
                     ]);
                 } catch (e: unknown) {

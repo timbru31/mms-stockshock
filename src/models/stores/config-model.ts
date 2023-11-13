@@ -12,6 +12,7 @@ export interface ConfigModel {
 export interface StoreConfiguration {
     // User data
     accounts: string[][];
+    use_new_login?: boolean;
 
     // Categories to check
     categories?: string[];
@@ -96,6 +97,7 @@ export interface StoreConfiguration {
 
     // SHA256 hashes for queries
     loginSHA256: string;
+    loginV2SHA256: string; // new login method
     categorySHA256: string;
     searchSHA256: string;
     wishlistSHA256: string;

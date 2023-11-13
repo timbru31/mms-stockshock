@@ -5,6 +5,9 @@ accounts = [["", ""]]
 # Recommended to leave as is, the 404 page will be used as the entrypoint (has very little JS etc to load)
 start_url = ""
 
+# German markets switched to a new login call
+use_new_login = false
+
 # Check for categories (pimCode)
 categories = []
 # Optionally check a title against a given regular expression
@@ -103,6 +106,7 @@ log_passwords = false
 
 # The hashes from the queries. Tend to change often
 loginSHA256 = ""
+loginV2SHA256 = ""
 categorySHA256 = ""
 wishlistSHA256 = ""
 addProductSHA256 = ""

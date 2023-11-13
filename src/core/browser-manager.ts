@@ -118,8 +118,7 @@ export class BrowserManager {
                                         salesLine: store.salesLine,
                                         country: store.countryCode,
                                         language: store.languageCode,
-                                        globalLoyaltyProgram: true,
-                                        fifaUserCreation: true,
+                                        isMdpActive: true,
                                     },
                                     persistedQuery: {
                                         version: 1,
@@ -145,6 +144,114 @@ export class BrowserManager {
                     v4(),
                     GRAPHQL_CLIENT_VERSION,
                     this.storeConfiguration.loginSHA256,
+                ),
+                sleep(this.loginRaceTimeout, {
+                    status: HTTPStatusCode.Timeout,
+                    body: { errors: "Timeout" },
+                }),
+            ]);
+        } catch (e: unknown) {
+            res = { status: HTTPStatusCode.Error, body: null };
+            this.logger.error("Error, %O", e);
+        }
+        if ((res.status as HTTPStatusCode) !== HTTPStatusCode.OK || !res.body || res.body.errors) {
+            if (headless) {
+                await this.handleResponseError("Login", res);
+                for (const notifier of this.notifiers) {
+                    await notifier.notifyAdmin(`😵 Login did not succeed. Status ${res.status}`);
+                }
+                this.loggedIn = false;
+                this.reLoginRequired = true;
+                throw new Error(`Login did not succeed. Status ${res.status}`);
+            }
+            await prompt({
+                name: "noop",
+                message: "Login did not succeed, please check browser for captcha and log in manually. Then hit enter...",
+            });
+        }
+        this.loggedIn = true;
+        this.reLoginRequired = false;
+    }
+
+    async logInV2(email: string, password: string, headless = true): Promise<void> {
+        if (!this.browser || !this.page) {
+            this.reLaunchRequired = true;
+            this.reLoginRequired = true;
+            throw new Error(`Puppeteer context not initialized! ${!this.page ? "Page" : "Browser"} is undefined.`);
+        }
+
+        let res: { status: number; body: LoginResponse | null; retryAfterHeader?: string | null };
+        try {
+            res = await Promise.race([
+                this.page.evaluate(
+                    async (
+                        store: Store,
+                        email: string,
+                        password: string,
+                        flowId: string,
+                        graphQLClientVersion: string,
+                        loginV2SHA256: string,
+                    ) =>
+                        fetch(`${store.baseUrl}/api/v1/graphql`, {
+                            credentials: "include",
+                            headers: {
+                                /* eslint-disable @typescript-eslint/naming-convention */
+                                "content-type": "application/json",
+                                "apollographql-client-name": "pwa-client",
+                                "apollographql-client-version": graphQLClientVersion,
+                                "x-operation": "InitiateLoginTransaction",
+                                "x-cacheable": "false",
+                                "x-mms-language": store.languageCode,
+                                "x-mms-country": store.countryCode,
+                                "x-mms-salesline": store.salesLine,
+                                "x-flow-id": flowId,
+                                Pragma: "no-cache",
+                                "Cache-Control": "no-cache",
+                                /* eslint-enable @typescript-eslint/naming-convention */
+                            },
+                            referrer: `${store.baseUrl}/`,
+                            method: "POST",
+                            mode: "cors",
+                            body: JSON.stringify({
+                                operationName: "InitiateLoginTransaction",
+                                variables: {
+                                    email,
+                                    password,
+                                    isLoyaltyTermsVersionCheckRequired: false,
+                                },
+                                extensions: {
+                                    pwa: {
+                                        salesLine: store.salesLine,
+                                        country: store.countryCode,
+                                        language: store.languageCode,
+                                        globalLoyaltyProgram: true,
+                                        isMdpActive: true,
+                                        isOneAccountProgramActive: true,
+                                    },
+                                    persistedQuery: {
+                                        version: 1,
+                                        sha256Hash: loginV2SHA256,
+                                    },
+                                },
+                            }),
+                        })
+                            .then(async (loginResponse) =>
+                                loginResponse
+                                    .json()
+                                    .then((data: LoginResponse) => ({ status: loginResponse.status, body: data }))
+                                    .catch((_) => ({
+                                        status: loginResponse.status,
+                                        body: null,
+                                        retryAfterHeader: loginResponse.headers.get("Retry-After"),
+                                    })),
+                            )
+                            .catch((_) => ({ status: -2, body: null })),
+                    this.store,
+                    email,
+                    password,
+                    v4(),
+                    GRAPHQL_CLIENT_VERSION,
+                    this.storeConfiguration.loginV2SHA256,
                 ),
                 sleep(this.loginRaceTimeout, {
                     status: HTTPStatusCode.Timeout,

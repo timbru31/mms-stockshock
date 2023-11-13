@@ -146,6 +146,9 @@ export class WishlistChecker {
                                     withMarketingInfos: false,
                                     salesLine: store.salesLine,
                                     locale: store.languageCode + "-" + store.countryCode,
+                                    isMpOfferV3Active: true,
+                                    isMpOfferOldActive: false,
+                                    isArtificialScarcityActive: true,
                                 },
                                 extensions: {
                                     pwa: {
