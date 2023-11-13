@@ -37,6 +37,10 @@ export async function getStoreAndStoreConfig(config: ConfigModel): Promise<{
                     value: "mediamarkt austria",
                 } as ListChoiceOptions,
                 {
+                    name: "MediaMarkt Belgium",
+                    value: "mediamarkt belgium",
+                } as ListChoiceOptions,
+                {
                     name: "MediaMarkt Germany",
                     value: "mediamarkt germany",
                 } as ListChoiceOptions,
