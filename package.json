@@ -45,7 +45,7 @@
         "@types/user-agents": "^1.0.4",
         "@types/ws": "^8.5.9",
         "@types/yargs": "^17.0.31",
-        "@typescript-eslint/eslint-plugin": "^6.10.0",
+        "@typescript-eslint/eslint-plugin": "^6.11.0",
         "@typescript-eslint/parser": "^6.10.0",
         "eslint": "^8.53.0",
         "eslint-plugin-deprecation": "^2.0.0",
