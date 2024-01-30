@@ -11,7 +11,7 @@
         "start": "node dist/src/index.js",
         "lint": "npm test",
         "test": "eslint . --ext .ts",
-        "prepare": "husky install"
+        "prepare": "husky"
     },
     "repository": "timbru31/mms-stockshock",
     "author": "Tim Brust <github@timbrust.de>",
