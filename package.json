@@ -28,7 +28,7 @@
         "discord.js": "^14.14.1",
         "inquirer": "^8.2.6",
         "proxy-chain": "^2.4.0",
-        "puppeteer": "^21.10.0",
+        "puppeteer": "^21.11.0",
         "puppeteer-extra": "^3.3.6",
         "puppeteer-extra-plugin-stealth": "^2.11.2",
         "telegraf": "^4.15.3",
