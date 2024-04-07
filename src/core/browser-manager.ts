@@ -390,7 +390,7 @@ export class BrowserManager {
             });
         }
 
-        const client = await this.page.target().createCDPSession();
+        const client = await this.page.createCDPSession();
         await client.send("Network.clearBrowserCookies");
 
         // This is the fastest site to render without any JS or CSS bloat

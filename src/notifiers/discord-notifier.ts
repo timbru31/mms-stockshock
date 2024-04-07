@@ -296,7 +296,7 @@ export class DiscordNotifier implements Notifier {
                 }
             }
             if (storeConfig.stock_discord_regex_channel) {
-                storeConfig.stock_discord_regex_channel.map(async (pair) => {
+                void storeConfig.stock_discord_regex_channel.map(async (pair) => {
                     const regexpStr = pair[key];
                     const channelIds = pair[value].split(",");
                     const tempChannels: TextChannel[] = [];
