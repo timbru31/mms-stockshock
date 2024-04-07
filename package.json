@@ -19,7 +19,7 @@
     "bugs": "https://github.com/timbru31/mms-stockshock/issues",
     "homepage": "https://github.com/timbru31/mms-stockshock#readme",
     "engines": {
-        "node": ">=18"
+        "node": ">=20"
     },
     "dependencies": {
         "@aws-sdk/client-dynamodb": "^3.549.0",
