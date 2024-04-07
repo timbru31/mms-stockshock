@@ -264,7 +264,7 @@ export class BrowserManager {
         }
         if ((res.status as HTTPStatusCode) !== HTTPStatusCode.OK || !res.body || res.body.errors) {
             if (headless) {
-                await this.handleResponseError("Login", res);
+                await this.handleResponseError("LoginV2", res);
                 for (const notifier of this.notifiers) {
                     await notifier.notifyAdmin(`😵 Login did not succeed. Status ${res.status}`);
                 }
