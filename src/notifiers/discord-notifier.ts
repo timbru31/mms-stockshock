@@ -276,91 +276,7 @@ export class DiscordNotifier implements Notifier {
             intents: [],
         });
         await this.discordBot.login(storeConfig.discord_bot_token);
-        this.discordBot.once("ready", async () => {
-            this.logger.info("👌 Discord bot integration ready");
-            this.discordBotReady = true;
-            this.discordBot?.user?.setStatus("online");
-            this.discordBot?.user?.setActivity({
-                name: storeConfig.discord_activity_message ?? "eating your cookies. 🍪",
-                type: ActivityType.Playing,
-            });
-            const key = 0;
-            const value = 1;
-
-            if (storeConfig.stock_discord_channel ?? storeConfig.discord_channel) {
-                const tempChannel = await this.discordBot?.channels.fetch(
-                    (storeConfig.stock_discord_channel ?? storeConfig.discord_channel)!,
-                );
-                if (((channel): channel is TextChannel => channel?.type === ChannelType.GuildText)(tempChannel)) {
-                    this.stockChannel = tempChannel;
-                }
-            }
-            if (storeConfig.stock_discord_regex_channel) {
-                void storeConfig.stock_discord_regex_channel.map(async (pair) => {
-                    const regexpStr = pair[key];
-                    const channelIds = pair[value].split(",");
-                    const tempChannels: TextChannel[] = [];
-                    for (const channelId of channelIds) {
-                        const tempChannel = await this.discordBot?.channels.fetch(channelId);
-                        if (((channel): channel is TextChannel => channel?.type === ChannelType.GuildText)(tempChannel)) {
-                            tempChannels.push(tempChannel);
-                        }
-                    }
-                    const regexp = new RegExp(regexpStr, "i");
-                    this.stockRegexChannel.set(regexp, tempChannels);
-                });
-            }
-
-            if (storeConfig.stock_discord_role_ping ?? storeConfig.discord_role_ping) {
-                this.stockRolePing = storeConfig.stock_discord_role_ping ?? storeConfig.discord_role_ping;
-            }
-            if (storeConfig.stock_discord_regex_role_ping) {
-                storeConfig.stock_discord_regex_role_ping.map((pair) => {
-                    const regexpStr = pair[key];
-                    const roleId = pair[value].split(",");
-                    const regexp = new RegExp(regexpStr, "i");
-                    this.stockRegexRolePing.set(regexp, roleId);
-                });
-            }
-
-            if (storeConfig.cookie_discord_channel ?? storeConfig.discord_channel) {
-                const tempChannel = await this.discordBot?.channels.fetch(
-                    (storeConfig.cookie_discord_channel ?? storeConfig.discord_channel)!,
-                );
-                if (((channel): channel is TextChannel => channel?.type === ChannelType.GuildText)(tempChannel)) {
-                    this.cookieChannel = tempChannel;
-                }
-            }
-            if (storeConfig.cookie_discord_role_ping ?? storeConfig.discord_role_ping) {
-                this.cookieRolePing = storeConfig.cookie_discord_role_ping ?? storeConfig.discord_role_ping;
-            }
-
-            if (storeConfig.admin_discord_channel ?? storeConfig.discord_channel) {
-                const tempChannel = await this.discordBot?.channels.fetch(
-                    (storeConfig.admin_discord_channel ?? storeConfig.discord_channel)!,
-                );
-                if (((channel): channel is TextChannel => channel?.type === ChannelType.GuildText)(tempChannel)) {
-                    this.adminChannel = tempChannel;
-                }
-            }
-            if (storeConfig.admin_discord_role_ping ?? storeConfig.discord_role_ping) {
-                this.adminRolePing = storeConfig.admin_discord_role_ping ?? storeConfig.discord_role_ping;
-            }
-
-            if (storeConfig.price_change_discord_channel ?? storeConfig.discord_channel) {
-                const tempChannel = await this.discordBot?.channels.fetch(
-                    (storeConfig.price_change_discord_channel ?? storeConfig.discord_channel)!,
-                );
-                if (((channel): channel is TextChannel => channel?.type === ChannelType.GuildText)(tempChannel)) {
-                    this.priceChangeChannel = tempChannel;
-                }
-            }
-            if (storeConfig.price_change_discord_role_ping ?? storeConfig.discord_role_ping) {
-                this.priceChangeRolePing = storeConfig.price_change_discord_role_ping ?? storeConfig.discord_role_ping;
-            }
-
-            this.noCookieEmoji = storeConfig.discord_nocookie_emoji;
-        });
+        this.discordBot.once("ready", () => void this.setupChannelsAndRoles(storeConfig));
 
         this.discordBot.on("rateLimit", (error) => {
             this.logger.error("Discord API error (rateLimit), %O", error);
@@ -371,6 +287,86 @@ export class DiscordNotifier implements Notifier {
         this.discordBot.on("shardError", (error) => {
             this.logger.error("Discord API error (shardError), %O", error);
         });
+    }
+
+    private async setupChannelsAndRoles(storeConfig: StoreConfiguration) {
+        this.logger.info("👌 Discord bot integration ready");
+        this.discordBotReady = true;
+        this.discordBot?.user?.setStatus("online");
+        this.discordBot?.user?.setActivity({
+            name: storeConfig.discord_activity_message ?? "eating your cookies. 🍪",
+            type: ActivityType.Playing,
+        });
+        const key = 0;
+        const value = 1;
+
+        if (storeConfig.stock_discord_channel ?? storeConfig.discord_channel) {
+            const tempChannel = await this.discordBot?.channels.fetch((storeConfig.stock_discord_channel ?? storeConfig.discord_channel)!);
+            if (((channel): channel is TextChannel => channel?.type === ChannelType.GuildText)(tempChannel)) {
+                this.stockChannel = tempChannel;
+            }
+        }
+        if (storeConfig.stock_discord_regex_channel) {
+            void storeConfig.stock_discord_regex_channel.map(async (pair) => {
+                const regexpStr = pair[key];
+                const channelIds = pair[value].split(",");
+                const tempChannels: TextChannel[] = [];
+                for (const channelId of channelIds) {
+                    const tempChannel = await this.discordBot?.channels.fetch(channelId);
+                    if (((channel): channel is TextChannel => channel?.type === ChannelType.GuildText)(tempChannel)) {
+                        tempChannels.push(tempChannel);
+                    }
+                }
+                const regexp = new RegExp(regexpStr, "i");
+                this.stockRegexChannel.set(regexp, tempChannels);
+            });
+        }
+
+        if (storeConfig.stock_discord_role_ping ?? storeConfig.discord_role_ping) {
+            this.stockRolePing = storeConfig.stock_discord_role_ping ?? storeConfig.discord_role_ping;
+        }
+        if (storeConfig.stock_discord_regex_role_ping) {
+            storeConfig.stock_discord_regex_role_ping.map((pair) => {
+                const regexpStr = pair[key];
+                const roleId = pair[value].split(",");
+                const regexp = new RegExp(regexpStr, "i");
+                this.stockRegexRolePing.set(regexp, roleId);
+            });
+        }
+
+        if (storeConfig.cookie_discord_channel ?? storeConfig.discord_channel) {
+            const tempChannel = await this.discordBot?.channels.fetch((storeConfig.cookie_discord_channel ?? storeConfig.discord_channel)!);
+            if (((channel): channel is TextChannel => channel?.type === ChannelType.GuildText)(tempChannel)) {
+                this.cookieChannel = tempChannel;
+            }
+        }
+        if (storeConfig.cookie_discord_role_ping ?? storeConfig.discord_role_ping) {
+            this.cookieRolePing = storeConfig.cookie_discord_role_ping ?? storeConfig.discord_role_ping;
+        }
+
+        if (storeConfig.admin_discord_channel ?? storeConfig.discord_channel) {
+            const tempChannel = await this.discordBot?.channels.fetch((storeConfig.admin_discord_channel ?? storeConfig.discord_channel)!);
+            if (((channel): channel is TextChannel => channel?.type === ChannelType.GuildText)(tempChannel)) {
+                this.adminChannel = tempChannel;
+            }
+        }
+        if (storeConfig.admin_discord_role_ping ?? storeConfig.discord_role_ping) {
+            this.adminRolePing = storeConfig.admin_discord_role_ping ?? storeConfig.discord_role_ping;
+        }
+
+        if (storeConfig.price_change_discord_channel ?? storeConfig.discord_channel) {
+            const tempChannel = await this.discordBot?.channels.fetch(
+                (storeConfig.price_change_discord_channel ?? storeConfig.discord_channel)!,
+            );
+            if (((channel): channel is TextChannel => channel?.type === ChannelType.GuildText)(tempChannel)) {
+                this.priceChangeChannel = tempChannel;
+            }
+        }
+        if (storeConfig.price_change_discord_role_ping ?? storeConfig.discord_role_ping) {
+            this.priceChangeRolePing = storeConfig.price_change_discord_role_ping ?? storeConfig.discord_role_ping;
+        }
+
+        this.noCookieEmoji = storeConfig.discord_nocookie_emoji;
     }
 
     private async getRolePingsForTitle(title: string, stockChannel: TextChannel) {
