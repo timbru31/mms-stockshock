@@ -22,22 +22,22 @@
         "node": ">=20"
     },
     "dependencies": {
-        "@aws-sdk/client-dynamodb": "^3.556.0",
+        "@aws-sdk/client-dynamodb": "^3.585.0",
         "@types/uuid": "^9.0.8",
         "date-fns": "^3.6.0",
-        "discord.js": "^14.14.1",
+        "discord.js": "^14.15.2",
         "inquirer": "^8.2.6",
         "proxy-chain": "^2.4.0",
-        "puppeteer": "^22.6.5",
+        "puppeteer": "^22.10.0",
         "puppeteer-extra": "^3.3.6",
         "puppeteer-extra-plugin-stealth": "^2.11.2",
         "telegraf": "^4.16.3",
         "toml": "^3.0.0",
-        "twitter-api-v2": "^1.16.1",
-        "user-agents": "^1.1.178",
+        "twitter-api-v2": "^1.17.0",
+        "user-agents": "^1.1.219",
         "uuid": "^9.0.1",
         "winston": "^3.13.0",
-        "ws": "^8.16.0",
+        "ws": "^8.17.0",
         "yargs": "^17.7.2"
     },
     "devDependencies": {
@@ -50,7 +50,7 @@
         "eslint": "^8.57.0",
         "eslint-plugin-deprecation": "^2.0.0",
         "husky": "^9.0.11",
-        "lint-staged": "^15.2.2",
+        "lint-staged": "^15.2.5",
         "prettier": "^3.2.5",
         "ts-node": "^10.9.2",
         "typescript": "^5.4.5"
