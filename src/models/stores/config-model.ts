@@ -5,6 +5,7 @@ export interface ConfigModel {
     mmes: StoreConfiguration;
     mmit: StoreConfiguration;
     mmnl: StoreConfiguration;
+    mmpl: StoreConfiguration;
     saturn: StoreConfiguration;
 }
 
