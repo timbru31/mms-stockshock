@@ -26,7 +26,7 @@
         "@types/uuid": "^10.0.0",
         "date-fns": "^3.6.0",
         "discord.js": "^14.15.3",
-        "inquirer": "^8.2.6",
+        "inquirer": "^9.2.23",
         "proxy-chain": "^2.5.1",
         "puppeteer": "^22.12.0",
         "puppeteer-extra": "^3.3.6",
@@ -41,7 +41,7 @@
         "yargs": "^17.7.2"
     },
     "devDependencies": {
-        "@types/inquirer": "^8.2.1",
+        "@types/inquirer": "^9.0.7",
         "@types/user-agents": "^1.0.4",
         "@types/ws": "^8.5.10",
         "@types/yargs": "^17.0.32",
