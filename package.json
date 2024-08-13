@@ -46,7 +46,7 @@
         "@types/ws": "^8.5.12",
         "@types/yargs": "^17.0.33",
         "@typescript-eslint/eslint-plugin": "^6.16.0",
-        "@typescript-eslint/parser": "^6.21.0",
+        "@typescript-eslint/parser": "^8.1.0",
         "eslint": "^8.57.0",
         "eslint-plugin-deprecation": "^3.0.0",
         "husky": "^9.1.4",
