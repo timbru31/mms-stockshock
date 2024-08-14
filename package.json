@@ -50,7 +50,7 @@
         "eslint": "^8.57.0",
         "eslint-plugin-deprecation": "^3.0.0",
         "husky": "^9.1.4",
-        "lint-staged": "^15.2.8",
+        "lint-staged": "^15.2.9",
         "prettier": "^3.3.3",
         "ts-node": "^10.9.2",
         "typescript": "^5.4.5"
