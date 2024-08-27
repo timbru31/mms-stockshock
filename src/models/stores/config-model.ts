@@ -10,7 +10,6 @@ export interface ConfigModel {
     saturn: StoreConfiguration;
 }
 
-/* eslint-disable @typescript-eslint/naming-convention */
 export interface StoreConfiguration {
     // User data
     accounts: string[][];
@@ -105,4 +104,3 @@ export interface StoreConfiguration {
     wishlistSHA256: string;
     addProductSHA256: string;
 }
-/* eslint-enable @typescript-eslint/naming-convention */

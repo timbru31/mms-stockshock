@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/naming-convention */
 export enum HTTPStatusCode {
     InnerError = -2,
     Error = -1,

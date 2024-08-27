@@ -90,7 +90,6 @@ export class BasketAdder {
                                     fetch(`${store.baseUrl}/api/v1/graphql`, {
                                         credentials: "include",
                                         headers: {
-                                            /* eslint-disable @typescript-eslint/naming-convention */
                                             "content-type": "application/json",
                                             "apollographql-client-name": "pwa-client",
                                             "apollographql-client-version": graphQLClientVersion,
@@ -102,7 +101,6 @@ export class BasketAdder {
                                             "x-flow-id": flowId,
                                             Pragma: "no-cache",
                                             "Cache-Control": "no-cache",
-                                            /* eslint-enable @typescript-eslint/naming-convention */
                                         },
                                         referrer: `${store.baseUrl}/`,
                                         method: "POST",
@@ -139,7 +137,6 @@ export class BasketAdder {
                                             addProductResponse
                                                 .json()
                                                 .then((data: AddProductResponse) => ({
-                                                    // eslint-disable-next-line @typescript-eslint/no-magic-numbers
                                                     success: addProductResponse.status === 200,
                                                     status: addProductResponse.status,
                                                     body: data,
@@ -171,7 +168,6 @@ export class BasketAdder {
 
                     if (res.success) {
                         try {
-                            // eslint-disable-next-line @typescript-eslint/no-magic-numbers
                             const basketCookie = (await this.browserManager.page.cookies()).filter((cookie) => cookie.name === "r")[0];
                             if (basketCookie.value) {
                                 cookies.push(basketCookie.value);

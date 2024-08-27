@@ -119,7 +119,6 @@ export class WishlistChecker {
                         fetch(`${store.baseUrl}/api/v1/graphql`, {
                             credentials: "include",
                             headers: {
-                                /* eslint-disable @typescript-eslint/naming-convention */
                                 "content-type": "application/json",
                                 "apollographql-client-name": "pwa-client",
                                 "apollographql-client-version": graphQLClientVersion,
@@ -131,7 +130,6 @@ export class WishlistChecker {
                                 "x-flow-id": flowId,
                                 Pragma: "no-cache",
                                 "Cache-Control": "no-cache",
-                                /* eslint-enable @typescript-eslint/naming-convention */
                             },
                             referrer: `${store.baseUrl}/`,
                             method: "POST",

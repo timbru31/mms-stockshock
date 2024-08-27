@@ -68,7 +68,7 @@ export class DiscordNotifier implements Notifier {
     async notifyAdmin(message: string): Promise<void> {
         if (this.adminChannel) {
             const storeName = ` [${this.store.getName()}]`;
-            // eslint-disable-next-line @typescript-eslint/no-magic-numbers
+
             const storeEnrichedMessage = [message.slice(0, 2), storeName, message.slice(2)].join("");
             const decoratedMessage = this.decorateMessageWithRoles(storeEnrichedMessage, this.adminRolePing);
             try {
@@ -100,9 +100,8 @@ export class DiscordNotifier implements Notifier {
 
     async notifyCookies(product?: Product, cookies?: string[]): Promise<void> {
         if (product && cookies) {
-            let rawMessage = `🍪 ${cookies.length} basket cookies were made for **${product.id}**, **${
-                product.title ?? ""
-            }** for ${this.store.getName()}`;
+            let rawMessage = `🍪 ${cookies.length} basket cookies were made for **${product.id}**, **${product.title ?? ""
+                }** for ${this.store.getName()}`;
             if (this.announceCookies) {
                 rawMessage += `:\n\`${cookies.map((cookie) => `${this.store.baseUrl}?cookie=${cookie}`).join("\n")}\`\n`;
             }
@@ -249,14 +248,11 @@ export class DiscordNotifier implements Notifier {
                         embeds: [embed],
                         content: this.decorateMessageWithRoles(
                             oldPrice
-                                ? /* eslint-disable @typescript-eslint/indent */
-                                  `${emoji} ${item.product.title ?? "(No title yet)"} [${
-                                      item.product.id
-                                  }] changed the price from ${oldPrice} ${currency} to ${newPrice} ${currency} (${deltaPercentage.toFixed(
-                                      precision,
-                                  )}%)`
+                                ? `${emoji} ${item.product.title ?? "(No title yet)"} [${item.product.id
+                                }] changed the price from ${oldPrice} ${currency} to ${newPrice} ${currency} (${deltaPercentage.toFixed(
+                                    precision,
+                                )}%)`
                                 : `${emoji} ${item.product.title ?? "(No title yet)"} [${item.product.id}] has been added!`,
-                            /* eslint-enable @typescript-eslint/indent */
                             this.priceChangeRolePing,
                         ),
                     });
@@ -301,6 +297,7 @@ export class DiscordNotifier implements Notifier {
         const value = 1;
 
         if (storeConfig.stock_discord_channel ?? storeConfig.discord_channel) {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             const tempChannel = await this.discordBot?.channels.fetch((storeConfig.stock_discord_channel ?? storeConfig.discord_channel)!);
             if (((channel): channel is TextChannel => channel?.type === ChannelType.GuildText)(tempChannel)) {
                 this.stockChannel = tempChannel;
@@ -335,6 +332,7 @@ export class DiscordNotifier implements Notifier {
         }
 
         if (storeConfig.cookie_discord_channel ?? storeConfig.discord_channel) {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             const tempChannel = await this.discordBot?.channels.fetch((storeConfig.cookie_discord_channel ?? storeConfig.discord_channel)!);
             if (((channel): channel is TextChannel => channel?.type === ChannelType.GuildText)(tempChannel)) {
                 this.cookieChannel = tempChannel;
@@ -345,6 +343,7 @@ export class DiscordNotifier implements Notifier {
         }
 
         if (storeConfig.admin_discord_channel ?? storeConfig.discord_channel) {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             const tempChannel = await this.discordBot?.channels.fetch((storeConfig.admin_discord_channel ?? storeConfig.discord_channel)!);
             if (((channel): channel is TextChannel => channel?.type === ChannelType.GuildText)(tempChannel)) {
                 this.adminChannel = tempChannel;
@@ -356,6 +355,7 @@ export class DiscordNotifier implements Notifier {
 
         if (storeConfig.price_change_discord_channel ?? storeConfig.discord_channel) {
             const tempChannel = await this.discordBot?.channels.fetch(
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 (storeConfig.price_change_discord_channel ?? storeConfig.discord_channel)!,
             );
             if (((channel): channel is TextChannel => channel?.type === ChannelType.GuildText)(tempChannel)) {

@@ -75,7 +75,6 @@ export class CategoryChecker {
             basketProducts = new Map([...basketProducts, ...items]);
 
             if (totalPages && !Number.isNaN(totalPages) && totalPages > 1) {
-                // eslint-disable-next-line @typescript-eslint/no-magic-numbers
                 for (let additionalQueryCalls = 2; additionalQueryCalls <= totalPages; additionalQueryCalls += 1) {
                     await sleep(this.store.getSleepTime());
                     const innerCategoryResponse = await this.performCategoryQuery(category, additionalQueryCalls);
@@ -114,12 +113,10 @@ export class CategoryChecker {
         category: string,
         page = this.defaultPage,
     ): Promise<{
-        /* eslint-disable @typescript-eslint/indent */
         status: number;
         body: CategoryResponse | null;
         retryAfterHeader?: string | null;
     }> {
-        /* eslint-enable @typescript-eslint/indent */
         if (!this.browserManager.page) {
             this.logger.error("Unable to perform category query: page is undefined!");
             return Promise.resolve({ status: 0, body: null });
@@ -138,7 +135,6 @@ export class CategoryChecker {
                         fetch(`${store.baseUrl}/api/v1/graphql`, {
                             credentials: "include",
                             headers: {
-                                /* eslint-disable @typescript-eslint/naming-convention */
                                 "content-type": "application/json",
                                 "apollographql-client-name": "pwa-client",
                                 "apollographql-client-version": graphQLClientVersion,
@@ -150,7 +146,6 @@ export class CategoryChecker {
                                 "x-flow-id": flowId,
                                 Pragma: "no-cache",
                                 "Cache-Control": "no-cache",
-                                /* eslint-enable @typescript-eslint/naming-convention */
                             },
                             referrer: `${store.baseUrl}/`,
                             method: "POST",

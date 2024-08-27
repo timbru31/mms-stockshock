@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/naming-convention */
 import type { DynamoDBClientConfig, GetItemCommandInput, UpdateItemCommandInput } from "@aws-sdk/client-dynamodb";
 import { DynamoDBClient, GetItemCommand, UpdateItemCommand } from "@aws-sdk/client-dynamodb";
 import type { Product } from "../models/api/product";
@@ -87,7 +86,7 @@ export class DynamoDBStore implements DatabaseConnection {
         try {
             const response = await this.client.send(command);
             return response.Item?.cookies.L?.length ?? this.fallbackAmount;
-        } catch (e: unknown) {
+        } catch (_e: unknown) {
             return this.fallbackAmount;
         }
     }
@@ -105,7 +104,7 @@ export class DynamoDBStore implements DatabaseConnection {
             const response = await this.client.send(command);
             const priceString = response.Item?.price.N;
             return priceString ? parseFloat(priceString) : NaN;
-        } catch (e: unknown) {
+        } catch (_e: unknown) {
             return NaN;
         }
     }

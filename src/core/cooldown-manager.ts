@@ -18,7 +18,6 @@ export class CooldownManager {
     constructor(storeConfig: StoreConfiguration) {
         if (existsSync("basket-cooldowns.json")) {
             try {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 this.basketCooldowns = new Map(JSON.parse(readFileSync("basket-cooldowns.json", "utf-8")));
             } catch {
                 this.basketCooldowns = new Map<string, NotificationCooldown>();
@@ -27,20 +26,18 @@ export class CooldownManager {
 
         if (existsSync("cooldowns.json")) {
             try {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 this.cooldowns = new Map(JSON.parse(readFileSync("cooldowns.json", "utf-8")));
             } catch {
                 this.cooldowns = new Map<string, NotificationCooldown>();
             }
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-magic-numbers
         this.cooldownInStockMinutes = storeConfig.cooldown_in_stock_minutes ?? 10;
-        // eslint-disable-next-line @typescript-eslint/no-magic-numbers
+
         this.cooldownCanBeAddedToBasketMinutes = storeConfig.cooldown_can_be_added_to_basket_minutes ?? 12 * 60;
-        // eslint-disable-next-line @typescript-eslint/no-magic-numbers
+
         this.cooldownStockWithCookiesMinutes = storeConfig.cooldown_stock_with_cookies_minutes ?? 2 * 60;
-        // eslint-disable-next-line @typescript-eslint/no-magic-numbers
+
         this.cooldownStockNoCookiesMinutes = storeConfig.cooldown_stock_no_cookies_minutes ?? 24 * 60;
     }
 

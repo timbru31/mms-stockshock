@@ -89,7 +89,6 @@ export class BrowserManager {
                         fetch(`${store.baseUrl}/api/v1/graphql`, {
                             credentials: "include",
                             headers: {
-                                /* eslint-disable @typescript-eslint/naming-convention */
                                 "content-type": "application/json",
                                 "apollographql-client-name": "pwa-client",
                                 "apollographql-client-version": graphQLClientVersion,
@@ -101,7 +100,6 @@ export class BrowserManager {
                                 "x-flow-id": flowId,
                                 Pragma: "no-cache",
                                 "Cache-Control": "no-cache",
-                                /* eslint-enable @typescript-eslint/naming-convention */
                             },
                             referrer: `${store.baseUrl}/`,
                             method: "POST",
@@ -195,7 +193,6 @@ export class BrowserManager {
                         fetch(`${store.baseUrl}/api/v1/graphql`, {
                             credentials: "include",
                             headers: {
-                                /* eslint-disable @typescript-eslint/naming-convention */
                                 "content-type": "application/json",
                                 "apollographql-client-name": "pwa-client",
                                 "apollographql-client-version": graphQLClientVersion,
@@ -207,7 +204,6 @@ export class BrowserManager {
                                 "x-flow-id": flowId,
                                 Pragma: "no-cache",
                                 "Cache-Control": "no-cache",
-                                /* eslint-enable @typescript-eslint/naming-convention */
                             },
                             referrer: `${store.baseUrl}/`,
                             method: "POST",
@@ -427,12 +423,10 @@ export class BrowserManager {
                 Object.defineProperty(HTMLDivElement.prototype, "offsetHeight", {
                     ...elementDescriptor,
                     get: function () {
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                         if (this.id === "modernizr") {
-                            // eslint-disable-next-line @typescript-eslint/no-magic-numbers
                             return 1;
                         }
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+
                         return elementDescriptor?.get?.apply(this);
                     },
                 });
