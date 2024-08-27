@@ -100,8 +100,7 @@ export class DiscordNotifier implements Notifier {
 
     async notifyCookies(product?: Product, cookies?: string[]): Promise<void> {
         if (product && cookies) {
-            let rawMessage = `🍪 ${cookies.length} basket cookies were made for **${product.id}**, **${product.title ?? ""
-                }** for ${this.store.getName()}`;
+            let rawMessage = `🍪 ${cookies.length} basket cookies were made for **${product.id}**, **${product.title ?? ""}** for ${this.store.getName()}`;
             if (this.announceCookies) {
                 rawMessage += `:\n\`${cookies.map((cookie) => `${this.store.baseUrl}?cookie=${cookie}`).join("\n")}\`\n`;
             }
@@ -248,10 +247,7 @@ export class DiscordNotifier implements Notifier {
                         embeds: [embed],
                         content: this.decorateMessageWithRoles(
                             oldPrice
-                                ? `${emoji} ${item.product.title ?? "(No title yet)"} [${item.product.id
-                                }] changed the price from ${oldPrice} ${currency} to ${newPrice} ${currency} (${deltaPercentage.toFixed(
-                                    precision,
-                                )}%)`
+                                ? `${emoji} ${item.product.title ?? "(No title yet)"} [${item.product.id}] changed the price from ${oldPrice} ${currency} to ${newPrice} ${currency} (${deltaPercentage.toFixed(precision)}%)`
                                 : `${emoji} ${item.product.title ?? "(No title yet)"} [${item.product.id}] has been added!`,
                             this.priceChangeRolePing,
                         ),
