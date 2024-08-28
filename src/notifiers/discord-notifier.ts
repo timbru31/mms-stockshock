@@ -138,13 +138,11 @@ export class DiscordNotifier implements Notifier {
             },
         ]);
         if (this.showMagicianLink) {
-            embed.addFields([
-                { name: "Magician", value: `${this.productHelper.getProductURL(item, this.store, this.replacements, true)}` },
-            ]);
+            embed.addFields([{ name: "Magician", value: this.productHelper.getProductURL(item, this.store, this.replacements, true) }]);
         }
         if (this.showCookiesAmount) {
             embed.addFields([
-                { name: "Cookies", value: cookiesAmount ? `${cookiesAmount} 🍪` : `${this.noCookieEmoji ?? "👎"}`, inline: true },
+                { name: "Cookies", value: cookiesAmount ? `${cookiesAmount} 🍪` : (this.noCookieEmoji ?? "👎"), inline: true },
             ]);
         }
         embed.addFields([{ name: "Availability State", value: item.availability.delivery?.availabilityType ?? "UNKNOWN", inline: true }]);

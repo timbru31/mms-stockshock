@@ -170,6 +170,7 @@ void (async function () {
     const wishlistRaceTimeout = 60000;
     const loginRaceTimeout = 30000;
 
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     while (shouldRun) {
         try {
             logger.info("🤖 Beep, I'm alive and well checking your stock");

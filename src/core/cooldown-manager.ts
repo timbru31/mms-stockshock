@@ -18,7 +18,9 @@ export class CooldownManager {
     constructor(storeConfig: StoreConfiguration) {
         if (existsSync("basket-cooldowns.json")) {
             try {
-                this.basketCooldowns = new Map(JSON.parse(readFileSync("basket-cooldowns.json", "utf-8")));
+                this.basketCooldowns = new Map(
+                    JSON.parse(readFileSync("basket-cooldowns.json", "utf-8")) as Iterable<readonly [string, NotificationCooldown]>,
+                );
             } catch {
                 this.basketCooldowns = new Map<string, NotificationCooldown>();
             }
@@ -26,7 +28,9 @@ export class CooldownManager {
 
         if (existsSync("cooldowns.json")) {
             try {
-                this.cooldowns = new Map(JSON.parse(readFileSync("cooldowns.json", "utf-8")));
+                this.cooldowns = new Map(
+                    JSON.parse(readFileSync("cooldowns.json", "utf-8")) as Iterable<readonly [string, NotificationCooldown]>,
+                );
             } catch {
                 this.cooldowns = new Map<string, NotificationCooldown>();
             }

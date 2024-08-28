@@ -186,9 +186,13 @@ export class SearchChecker {
                                 res
                                     .json()
                                     .then((data: SearchResponse) => ({ status: res.status, body: data }))
-                                    .catch((_) => ({ status: res.status, body: null, retryAfterHeader: res.headers.get("Retry-After") })),
+                                    .catch((_: unknown) => ({
+                                        status: res.status,
+                                        body: null,
+                                        retryAfterHeader: res.headers.get("Retry-After"),
+                                    })),
                             )
-                            .catch((_) => ({ status: -2, body: null })),
+                            .catch((_: unknown) => ({ status: -2, body: null })),
                     this.store,
                     page,
                     searchQuery,

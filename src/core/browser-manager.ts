@@ -129,13 +129,13 @@ export class BrowserManager {
                                 loginResponse
                                     .json()
                                     .then((data: LoginResponse) => ({ status: loginResponse.status, body: data }))
-                                    .catch((_) => ({
+                                    .catch((_: unknown) => ({
                                         status: loginResponse.status,
                                         body: null,
                                         retryAfterHeader: loginResponse.headers.get("Retry-After"),
                                     })),
                             )
-                            .catch((_) => ({ status: -2, body: null })),
+                            .catch((_: unknown) => ({ status: -2, body: null })),
                     this.store,
                     email,
                     password,
@@ -235,13 +235,13 @@ export class BrowserManager {
                                 loginResponse
                                     .json()
                                     .then((data: LoginResponse) => ({ status: loginResponse.status, body: data }))
-                                    .catch((_) => ({
+                                    .catch((_: unknown) => ({
                                         status: loginResponse.status,
                                         body: null,
                                         retryAfterHeader: loginResponse.headers.get("Retry-After"),
                                     })),
                             )
-                            .catch((_) => ({ status: -2, body: null })),
+                            .catch((_: unknown) => ({ status: -2, body: null })),
                     this.store,
                     email,
                     password,
@@ -423,10 +423,11 @@ export class BrowserManager {
                 Object.defineProperty(HTMLDivElement.prototype, "offsetHeight", {
                     ...elementDescriptor,
                     get: function () {
-                        if (this.id === "modernizr") {
+                        if ((this as HTMLElement).id === "modernizr") {
                             return 1;
                         }
 
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                         return elementDescriptor?.get?.apply(this);
                     },
                 });

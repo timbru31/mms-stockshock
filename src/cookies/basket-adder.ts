@@ -141,14 +141,14 @@ export class BasketAdder {
                                                     status: addProductResponse.status,
                                                     body: data,
                                                 }))
-                                                .catch((_) => ({
+                                                .catch((_: unknown) => ({
                                                     success: false,
                                                     status: addProductResponse.status,
                                                     body: null,
                                                     retryAfterHeader: addProductResponse.headers.get("Retry-After"),
                                                 })),
                                         )
-                                        .catch((_) => ({ success: false, status: -2, body: null })),
+                                        .catch((_: unknown) => ({ success: false, status: -2, body: null })),
                                 this.store,
                                 id,
                                 v4(),
@@ -168,8 +168,8 @@ export class BasketAdder {
 
                     if (res.success) {
                         try {
-                            const basketCookie = (await this.browserManager.page.cookies()).filter((cookie) => cookie.name === "r")[0];
-                            if (basketCookie.value) {
+                            const basketCookie = (await this.browserManager.page.cookies()).find((cookie) => cookie.name === "r");
+                            if (basketCookie) {
                                 cookies.push(basketCookie.value);
                                 this.logger.info(
                                     `Made cookie ${basketCookie.value} for product ${id}: ${this.store.baseUrl}?cookie=${basketCookie.value}`,
