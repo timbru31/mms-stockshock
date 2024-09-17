@@ -26,7 +26,7 @@
         "@types/uuid": "^10.0.0",
         "date-fns": "^4.0.0",
         "discord.js": "^14.16.2",
-        "inquirer": "^8.2.6",
+        "inquirer": "^11.0.1",
         "proxy-chain": "^2.5.3",
         "puppeteer": "^23.3.1",
         "puppeteer-extra": "^3.3.6",
