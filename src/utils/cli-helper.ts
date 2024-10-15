@@ -127,7 +127,7 @@ export async function getStoreAndStoreConfig(config: ConfigModel): Promise<{
         case "mediamarktpoland":
         case "mediamarkt poland":
             store = new MediaMarktPoland();
-            storeConfig = config.mmnl;
+            storeConfig = config.mmpl;
             store.setSleepTimes(storeConfig.min_sleep_time, storeConfig.max_sleep_time);
             break;
         case "mmes":

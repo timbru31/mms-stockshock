@@ -159,21 +159,21 @@ export class SearchChecker {
                                     isDemonstrationModelAvailabilityActive: false,
                                     withMarketingInfos: false,
                                     experiment: "mp",
-
                                     filters: range.length === 2 ? [`currentprice:${range[0]}-${range[1]}`] : [],
                                     page: pageOffset,
                                     query,
                                     pageSize: 20,
-
                                     productFilters: range.length === 2 ? [[`currentprice:${range[0]}-${range[1]}`]] : [],
                                 },
                                 extensions: {
                                     pwa: {
-                                        salesLine: store.salesLine,
+                                        captureChannel: "DESKTOP",
                                         country: store.countryCode,
-                                        language: store.languageCode,
                                         globalLoyaltyProgram: true,
-                                        fifaUserCreation: true,
+                                        isMdpActive: true,
+                                        isOneAccountProgramActive: true,
+                                        language: store.languageCode,
+                                        salesLine: store.salesLine,
                                     },
                                     persistedQuery: {
                                         version: 1,

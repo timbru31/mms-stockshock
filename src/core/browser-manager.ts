@@ -113,10 +113,13 @@ export class BrowserManager {
                                 },
                                 extensions: {
                                     pwa: {
-                                        salesLine: store.salesLine,
+                                        captureChannel: "DESKTOP",
                                         country: store.countryCode,
-                                        language: store.languageCode,
+                                        globalLoyaltyProgram: true,
                                         isMdpActive: true,
+                                        isOneAccountProgramActive: true,
+                                        language: store.languageCode,
+                                        salesLine: store.salesLine,
                                     },
                                     persistedQuery: {
                                         version: 1,
@@ -217,12 +220,13 @@ export class BrowserManager {
                                 },
                                 extensions: {
                                     pwa: {
-                                        salesLine: store.salesLine,
+                                        captureChannel: "DESKTOP",
                                         country: store.countryCode,
-                                        language: store.languageCode,
                                         globalLoyaltyProgram: true,
                                         isMdpActive: true,
                                         isOneAccountProgramActive: true,
+                                        language: store.languageCode,
+                                        salesLine: store.salesLine,
                                     },
                                     persistedQuery: {
                                         version: 1,

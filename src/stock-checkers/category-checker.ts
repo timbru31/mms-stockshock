@@ -163,11 +163,13 @@ export class CategoryChecker {
                                 },
                                 extensions: {
                                     pwa: {
-                                        salesLine: store.salesLine,
+                                        captureChannel: "DESKTOP",
                                         country: store.countryCode,
-                                        language: store.languageCode,
                                         globalLoyaltyProgram: true,
-                                        fifaUserCreation: true,
+                                        isMdpActive: true,
+                                        isOneAccountProgramActive: true,
+                                        language: store.languageCode,
+                                        salesLine: store.salesLine,
                                     },
                                     persistedQuery: {
                                         version: 1,
