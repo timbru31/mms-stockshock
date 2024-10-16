@@ -27,7 +27,7 @@
         "date-fns": "^4.1.0",
         "discord.js": "^14.16.3",
         "inquirer": "^8.2.6",
-        "proxy-chain": "^2.5.3",
+        "proxy-chain": "^2.5.4",
         "puppeteer": "^23.5.3",
         "puppeteer-extra": "^3.3.6",
         "puppeteer-extra-plugin-stealth": "^2.11.2",
