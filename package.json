@@ -34,7 +34,7 @@
         "telegraf": "^4.16.3",
         "toml": "^3.0.0",
         "twitter-api-v2": "^1.18.0",
-        "user-agents": "^1.1.330",
+        "user-agents": "^1.1.333",
         "uuid": "^10.0.0",
         "winston": "^3.15.0",
         "ws": "^8.18.0",
