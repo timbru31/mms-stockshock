@@ -45,7 +45,7 @@
         "@types/eslint__js": "^8.42.3",
         "@types/inquirer": "^8.2.1",
         "@types/user-agents": "^1.0.4",
-        "@types/ws": "^8.5.12",
+        "@types/ws": "^8.5.13",
         "@types/yargs": "^17.0.33",
         "eslint-config-prettier": "^9.1.0",
         "eslint-plugin-prettier": "^5.2.1",
