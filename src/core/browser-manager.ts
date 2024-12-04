@@ -1,6 +1,6 @@
 import { prompt } from "inquirer";
 import { Server } from "proxy-chain";
-import type { Browser, Page, PuppeteerNodeLaunchOptions } from "puppeteer";
+import type { Browser, LaunchOptions, Page } from "puppeteer";
 import puppeteer from "puppeteer-extra";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import UserAgent from "user-agents";
@@ -357,7 +357,7 @@ export class BrowserManager {
             headless: headless ? "new" : false,
             defaultViewport: null,
             args,
-        } as PuppeteerNodeLaunchOptions;
+        } as LaunchOptions;
         if (process.env.PUPPETEER_EXECUTABLE_PATH) {
             options.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
         } else {
