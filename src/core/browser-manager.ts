@@ -19,8 +19,8 @@ export class BrowserManager {
     reLaunchRequired = false;
     loggedIn = false;
     page: Page | undefined;
+    browser: Browser | undefined;
 
-    private browser: Browser | undefined;
     private readonly store: Store;
     private readonly storeConfiguration: StoreConfiguration;
     private readonly logger: Logger;

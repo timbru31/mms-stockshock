@@ -170,7 +170,8 @@ export class BasketAdder {
 
                     if (res.success) {
                         try {
-                            const basketCookie = (await this.browserManager.page.cookies()).find((cookie) => cookie.name === "r");
+                            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                            const basketCookie = (await this.browserManager.browser!.cookies()).find((cookie) => cookie.name === "r");
                             if (basketCookie) {
                                 cookies.push(basketCookie.value);
                                 this.logger.info(
