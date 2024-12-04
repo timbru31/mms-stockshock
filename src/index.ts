@@ -7,7 +7,7 @@ import { DynamoDBStore } from "./databases/dynamodb-store";
 import type { Product } from "./models/api/product";
 import type { CliArguments } from "./models/cli";
 import type { Notifier } from "./models/notifier";
-import { DiscordNotifier, LoggerNotifier, TelegramNotifier, TwitterNotifier, WebSocketNotifier } from "./notifiers";
+import { DiscordNotifier, LoggerNotifier, TelegramNotifier, WebSocketNotifier } from "./notifiers";
 import { CategoryChecker } from "./stock-checkers/category-checker";
 import { SearchChecker } from "./stock-checkers/search-checker";
 import { WishlistChecker } from "./stock-checkers/wishlist-checker";
@@ -114,15 +114,6 @@ void (async function () {
     if (storeConfig.use_websocket) {
         const webSocketNotifier = new WebSocketNotifier(storeConfig, logger);
         notifiers.push(webSocketNotifier);
-    }
-    if (
-        storeConfig.twitter_api_key &&
-        storeConfig.twitter_api_key_secret &&
-        storeConfig.twitter_access_token &&
-        storeConfig.twitter_access_token_secret
-    ) {
-        const twitterNotifier = new TwitterNotifier(store, storeConfig, logger);
-        notifiers.push(twitterNotifier);
     }
 
     if (storeConfig.telegram_channel_id && storeConfig.telegram_bot_api_key) {

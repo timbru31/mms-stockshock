@@ -4,17 +4,16 @@
 
 ## Features
 
--   Category tracking of products
--   Wishlist tracking
--   Search tracking
--   Price watching/comparison
--   Automatic basket cookie generation
--   Rich notifications for
-    -   Discord (stock alerts, cookies, price changes, admin messages)
-    -   Telegram (stock alerts)
-    -   Twitter (stock alerts)
--   Monitoring is API based, no Selenium involved
--   **_NO BUY BOT_**
+- Category tracking of products
+- Wishlist tracking
+- Search tracking
+- Price watching/comparison
+- Automatic basket cookie generation
+- Rich notifications for
+    - Discord (stock alerts, cookies, price changes, admin messages)
+    - Telegram (stock alerts)
+- Monitoring is API based, no Selenium involved
+- **_NO BUY BOT_**
 
 ## No support 🚨
 
@@ -28,15 +27,15 @@ You need to put products on your wishlist in order to have this bot working or h
 
 ### Supported stores
 
--   MediaMarkt Austria
--   MediaMarkt Belgium
--   MediaMarkt Germany
--   MediaMarkt Netherlands
--   MediaMarkt Poland
--   MediaMarkt Spain
--   MediaMarkt Switzerland
--   MediaWorld Italy
--   Saturn
+- MediaMarkt Austria
+- MediaMarkt Belgium
+- MediaMarkt Germany
+- MediaMarkt Netherlands
+- MediaMarkt Poland
+- MediaMarkt Spain
+- MediaMarkt Switzerland
+- MediaWorld Italy
+- Saturn
 
 ## Installation
 
@@ -75,11 +74,6 @@ Here is an example how the message looks like:
 Alternatively, or additionally, you can send the notifications to Telegram.  
 To configure it, create or re-use your Telegram bot and configure the bot API key and channel ID in the `Telegram` section of the `stores.toml`.
 
-### Twitter notifications
-
-In addition, this tracker offers a `Twitter` integration. The configuration is similar to Telegram, you need to supply the bearer token of your Twitter bot.  
-If desired, you can supply an array of tags a tweet should contain.
-
 ## Run the bot
 
 Run
@@ -116,10 +110,10 @@ An example launch command would be:
 
 Pro tips:
 
--   disable core dumps (`--ulimit core=0`)
--   limit swap and memory
--   restart on failures
--   dev null the log file (you can use the logs command of docker)
+- disable core dumps (`--ulimit core=0`)
+- limit swap and memory
+- restart on failures
+- dev null the log file (you can use the logs command of docker)
 
 ```sh
 docker run --restart on-failure --memory 500m --memory-swap 500m --ulimit core=0 -v /dev/null:/opt/mms-stockshock/stockshock.log -v $PWD/stores.toml:/opt/mms-stockshock/stores.toml -v $PWD/cooldowns.json:/opt/mms-stockshock/cooldowns.json -v $PWD/basket-cooldowns.json:/opt/mms-stockshock/basket-cooldowns.json -v /etc/letsencrypt/live/my-domain/privkey.pem:/opt/mms-stockshock/key.pem -v /etc/letsencrypt/live/my-domain/fullchain.pem:/opt/mms-stockshock/cert.pem -e "STORE=saturn" -p 8080:8080 -d timbru31/mms-stockshock

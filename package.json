@@ -1,6 +1,6 @@
 {
     "name": "stockshock",
-    "version": "7.0.0",
+    "version": "8.0.0",
     "private": true,
     "description": "A simple bot for MediaMarkt and Saturn to check if tracked items are available",
     "main": "dist/index.js",
@@ -33,7 +33,6 @@
         "puppeteer-extra-plugin-stealth": "^2.11.2",
         "telegraf": "^4.16.3",
         "toml": "^3.0.0",
-        "twitter-api-v2": "^1.18.2",
         "user-agents": "^1.1.377",
         "uuid": "^10.0.0",
         "winston": "^3.17.0",

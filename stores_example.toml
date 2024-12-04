@@ -71,13 +71,6 @@ cookie_discord_role_ping = ""
 admin_discord_role_ping = ""
 price_change_discord_role_ping = ""
 
-# Twitter integration (optional)
-twitter_api_key = ""
-twitter_api_key_secret = ""
-twitter_access_token = ""
-twitter_access_token_secret = ""
-twitter_tags = []
-
 # Telegram integration (optional)
 telegram_bot_api_key = ""
 telegram_channel_id = ""
