@@ -35,7 +35,7 @@
         "user-agents": "^1.1.456",
         "uuid": "^11.1.0",
         "winston": "^3.17.0",
-        "ws": "^8.18.0",
+        "ws": "^8.18.1",
         "yargs": "^17.7.2"
     },
     "devDependencies": {
