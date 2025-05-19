@@ -89,6 +89,9 @@ export interface StoreConfiguration {
     websocket_key_path?: string;
     log_passwords?: boolean;
 
+    // GraphQL Version
+    graphql_version: string;
+
     // SHA256 hashes for queries
     loginSHA256: string;
     loginV2SHA256: string; // new login method

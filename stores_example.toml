@@ -98,6 +98,9 @@ websocket_cert_path = ""
 websocket_key_path = ""
 log_passwords = false
 
+# GraphQL config
+graphql_version = "8.260.3"
+
 # The hashes from the queries. Tend to change often
 loginSHA256 = ""
 loginV2SHA256 = ""

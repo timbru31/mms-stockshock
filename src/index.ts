@@ -12,7 +12,7 @@ import { CategoryChecker } from "./stock-checkers/category-checker";
 import { SearchChecker } from "./stock-checkers/search-checker";
 import { WishlistChecker } from "./stock-checkers/wishlist-checker";
 import { getStoreAndStoreConfig } from "./utils/cli-helper";
-import { createLogger, loadConfig, sleep } from "./utils/utils";
+import { createLogger, loadConfig, setGraphQLClientVersion, sleep } from "./utils/utils";
 
 async function reLoginIfRequired(
     browserManager: BrowserManager,
@@ -86,6 +86,8 @@ void (async function () {
     }
 
     const { store, storeConfig, args } = await getStoreAndStoreConfig(configFile);
+    const graphqlVersion = storeConfig.graphql_version;
+    setGraphQLClientVersion(graphqlVersion);
 
     if (storeConfig.proxy_urls?.length && storeConfig.proxy_url) {
         throw new Error("Can't use proxy_url and proxy_urls together, choose one!");
