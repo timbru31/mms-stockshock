@@ -36,7 +36,7 @@
         "uuid": "^11.1.0",
         "winston": "^3.17.0",
         "ws": "^8.18.2",
-        "yargs": "^17.7.2"
+        "yargs": "^18.0.0"
     },
     "devDependencies": {
         "@eslint/js": "^9.29.0",
