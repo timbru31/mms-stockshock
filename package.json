@@ -32,7 +32,7 @@
         "puppeteer-extra-plugin-stealth": "^2.11.2",
         "telegraf": "^4.16.3",
         "toml": "^3.0.0",
-        "user-agents": "^1.1.617",
+        "user-agents": "^1.1.620",
         "uuid": "^11.1.0",
         "winston": "^3.17.0",
         "ws": "^8.18.3",
