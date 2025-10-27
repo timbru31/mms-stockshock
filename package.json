@@ -24,7 +24,7 @@
     "dependencies": {
         "@aws-sdk/client-dynamodb": "^3.916.0",
         "date-fns": "^4.1.0",
-        "discord.js": "^14.23.2",
+        "discord.js": "^14.24.0",
         "inquirer": "^8.2.6",
         "proxy-chain": "^2.5.9",
         "puppeteer": "^24.20.0",
