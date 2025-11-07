@@ -22,7 +22,7 @@
         "node": ">=20"
     },
     "dependencies": {
-        "@aws-sdk/client-dynamodb": "^3.925.0",
+        "@aws-sdk/client-dynamodb": "^3.926.0",
         "date-fns": "^4.1.0",
         "discord.js": "^14.24.2",
         "inquirer": "^8.2.6",
