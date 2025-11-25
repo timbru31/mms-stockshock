@@ -52,7 +52,7 @@
         "prettier": "^3.6.2",
         "ts-node": "^10.9.2",
         "typescript": "~5.8.3",
-        "typescript-eslint": "^8.47.0"
+        "typescript-eslint": "^8.48.0"
     },
     "funding": "https://github.com/sponsors/timbru31"
 }
