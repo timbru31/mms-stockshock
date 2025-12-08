@@ -380,7 +380,9 @@ export class BrowserManager {
             this.page = undefined;
         }
         this.page = await this.browser.newPage();
-        await this.page.setUserAgent(new UserAgent().toString());
+        await this.page.setUserAgent({
+            userAgent: new UserAgent().toString(),
+        });
         await this.patchHairlineDetection();
 
         if (this.storeConfiguration.proxy_url && this.storeConfiguration.proxy_username && this.storeConfiguration.proxy_password) {
