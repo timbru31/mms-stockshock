@@ -381,7 +381,7 @@ export class BrowserManager {
         }
         this.page = await this.browser.newPage();
         await this.page.setUserAgent({
-            userAgent: new UserAgent().toString()
+            userAgent: new UserAgent().toString(),
         });
         await this.patchHairlineDetection();
 
