@@ -54,6 +54,9 @@ npm install
 Copy the `stores_example.toml` to `stores.toml` and configure your credentials.  
 **You need to supply the query hashes from the MM/S API as they change too often to maintain!**
 
+The GraphQL client version is fetched automatically from `<meta name="version" ...>` on the storefront page.
+You can still set `graphql_version` in `stores.toml` as a fallback.
+
 You can setup different categories (use the ID) to check, too.  
 If desired, configure the notification providers (see below), websocket announcements, id replacements (e.g., for affiliates), proxies or turn off shopping cart alerts.
 

@@ -12,7 +12,7 @@ import type { Notifier } from "../models/notifier";
 import type { StoreConfiguration } from "../models/stores/config-model";
 import type { Store } from "../models/stores/store";
 import { HTTPStatusCode } from "../utils/http";
-import { GRAPHQL_CLIENT_VERSION, shuffle, sleep } from "../utils/utils";
+import { GRAPHQL_CLIENT_VERSION, setGraphQLClientVersion, shuffle, sleep } from "../utils/utils";
 
 export class BrowserManager {
     reLoginRequired = true;
@@ -403,11 +403,18 @@ export class BrowserManager {
             width: this.baseWidth + Math.floor(Math.random() * this.randomFactor),
             height: this.baseHeight + Math.floor(Math.random() * this.randomFactor),
         });
+        const startUrl = this.storeConfiguration.start_url?.trim().length
+            ? this.storeConfiguration.start_url
+            : `${this.store.baseUrl}/${this.store.languageCode}/legal`;
         try {
-            await this.page.goto(this.storeConfiguration.start_url ?? `${this.store.baseUrl}/404`, {
+            await this.page.goto(startUrl, {
                 waitUntil: "networkidle0",
                 timeout: 5000,
             });
+            if (!(await this.resolveGraphQLClientVersion(startUrl))) {
+                this.rotateProxy();
+                return false;
+            }
         } catch (e: unknown) {
             this.logger.error("Unable to visit start page..., %O", e);
             this.rotateProxy();
@@ -418,6 +425,29 @@ export class BrowserManager {
             await sleep(this.store.loginSleepTime);
         }
         return Boolean(this.page);
+    }
+
+    private async resolveGraphQLClientVersion(startUrl: string): Promise<boolean> {
+        const graphqlClientVersion = await this.page?.evaluate(() => {
+            const versionMetaTag = document.querySelector("meta[name='version']");
+            return versionMetaTag?.getAttribute("content")?.trim() ?? null;
+        });
+
+        if (graphqlClientVersion) {
+            setGraphQLClientVersion(graphqlClientVersion);
+            this.logger.info(`Using GraphQL client version ${graphqlClientVersion}`);
+            return true;
+        }
+
+        if (this.storeConfiguration.graphql_version) {
+            setGraphQLClientVersion(this.storeConfiguration.graphql_version);
+            this.logger.warn(`Unable to resolve GraphQL client version from ${startUrl}, falling back to configured value`);
+            this.logger.info(`Using GraphQL client version ${this.storeConfiguration.graphql_version}`);
+            return true;
+        }
+
+        this.logger.error(`Unable to resolve GraphQL client version from ${startUrl}, no fallback graphql_version configured`);
+        return false;
     }
 
     // See https://intoli.com/blog/making-chrome-headless-undetectable/

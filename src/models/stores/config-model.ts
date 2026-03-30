@@ -91,8 +91,8 @@ export interface StoreConfiguration {
     websocket_key_path?: string;
     log_passwords?: boolean;
 
-    // GraphQL Version
-    graphql_version: string;
+    // GraphQL Version fallback (auto-detected from storefront meta tag)
+    graphql_version?: string;
 
     // SHA256 hashes for queries
     loginSHA256: string;

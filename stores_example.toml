@@ -98,8 +98,9 @@ websocket_cert_path = ""
 websocket_key_path = ""
 log_passwords = false
 
-# GraphQL config
-graphql_version = "8.397.5"
+# GraphQL client version is auto-detected from the storefront's meta tag.
+# Optional fallback if auto-detection fails:
+# graphql_version = "8.397.5"
 
 # The hashes from the queries. Tend to change often
 loginSHA256 = ""
