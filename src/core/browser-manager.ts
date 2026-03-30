@@ -1,4 +1,4 @@
-import { prompt } from "inquirer";
+import { confirm } from "@inquirer/prompts";
 import { randomUUID } from "node:crypto";
 import { Server } from "proxy-chain";
 import type { Browser, LaunchOptions, Page } from "puppeteer";
@@ -165,8 +165,7 @@ export class BrowserManager {
                 this.reLoginRequired = true;
                 throw new Error(`Login did not succeed. Status ${res.status}`);
             }
-            await prompt({
-                name: "noop",
+            await confirm({
                 message: "Login did not succeed, please check browser for captcha and log in manually. Then hit enter...",
             });
         }
@@ -276,8 +275,7 @@ export class BrowserManager {
                 this.reLoginRequired = true;
                 throw new Error(`Login did not succeed. Status ${res.status}`);
             }
-            await prompt({
-                name: "noop",
+            await confirm({
                 message: "Login did not succeed, please check browser for captcha and log in manually. Then hit enter...",
             });
         }

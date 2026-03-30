@@ -1,5 +1,3 @@
-import type { ListChoiceOptions } from "inquirer";
-import { prompt } from "inquirer";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import type { CliArguments } from "../models/cli";
@@ -16,6 +14,7 @@ import { MediaMarktTurkey } from "../models/stores/media-markt-turkey";
 import { MediaWorldItaly } from "../models/stores/media-world-italy";
 import { Saturn } from "../models/stores/saturn";
 import type { Store } from "../models/stores/store";
+import { select } from "@inquirer/prompts";
 
 export async function getStoreAndStoreConfig(config: ConfigModel): Promise<{
     store: Store;
@@ -31,58 +30,55 @@ export async function getStoreAndStoreConfig(config: ConfigModel): Promise<{
     let storeConfig: StoreConfiguration;
     let storeArgument: string;
     if (!args.store) {
-        const storePrompt = await prompt({
-            type: "list",
-            name: "store",
+        storeArgument = await select({
             message: "Please choose the desired store...",
             choices: [
                 {
                     name: "MediaMarkt Austria",
                     value: "mediamarkt austria",
-                } as ListChoiceOptions,
+                },
                 {
                     name: "MediaMarkt Belgium",
                     value: "mediamarkt belgium",
-                } as ListChoiceOptions,
+                },
                 {
                     name: "MediaMarkt Switzerland",
                     value: "mediamarkt switzerland",
-                } as ListChoiceOptions,
+                },
                 {
                     name: "MediaMarkt Germany",
                     value: "mediamarkt germany",
-                } as ListChoiceOptions,
+                },
                 {
                     name: "MediaMarkt Hungary",
                     value: "mediamarkt hungary",
-                } as ListChoiceOptions,
+                },
                 {
                     name: "MediaWorld Italy",
                     value: "mediaworld italy",
-                } as ListChoiceOptions,
+                },
                 {
                     name: "MediaMarkt Netherlands",
                     value: "mediamarkt netherlands",
-                } as ListChoiceOptions,
+                },
                 {
                     name: "MediaMarkt Poland",
                     value: "mediamarkt poland",
-                } as ListChoiceOptions,
+                },
                 {
                     name: "MediaMarkt Spain",
                     value: "mediamarkt spain",
-                } as ListChoiceOptions,
+                },
                 {
                     name: "MediaMarkt Turkey",
                     value: "mediamarkt turkey",
-                } as ListChoiceOptions,
+                },
                 {
                     name: "Saturn",
                     value: "saturn",
-                } as ListChoiceOptions,
+                },
             ],
         });
-        storeArgument = storePrompt.store as string;
     } else {
         storeArgument = args.store;
     }

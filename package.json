@@ -23,9 +23,9 @@
     },
     "dependencies": {
         "@aws-sdk/client-dynamodb": "^3.1019.0",
+        "@inquirer/prompts": "^8.3.2",
         "date-fns": "^4.1.0",
         "discord.js": "^14.25.1",
-        "inquirer": "^8.2.6",
         "proxy-chain": "^2.7.1",
         "puppeteer": "^24.40.0",
         "puppeteer-extra": "^3.3.6",
@@ -39,7 +39,6 @@
     },
     "devDependencies": {
         "@eslint/js": "^9.31.0",
-        "@types/inquirer": "^8.2.1",
         "@types/user-agents": "^1.0.4",
         "@types/ws": "^8.18.1",
         "@types/yargs": "^17.0.33",
