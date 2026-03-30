@@ -1,4 +1,4 @@
-import { v4 } from "uuid";
+import { randomUUID } from "node:crypto";
 import type { Logger } from "winston";
 import type { BrowserManager } from "../core/browser-manager";
 import type { CooldownManager } from "../core/cooldown-manager";
@@ -178,7 +178,7 @@ export class WishlistChecker {
                             .catch((_: unknown) => ({ status: -2, body: null })),
                     this.store,
                     offset,
-                    v4(),
+                    randomUUID(),
                     GRAPHQL_CLIENT_VERSION,
                     this.storeConfiguration.wishlistSHA256,
                 ),

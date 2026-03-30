@@ -1,10 +1,10 @@
 import { prompt } from "inquirer";
+import { randomUUID } from "node:crypto";
 import { Server } from "proxy-chain";
 import type { Browser, LaunchOptions, Page } from "puppeteer";
 import puppeteer from "puppeteer-extra";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import UserAgent from "user-agents";
-import { v4 } from "uuid";
 import type { Logger } from "winston";
 import type { LoginResponse } from "../models/api/login-response";
 import type { Response } from "../models/api/response";
@@ -142,7 +142,7 @@ export class BrowserManager {
                     this.store,
                     email,
                     password,
-                    v4(),
+                    randomUUID(),
                     GRAPHQL_CLIENT_VERSION,
                     this.storeConfiguration.loginSHA256,
                 ),
@@ -249,7 +249,7 @@ export class BrowserManager {
                     this.store,
                     email,
                     password,
-                    v4(),
+                    randomUUID(),
                     GRAPHQL_CLIENT_VERSION,
                     this.storeConfiguration.loginV2SHA256,
                 ),

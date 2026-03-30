@@ -1,4 +1,4 @@
-import { v4 } from "uuid";
+import { randomUUID } from "node:crypto";
 import type { Logger } from "winston";
 import type { BrowserManager } from "../core/browser-manager";
 import type { CooldownManager } from "../core/cooldown-manager";
@@ -192,7 +192,7 @@ export class CategoryChecker {
                     this.store,
                     page,
                     category,
-                    v4(),
+                    randomUUID(),
                     GRAPHQL_CLIENT_VERSION,
                     this.storeConfiguration.categorySHA256,
                 ),
