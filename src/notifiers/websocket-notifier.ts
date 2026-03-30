@@ -4,7 +4,7 @@ import https from "https";
 import type { Socket } from "net";
 import type { Logger } from "winston";
 import WebSocket from "ws";
-import type { Item } from "../models/api/item";
+import type { CofrProductAggregate } from "../models/api/product-aggregate";
 import type { Notifier } from "../models/notifier";
 import type { StoreConfiguration } from "../models/stores/config-model";
 import { ProductHelper } from "../utils/product-helper";
@@ -39,7 +39,7 @@ export class WebSocketNotifier implements Notifier {
         await noopPromise();
     }
 
-    async notifyStock(item: Item | undefined): Promise<void> {
+    async notifyStock(item: CofrProductAggregate | undefined): Promise<void> {
         if (!item) {
             return Promise.resolve(undefined);
         }
@@ -75,7 +75,7 @@ export class WebSocketNotifier implements Notifier {
         }
         const wss = new WebSocket.Server({ noServer: true });
 
-        server.on("upgrade", (request, socket: Socket, head) => {
+        server.on("upgrade", (request: http.IncomingMessage, socket: Socket, head: Buffer) => {
             const password = request.headers["sec-websocket-protocol"];
             if (!password || !storeConfig.websocket_passwords?.includes(password)) {
                 this.logger.info(`😵‍💫 WebSocket connection from client from ${socket.remoteAddress ?? ""} was denied!`);
@@ -106,8 +106,8 @@ export class WebSocketNotifier implements Notifier {
         return wss;
     }
 
-    private notifyWebSocketClients(item: Item, direct: boolean) {
-        if (!item.product) {
+    private notifyWebSocketClients(item: CofrProductAggregate, direct: boolean) {
+        if (!item.productId) {
             return;
         }
         if (this.wss) {
@@ -116,9 +116,9 @@ export class WebSocketNotifier implements Notifier {
                     client.send(
                         JSON.stringify({
                             direct,
-                            title: item.product.title,
-                            id: item.product.id,
-                            price: item.price?.price ?? this.fallbackPrice,
+                            title: item.cofrCoreFeature?.productName ?? item.productId,
+                            id: item.productId,
+                            price: item.cofrPriceFeature?.price?.amount ?? this.fallbackPrice,
                         }),
                         (e: unknown) => {
                             if (e) {

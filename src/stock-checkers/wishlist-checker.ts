@@ -60,10 +60,11 @@ export class WishlistChecker {
                 throw new Error("Nothing on wishlist!");
             }
             let items = await this.productHelper.checkItems(
-                res.body.data?.wishlistItems?.items.map((item) => item.productAggregate),
+                res.body.data?.wishlistItems?.items.map((item) => item.cofrProductAggregate),
                 this.cooldownManager,
                 this.database,
                 this.notifiers,
+                this.store,
                 this.storeConfiguration.check_online_status ?? false,
                 this.storeConfiguration.check_in_assortment ?? true,
                 this.storeConfiguration.cookie_ids ?? [],
@@ -87,10 +88,11 @@ export class WishlistChecker {
                         }
                     } else {
                         items = await this.productHelper.checkItems(
-                            innerResponse.body.data?.wishlistItems?.items.map((item) => item.productAggregate),
+                            innerResponse.body.data?.wishlistItems?.items.map((item) => item.cofrProductAggregate),
                             this.cooldownManager,
                             this.database,
                             this.notifiers,
+                            this.store,
                             this.storeConfiguration.check_online_status ?? false,
                             this.storeConfiguration.check_in_assortment ?? true,
                             this.storeConfiguration.cookie_ids ?? [],
@@ -115,12 +117,98 @@ export class WishlistChecker {
         try {
             return await Promise.race([
                 this.browserManager.page.evaluate(
-                    async (store: Store, pageOffset: number, flowId: string, graphQLClientVersion: string, wishlistSHA256: string) =>
-                        fetch(`${store.baseUrl}/api/v1/graphql`, {
+                    async (store: Store, pageOffset: number, flowId: string, graphQLClientVersion: string, wishlistSHA256: string) => {
+                        const params = new URLSearchParams({
+                            operationName: "WishlistItems",
+                            variables: JSON.stringify({
+                                shouldFetchBasket: true,
+                                isArtificialScarcityActive: true,
+                                limit: 24,
+                                offset: pageOffset,
+                                hasMarketplace: true,
+                                locale: `${store.languageCode}-${store.countryCode}`,
+                                salesLine: store.salesLine,
+                                isRefurbishedGoodsActive: true,
+                                isPdpFaqSectionActive: true,
+                                shouldIncludeYourekoRatingExp1150: true,
+                                isDemonstrationModelAvailabilityActive: false,
+                                isCrossLinkingActive: false,
+                                priceAlertsFilter: [],
+                                cofrConfig: {
+                                    isEnabled: true,
+                                    baseDomain: store.baseUrl,
+                                    channel: "DESKTOP",
+                                    isLegacyDataExcluded: false,
+                                    features: {
+                                        badges: {
+                                            isFreeShippingBadgeIncluded: false,
+                                        },
+                                        crossSalesLine: {
+                                            isEnabled: true,
+                                            isOutputForced: false,
+                                        },
+                                        onlineStatus: {
+                                            isPermanentlyNaIndexEnabled: true,
+                                        },
+                                        pickup: {
+                                            isStrictPickupDisplayStatusEnabled: false,
+                                        },
+                                        price: {
+                                            strikePriceTypes: [
+                                                {
+                                                    strikePriceType: "lop",
+                                                },
+                                                {
+                                                    strikePriceType: "rrp",
+                                                    shouldBeStruck: true,
+                                                    showDiscountBadge: true,
+                                                    isLegalTextInlineAllowed: false,
+                                                },
+                                            ],
+                                            isBasePriceRequiredFlagRespected: false,
+                                            isDiscountLabelEnabled: true,
+                                            isDiscountPercentageShown: true,
+                                            isDisplayPriceWithStrikePriceRrpThemed: true,
+                                            isLongerStrikePricePrefixAllowed: false,
+                                            isPromoPriceFiltered: true,
+                                            isPromoPriceUsedAsDisplayPriceInApp: false,
+                                            isHistoryChartEnabled: false,
+                                            discountPercentageMinimum: 10,
+                                            discountPercentageMinimumFractionDigits: 0,
+                                        },
+                                        delivery: {
+                                            isDeliveryStatusByEarliestDateEnabled: true,
+                                            isLocationSourcingEnabled: true,
+                                        },
+                                        refurbishedGoods: {
+                                            isEnabled: true,
+                                        },
+                                    },
+                                },
+                            }),
+                            extensions: JSON.stringify({
+                                persistedQuery: {
+                                    version: 1,
+                                    sha256Hash: wishlistSHA256,
+                                },
+                                pwa: {
+                                    captureChannel: "DESKTOP",
+                                    salesLine: store.salesLine,
+                                    country: store.countryCode,
+                                    language: store.languageCode,
+                                    globalLoyaltyProgram: true,
+                                    isOneAccountProgramActive: true,
+                                    shouldInactiveContractsBeHidden: true,
+                                    isUsingXccCustomerComponent: true,
+                                    isCheckoutPhoneCompareActive: true,
+                                },
+                            }),
+                        });
+                        return fetch(`${store.baseUrl}/api/v1/graphql?${params}`, {
                             credentials: "include",
                             headers: {
                                 "content-type": "application/json",
-                                "apollographql-client-name": "pwa-client",
+                                "apollographql-client-name": "pwa-client-pqm",
                                 "apollographql-client-version": graphQLClientVersion,
                                 "x-operation": "WishlistItems",
                                 "x-cacheable": "false",
@@ -132,38 +220,8 @@ export class WishlistChecker {
                                 "Cache-Control": "no-cache",
                             },
                             referrer: `${store.baseUrl}/`,
-                            method: "POST",
+                            method: "GET",
                             mode: "cors",
-                            body: JSON.stringify({
-                                operationName: "WishlistItems",
-                                variables: {
-                                    hasMarketplace: true,
-                                    shouldFetchBasket: true,
-                                    limit: 24,
-                                    offset: pageOffset,
-                                    withMarketingInfos: false,
-                                    salesLine: store.salesLine,
-                                    locale: store.languageCode + "-" + store.countryCode,
-                                    isMpOfferV3Active: true,
-                                    isMpOfferOldActive: false,
-                                    isArtificialScarcityActive: true,
-                                },
-                                extensions: {
-                                    pwa: {
-                                        captureChannel: "DESKTOP",
-                                        country: store.countryCode,
-                                        globalLoyaltyProgram: true,
-                                        isMdpActive: true,
-                                        isOneAccountProgramActive: true,
-                                        language: store.languageCode,
-                                        salesLine: store.salesLine,
-                                    },
-                                    persistedQuery: {
-                                        version: 1,
-                                        sha256Hash: wishlistSHA256,
-                                    },
-                                },
-                            }),
                         })
                             .then(async (res) =>
                                 res
@@ -175,7 +233,8 @@ export class WishlistChecker {
                                         retryAfterHeader: res.headers.get("Retry-After"),
                                     })),
                             )
-                            .catch((_: unknown) => ({ status: -2, body: null })),
+                            .catch((_: unknown) => ({ status: -2, body: null }));
+                    },
                     this.store,
                     offset,
                     randomUUID(),

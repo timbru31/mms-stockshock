@@ -13,17 +13,17 @@ export interface CategoryResponse extends Response {
             paging: {
                 currentPage: number;
                 pageCount: number;
+                maxPage: number;
+                pageSize: number;
             };
             campaigns: unknown;
             meta: unknown;
             decorations: unknown;
-            searchResultsAdBeacons: unknown;
             breadcrumbs: {
                 categoryId: string;
                 wcsId: string;
                 name: string;
             }[];
-            sponsoredSearch: unknown;
         };
     };
 }

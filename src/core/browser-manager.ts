@@ -90,7 +90,7 @@ export class BrowserManager {
                             credentials: "include",
                             headers: {
                                 "content-type": "application/json",
-                                "apollographql-client-name": "pwa-client",
+                                "apollographql-client-name": "pwa-client-pqm",
                                 "apollographql-client-version": graphQLClientVersion,
                                 "x-operation": "LoginProfileUser",
                                 "x-cacheable": "false",
@@ -197,7 +197,7 @@ export class BrowserManager {
                             credentials: "include",
                             headers: {
                                 "content-type": "application/json",
-                                "apollographql-client-name": "pwa-client",
+                                "apollographql-client-name": "pwa-client-pqm",
                                 "apollographql-client-version": graphQLClientVersion,
                                 "x-operation": "InitiateLoginTransaction",
                                 "x-cacheable": "false",
@@ -214,19 +214,23 @@ export class BrowserManager {
                             body: JSON.stringify({
                                 operationName: "InitiateLoginTransaction",
                                 variables: {
-                                    email,
+                                    type: "EMAIL",
+                                    username: email,
                                     password,
                                     isLoyaltyTermsVersionCheckRequired: false,
+                                    isMergeLoyaltyStatusRequired: false,
                                 },
                                 extensions: {
                                     pwa: {
                                         captureChannel: "DESKTOP",
                                         country: store.countryCode,
                                         globalLoyaltyProgram: true,
-                                        isMdpActive: true,
+                                        isCheckoutPhoneCompareActive: true,
                                         isOneAccountProgramActive: true,
+                                        isUsingXccCustomerComponent: true,
                                         language: store.languageCode,
                                         salesLine: store.salesLine,
+                                        shouldInactiveContractsBeHidden: true,
                                     },
                                     persistedQuery: {
                                         version: 1,

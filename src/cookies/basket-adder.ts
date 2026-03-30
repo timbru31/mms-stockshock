@@ -91,7 +91,7 @@ export class BasketAdder {
                                         credentials: "include",
                                         headers: {
                                             "content-type": "application/json",
-                                            "apollographql-client-name": "pwa-client",
+                                            "apollographql-client-name": "pwa-client-pqm",
                                             "apollographql-client-version": graphQLClientVersion,
                                             "x-operation": "AddProduct",
                                             "x-cacheable": "false",
@@ -110,23 +110,26 @@ export class BasketAdder {
                                             variables: {
                                                 items: [
                                                     {
-                                                        productId,
                                                         outletId: null,
+                                                        productId,
                                                         quantity: 1,
-                                                        serviceIds: [],
-                                                        warrantyIds: [],
+                                                        serviceIds: null,
+                                                        warrantyIds: null,
                                                     },
                                                 ],
                                             },
                                             extensions: {
                                                 pwa: {
                                                     captureChannel: "DESKTOP",
-                                                    country: store.countryCode,
-                                                    globalLoyaltyProgram: true,
-                                                    isMdpActive: true,
-                                                    isOneAccountProgramActive: true,
-                                                    language: store.languageCode,
                                                     salesLine: store.salesLine,
+                                                    country: store.countryCode,
+                                                    language: store.languageCode,
+                                                    globalLoyaltyProgram: true,
+                                                    isLoyDowngradeReq: true,
+                                                    isOneAccountProgramActive: true,
+                                                    shouldInactiveContractsBeHidden: true,
+                                                    isUsingXccCustomerComponent: true,
+                                                    isCheckoutPhoneCompareActive: true,
                                                 },
                                                 persistedQuery: {
                                                     version: 1,

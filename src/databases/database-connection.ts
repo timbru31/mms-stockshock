@@ -2,7 +2,7 @@ import type { Product } from "../models/api/product";
 
 export interface DatabaseConnection {
     storeCookies: (product: Product, cookies: string[]) => Promise<void>;
-    getCookiesAmount: (product: Product) => Promise<number>;
+    getCookiesAmount: (productId: string) => Promise<number>;
     storePrice: (product: Product, price: number) => Promise<void>;
-    getLastKnownPrice: (product: Product) => Promise<number>;
+    getLastKnownPrice: (productId: string) => Promise<number>;
 }

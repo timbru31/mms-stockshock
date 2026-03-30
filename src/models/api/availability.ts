@@ -1,10 +1,9 @@
 export interface Availability {
-    productId?: string;
-    delivery: {
-        availabilityType: "IN_STORE" | "IN_WAREHOUSE" | "LONG_TAIL" | "NONE";
-        quantity: number;
-        earliest: string | null; // Date compatible string
-        latest: string | null; // Date compatible string
-    } | null;
-    pickup?: unknown;
+    id: string;
+    isAvailableAndBuyable: boolean;
+    isAvailableForDelivery: boolean;
+    isAvailableForPickup: boolean;
+    isInAssortment: boolean;
+    onlineStatus: "AVAILABLE" | "TEMPORARILY_NOT_AVAILABLE" | "MP_OFFER" | "PERMANENTLY_NOT_AVAILABLE";
+    releaseDate: null | string;
 }

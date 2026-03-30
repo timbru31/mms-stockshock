@@ -1,7 +1,7 @@
-import type { Item } from "./item";
+import type { CofrProductAggregate } from "./product-aggregate";
 
 export interface SearchItem {
-    adId: unknown;
+    adData: unknown;
     decorations: unknown;
-    productAggregate: Item;
+    cofrProductAggregate: CofrProductAggregate;
 }

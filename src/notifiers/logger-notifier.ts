@@ -1,5 +1,5 @@
 import type { Logger } from "winston";
-import type { Item } from "../models/api/item";
+import type { CofrProductAggregate } from "../models/api/product-aggregate";
 import type { Product } from "../models/api/product";
 import type { Notifier } from "../models/notifier";
 import type { StoreConfiguration } from "../models/stores/config-model";
@@ -54,36 +54,36 @@ export class LoggerNotifier implements Notifier {
         return Promise.resolve(undefined);
     }
 
-    async notifyStock(item?: Item): Promise<void> {
-        if (!item?.product) {
+    async notifyStock(item?: CofrProductAggregate): Promise<void> {
+        if (!item?.productId) {
             return;
         }
         let message: string;
         const fullAlert = this.productHelper.isProductBuyable(item, this.checkOnlineStatus, this.checkInAssortment);
 
-        const price = item.price?.price ?? "0";
-        const currency = item.price?.currency ?? "𑿠";
+        const price = item.cofrPriceFeature?.price?.amount ?? "0";
+        const currency = item.cofrPriceFeature?.currency ?? "𑿠";
         if (fullAlert) {
-            message = `🟢 Item **available**: ${item.product.id}, ${
-                item.product.title ?? item.product.id
+            message = `🟢 Item **available**: ${item.productId}, ${
+                item.cofrCoreFeature?.productName ?? item.productId
             } for ${price} ${currency}! Go check it out: ${this.productHelper.getProductURL(item, this.store, undefined, true)}`;
         } else if (this.productHelper.canProductBeAddedToBasket(item, this.checkOnlineStatus, this.checkInAssortment)) {
-            message = `🛒 Item **can be added to basket**: ${item.product.id}, ${
-                item.product.title ?? item.product.id
+            message = `🛒 Item **can be added to basket**: ${item.productId}, ${
+                item.cofrCoreFeature?.productName ?? item.productId
             } for ${price} ${currency}! Go check it out: ${this.productHelper.getProductURL(item, this.store, undefined, true)}`;
         } else {
-            message = `🟡 Item for **basket parker**: ${item.product.id}, ${
-                item.product.title ?? item.product.id
+            message = `🟡 Item for **basket parker**: ${item.productId}, ${
+                item.cofrCoreFeature?.productName ?? item.productId
             } for ${price} ${currency}! Go check it out: ${this.productHelper.getProductURL(item, this.store)}`;
         }
         this.logger.info(message);
         return Promise.resolve(undefined);
     }
 
-    async notifyPriceChange(item?: Item, oldPrice?: number): Promise<void> {
-        if (item?.product && oldPrice) {
-            const currency = item.price?.currency ?? "𑿠";
-            const newPrice = item.price?.price ?? this.zero;
+    async notifyPriceChange(item?: CofrProductAggregate, oldPrice?: number): Promise<void> {
+        if (item?.productId && oldPrice) {
+            const currency = item.cofrPriceFeature?.currency ?? "𑿠";
+            const newPrice = item.cofrPriceFeature?.price?.amount ?? this.zero;
             const delta = newPrice - oldPrice;
             const percentageFactor = 100;
             const precision = 2;
@@ -91,8 +91,8 @@ export class LoggerNotifier implements Notifier {
 
             const emoji = delta > this.zero ? "⏫" : "⏬";
 
-            const message = `${emoji} ${item.product.title ?? item.product.id} [${
-                item.product.id
+            const message = `${emoji} ${item.cofrCoreFeature?.productName ?? item.productId} [${
+                item.productId
             }] changed the price from ${oldPrice} ${currency} to ${newPrice} ${currency} (${deltaPercentage.toFixed(precision)}%)`;
 
             this.logger.info(message);

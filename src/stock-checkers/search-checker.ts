@@ -61,13 +61,14 @@ export class SearchChecker {
             const totalPages = outerSearchResponse.body.data?.searchV4.paging.pageCount;
 
             let products = outerSearchResponse.body.data?.searchV4.products
-                ?.map((item) => item.productAggregate)
-                .filter((item) => !searchRegexp || searchRegexp.test(item.product?.title ?? ""));
+                ?.map((item) => item.cofrProductAggregate)
+                .filter((item) => !searchRegexp || searchRegexp.test(item.cofrCoreFeature?.productName ?? ""));
             let items = await this.productHelper.checkItems(
                 products,
                 this.cooldownManager,
                 this.database,
                 this.notifiers,
+                this.store,
                 this.storeConfiguration.check_online_status ?? false,
                 this.storeConfiguration.check_in_assortment ?? true,
                 this.storeConfiguration.cookie_ids ?? [],
@@ -89,13 +90,14 @@ export class SearchChecker {
                         }
                     } else {
                         products = innerSearchResponse.body.data?.searchV4.products
-                            ?.map((item) => item.productAggregate)
-                            .filter((item) => !searchRegexp || searchRegexp.test(item.product?.title ?? ""));
+                            ?.map((item) => item.cofrProductAggregate)
+                            .filter((item) => !searchRegexp || searchRegexp.test(item.cofrCoreFeature?.productName ?? ""));
                         items = await this.productHelper.checkItems(
                             products,
                             this.cooldownManager,
                             this.database,
                             this.notifiers,
+                            this.store,
                             this.storeConfiguration.check_online_status ?? false,
                             this.storeConfiguration.check_in_assortment ?? true,
                             this.storeConfiguration.cookie_ids ?? [],
@@ -133,12 +135,102 @@ export class SearchChecker {
                         flowId: string,
                         graphQLClientVersion: string,
                         searchSHA256: string,
-                    ) =>
-                        fetch(`${store.baseUrl}/api/v1/graphql`, {
+                    ) => {
+                        const params = new URLSearchParams({
+                            operationName: "SearchV4",
+                            variables: JSON.stringify({
+                                bypassStandardization: false,
+                                hasMarketplace: true,
+                                isArtificialScarcityActive: true,
+                                shouldIncludeYourekoRatingExp1150: false,
+                                locale: store.locale,
+                                salesLine: store.salesLine,
+                                isRefurbishedGoodsActive: true,
+                                isFinancingDisplayActive: true,
+                                isPdpFaqSectionActive: true,
+                                isDemonstrationModelAvailabilityActive: false,
+                                isCrossLinkingActive: false,
+                                query,
+                                page: pageOffset,
+                                filters: range.length === 2 ? [`currentprice:${range[0]}-${range[1]}`] : [],
+                                searchExperiment: null,
+                                withPerfChanges: true,
+                                cofrConfig: {
+                                    isEnabled: true,
+                                    baseDomain: store.baseUrl,
+                                    channel: "DESKTOP",
+                                    isLegacyDataExcluded: false,
+                                    features: {
+                                        badges: {
+                                            isFreeShippingBadgeIncluded: false,
+                                        },
+                                        crossSalesLine: {
+                                            isEnabled: false,
+                                            isOutputForced: false,
+                                        },
+                                        onlineStatus: {
+                                            isPermanentlyNaIndexEnabled: true,
+                                        },
+                                        pickup: {
+                                            isStrictPickupDisplayStatusEnabled: false,
+                                        },
+                                        price: {
+                                            strikePriceTypes: [
+                                                {
+                                                    strikePriceType: "lop",
+                                                },
+                                                {
+                                                    strikePriceType: "rrp",
+                                                    shouldBeStruck: true,
+                                                    showDiscountBadge: true,
+                                                    isLegalTextInlineAllowed: false,
+                                                },
+                                            ],
+                                            isBasePriceRequiredFlagRespected: false,
+                                            isDiscountLabelEnabled: true,
+                                            isDiscountPercentageShown: true,
+                                            isDisplayPriceWithStrikePriceRrpThemed: true,
+                                            isLongerStrikePricePrefixAllowed: false,
+                                            isPromoPriceFiltered: true,
+                                            isPromoPriceUsedAsDisplayPriceInApp: false,
+                                            isHistoryChartEnabled: false,
+                                            discountPercentageMinimum: 10,
+                                            discountPercentageMinimumFractionDigits: 0,
+                                        },
+                                        delivery: {
+                                            isDeliveryStatusByEarliestDateEnabled: true,
+                                            isLocationSourcingEnabled: true,
+                                        },
+                                        refurbishedGoods: {
+                                            isEnabled: true,
+                                        },
+                                    },
+                                },
+                            }),
+                            extensions: JSON.stringify({
+                                pwa: {
+                                    captureChannel: "DESKTOP",
+                                    salesLine: store.salesLine,
+                                    country: store.countryCode,
+                                    language: store.languageCode,
+                                    globalLoyaltyProgram: true,
+                                    isLoyDowngradeReq: true,
+                                    isOneAccountProgramActive: true,
+                                    shouldInactiveContractsBeHidden: true,
+                                    isUsingXccCustomerComponent: true,
+                                    isCheckoutPhoneCompareActive: true,
+                                },
+                                persistedQuery: {
+                                    version: 1,
+                                    sha256Hash: searchSHA256,
+                                },
+                            }),
+                        });
+                        return fetch(`${store.baseUrl}/api/v1/graphql?${params}`, {
                             credentials: "include",
                             headers: {
                                 "content-type": "application/json",
-                                "apollographql-client-name": "pwa-client",
+                                "apollographql-client-name": "pwa-client-pqm",
                                 "apollographql-client-version": graphQLClientVersion,
                                 "x-operation": "SearchV4",
                                 "x-cacheable": "true",
@@ -150,37 +242,8 @@ export class SearchChecker {
                                 "Cache-Control": "no-cache",
                             },
                             referrer: `${store.baseUrl}/`,
-                            method: "POST",
+                            method: "GET",
                             mode: "cors",
-                            body: JSON.stringify({
-                                operationName: "SearchV4",
-                                variables: {
-                                    hasMarketplace: true,
-                                    isDemonstrationModelAvailabilityActive: false,
-                                    withMarketingInfos: false,
-                                    experiment: "mp",
-                                    filters: range.length === 2 ? [`currentprice:${range[0]}-${range[1]}`] : [],
-                                    page: pageOffset,
-                                    query,
-                                    pageSize: 20,
-                                    productFilters: range.length === 2 ? [[`currentprice:${range[0]}-${range[1]}`]] : [],
-                                },
-                                extensions: {
-                                    pwa: {
-                                        captureChannel: "DESKTOP",
-                                        country: store.countryCode,
-                                        globalLoyaltyProgram: true,
-                                        isMdpActive: true,
-                                        isOneAccountProgramActive: true,
-                                        language: store.languageCode,
-                                        salesLine: store.salesLine,
-                                    },
-                                    persistedQuery: {
-                                        version: 1,
-                                        sha256Hash: searchSHA256,
-                                    },
-                                },
-                            }),
                         })
                             .then(async (res) =>
                                 res
@@ -192,7 +255,8 @@ export class SearchChecker {
                                         retryAfterHeader: res.headers.get("Retry-After"),
                                     })),
                             )
-                            .catch((_: unknown) => ({ status: -2, body: null })),
+                            .catch((_: unknown) => ({ status: -2, body: null }));
+                    },
                     this.store,
                     page,
                     searchQuery,

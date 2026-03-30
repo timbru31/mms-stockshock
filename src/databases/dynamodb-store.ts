@@ -74,12 +74,12 @@ export class DynamoDBStore implements DatabaseConnection {
         await this.client.send(command);
     }
 
-    async getCookiesAmount(product: Product): Promise<number> {
+    async getCookiesAmount(productId: string): Promise<number> {
         const params: GetItemCommandInput = {
             TableName: this.storeConfiguration.dynamo_db_table_name,
             Key: {
                 store: { S: this.store.shortCode },
-                productId: { S: product.id },
+                productId: { S: productId },
             },
         };
         const command = new GetItemCommand(params);
@@ -91,12 +91,12 @@ export class DynamoDBStore implements DatabaseConnection {
         }
     }
 
-    async getLastKnownPrice(product: Product): Promise<number> {
+    async getLastKnownPrice(productId: string): Promise<number> {
         const params: GetItemCommandInput = {
             TableName: this.storeConfiguration.dynamo_db_table_name,
             Key: {
                 store: { S: this.store.shortCode },
-                productId: { S: product.id },
+                productId: { S: productId },
             },
         };
         const command = new GetItemCommand(params);

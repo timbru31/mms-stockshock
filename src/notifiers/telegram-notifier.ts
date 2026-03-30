@@ -1,7 +1,7 @@
 import { format } from "date-fns";
 import type { Logger } from "winston";
 import { Telegraf } from "telegraf";
-import type { Item } from "../models/api/item";
+import type { CofrProductAggregate } from "../models/api/product-aggregate";
 import type { Notifier } from "../models/notifier";
 import type { StoreConfiguration } from "../models/stores/config-model";
 import type { Store } from "../models/stores/store";
@@ -54,8 +54,8 @@ export class TelegramNotifier implements Notifier {
         await noopPromise();
     }
 
-    async notifyStock(item: Item | undefined): Promise<void> {
-        if (!this.telegramBot || !item?.product) {
+    async notifyStock(item: CofrProductAggregate | undefined): Promise<void> {
+        if (!this.telegramBot || !item?.productId) {
             return;
         }
 
@@ -63,8 +63,8 @@ export class TelegramNotifier implements Notifier {
         const fullAlert = this.productHelper.isProductBuyable(item, this.checkOnlineStatus, this.checkInAssortment);
         if (fullAlert) {
             message = this.addTimestamp(
-                `\uD83D\uDFE2 Produkt bei ${this.store.getShortName()} verfügbar: \n\n${item.product.title ?? item.product.id}` +
-                    `\nPreis : ${item.price?.price ?? "0"} ${item.price?.currency ?? "𑿠"}!` +
+                `\uD83D\uDFE2 Produkt bei ${this.store.getShortName()} verfügbar: \n\n${item.cofrCoreFeature?.productName ?? item.productId}` +
+                    `\nPreis : ${item.cofrPriceFeature?.price?.amount ?? "0"} ${item.cofrPriceFeature?.currency ?? "𑿠"}!` +
                     `\n\n${this.productHelper.getProductURL(item, this.store, this.replacements)}`,
             );
         } else if (this.productHelper.canProductBeAddedToBasket(item, this.checkOnlineStatus, this.checkInAssortment)) {
@@ -73,16 +73,14 @@ export class TelegramNotifier implements Notifier {
             }
             message = this.addTimestamp(
                 `\uD83D\uDED2 Produkt bei ${this.store.getShortName()} kann zum Warenkorb hinzugefügt werden: ` +
-                    `\n\n${item.product.title ?? item.product.id} ` +
-                    `\nPreis : ${item.price?.price ?? "0"} ${item.price?.currency ?? "𑿠"}!` +
+                    `\n\n${item.cofrCoreFeature?.productName ?? item.productId} ` +
+                    `\nPreis : ${item.cofrPriceFeature?.price?.amount ?? "0"} ${item.cofrPriceFeature?.currency ?? "𑿠"}!` +
                     `\n\n${this.productHelper.getProductURL(item, this.store, this.replacements)}`,
             );
         } else {
             message = this.addTimestamp(
-                `\uD83D\uDFE1 Produkt bei ${this.store.getShortName()} für Warenkorb-Parker: \n\n${
-                    item.product.title ?? item.product.id
-                } ` +
-                    `\nPreis : ${item.price?.price ?? "0"} ${item.price?.currency ?? "𑿠"}! ` +
+                `\uD83D\uDFE1 Produkt bei ${this.store.getShortName()} für Warenkorb-Parker: \n\n${item.cofrCoreFeature?.productName ?? item.productId} ` +
+                    `\nPreis : ${item.cofrPriceFeature?.price?.amount ?? "0"} ${item.cofrPriceFeature?.currency ?? "𑿠"}! ` +
                     `\n\n${this.productHelper.getProductURL(item, this.store, this.replacements)}`,
             );
         }

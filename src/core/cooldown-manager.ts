@@ -1,6 +1,6 @@
 import { Duration, add, isAfter, parseISO } from "date-fns";
 import { existsSync, readFileSync, writeFileSync } from "fs";
-import type { Item } from "../models/api/item";
+import type { CofrProductAggregate } from "../models/api/product-aggregate";
 import type { Product } from "../models/api/product";
 import type { NotificationCooldown } from "../models/cooldown";
 import type { StoreConfiguration } from "../models/stores/config-model";
@@ -47,12 +47,12 @@ export class CooldownManager {
 
     addToCooldownMap(
         isProductBuyable: boolean,
-        item: Item,
+        item: CofrProductAggregate,
         checkOnlineStatus: boolean,
         checkInAssortment: boolean,
         hasCookies?: boolean,
     ): void {
-        if (!item.product) {
+        if (!item.productId) {
             return;
         }
         const canBeAddedToBasket = this.productHelper.canProductBeAddedToBasket(item, checkOnlineStatus, checkInAssortment);
@@ -71,8 +71,8 @@ export class CooldownManager {
             };
         }
         const endTime = add(new Date(), cooldownTime);
-        this.cooldowns.set(item.product.id, {
-            id: item.product.id,
+        this.cooldowns.set(item.productId, {
+            id: item.productId,
             isProductBuyable,
             endTime,
         });

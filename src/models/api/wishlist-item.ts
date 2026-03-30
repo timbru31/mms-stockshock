@@ -1,7 +1,7 @@
-import type { Item } from "./item";
+import { CofrProductAggregate } from "./product-aggregate";
 
 export interface WishlistItem {
     id: string;
     updated: Date;
-    productAggregate: Item;
+    cofrProductAggregate: CofrProductAggregate;
 }

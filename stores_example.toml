@@ -99,7 +99,7 @@ websocket_key_path = ""
 log_passwords = false
 
 # GraphQL config
-graphql_version = "8.260.3"
+graphql_version = "8.397.5"
 
 # The hashes from the queries. Tend to change often
 loginSHA256 = ""

@@ -13,10 +13,10 @@ export interface SearchResponse extends Response {
             paging: {
                 currentPage: number;
                 pageCount: number;
+                maxPage: number;
             };
             meta: unknown;
             decorations: unknown;
-            searchResultsAdBeacons: unknown;
         };
     };
 }

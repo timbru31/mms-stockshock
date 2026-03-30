@@ -1,6 +1,6 @@
 import type { CooldownManager } from "../core/cooldown-manager";
 import type { DatabaseConnection } from "../databases/database-connection";
-import type { Item } from "../models/api/item";
+import { CofrProductAggregate } from "../models/api/product-aggregate";
 import type { Product } from "../models/api/product";
 import type { Notifier } from "../models/notifier";
 import type { Store } from "../models/stores/store";
@@ -14,28 +14,28 @@ export class ProductHelper {
      * There seems to be IN_STORE too, where the quantity does not matter. Probably a local store will ship the item
      * Special note: LONG_TAIL needs to be purchasable (isInAssortment and/or onlineStatus)!
      */
-    isProductAvailable(item: Item, checkOnlineStatus: boolean, checkInAssortment: boolean): boolean {
+    isProductAvailable(item: CofrProductAggregate, checkOnlineStatus: boolean, checkInAssortment: boolean): boolean {
         let onlineStatus = true;
         if (checkOnlineStatus) {
-            onlineStatus = item.product?.onlineStatus ?? false;
+            onlineStatus = item.cofrOnlineStatusFeature?.onlineStatus === "AVAILABLE";
         }
 
         let inAssortmentStatus = true;
         if (checkInAssortment) {
-            inAssortmentStatus = item.productControl?.isInAssortment ?? false;
+            inAssortmentStatus = item.cofrDeliveryFeature?.isInAssortment ?? false;
         }
 
         if (onlineStatus && inAssortmentStatus) {
             return true;
         }
 
-        switch (item.availability.delivery?.availabilityType) {
-            case "IN_STORE":
+        switch (item.cofrDeliveryFeature?.delivery?.deliveryStatus) {
+            case "AVAILABLE_ON_NEXT_DAY":
+            case "AVAILABLE_WITHIN_REASONABLE_TIME_FRAME":
+            case "AVAILABLE_OUTSIDE_REASONABLE_TIME_FRAME":
                 return true;
-            case "IN_WAREHOUSE":
-            case "LONG_TAIL":
-                return item.availability.delivery.quantity > this.fallbackAmount;
-            case "NONE": {
+            case "PERMANENTLY_NOT_AVAILABLE":
+            case "NOT_AVAILABLE": {
                 return false;
             }
             case undefined: {
@@ -44,25 +44,25 @@ export class ProductHelper {
         }
     }
 
-    isProductBuyable(item: Item, checkOnlineStatus: boolean, checkInAssortment: boolean): boolean {
+    isProductBuyable(item: CofrProductAggregate, checkOnlineStatus: boolean, checkInAssortment: boolean): boolean {
         let onlineStatus = true;
         if (checkOnlineStatus) {
-            onlineStatus = item.product?.onlineStatus ?? false;
+            onlineStatus = item.cofrOnlineStatusFeature?.onlineStatus === "AVAILABLE";
         }
 
         let inAssortmentStatus = true;
         if (checkInAssortment) {
-            inAssortmentStatus = item.productControl?.isInAssortment ?? false;
+            inAssortmentStatus = item.cofrDeliveryFeature?.isInAssortment ?? false;
         }
 
         if (onlineStatus && inAssortmentStatus) {
-            switch (item.availability.delivery?.availabilityType) {
-                case "IN_STORE":
+            switch (item.cofrDeliveryFeature?.delivery?.deliveryStatus) {
+                case "AVAILABLE_ON_NEXT_DAY":
+                case "AVAILABLE_WITHIN_REASONABLE_TIME_FRAME":
+                case "AVAILABLE_OUTSIDE_REASONABLE_TIME_FRAME":
                     return true;
-                case "IN_WAREHOUSE":
-                case "LONG_TAIL":
-                    return item.availability.delivery.quantity > this.fallbackAmount;
-                case "NONE": {
+                case "PERMANENTLY_NOT_AVAILABLE":
+                case "NOT_AVAILABLE": {
                     return false;
                 }
                 case undefined: {
@@ -73,40 +73,41 @@ export class ProductHelper {
         return false;
     }
 
-    canProductBeAddedToBasket(item: Item, checkOnlineStatus: boolean, checkInAssortment: boolean): boolean {
+    canProductBeAddedToBasket(item: CofrProductAggregate, checkOnlineStatus: boolean, checkInAssortment: boolean): boolean {
         let onlineStatus = true;
         if (checkOnlineStatus) {
-            onlineStatus = item.product?.onlineStatus ?? false;
+            onlineStatus = item.cofrOnlineStatusFeature?.onlineStatus === "AVAILABLE";
         }
 
         let inAssortmentStatus = true;
         if (checkInAssortment) {
-            inAssortmentStatus = item.productControl?.isInAssortment ?? false;
+            inAssortmentStatus = item.cofrDeliveryFeature?.isInAssortment ?? false;
         }
         return onlineStatus && inAssortmentStatus;
     }
 
-    getProductURL(item: Item, store: Store, replacements?: Map<string, string>, magician = false): string {
-        if (!item.product) {
+    getProductURL(item: CofrProductAggregate, store: Store, replacements?: Map<string, string>, magician = false): string {
+        if (!item.productId) {
             return "";
         }
-        const replacement = replacements?.get(magician ? `${item.product.id}*` : item.product.id);
+        const replacement = replacements?.get(magician ? `${item.productId}*` : item.productId);
         if (replacement) {
             return replacement;
         }
 
         return (
             store.baseUrl +
-            (item.product.url || `/${store.languageCode}/product/-${item.product.id}.html`) +
-            (magician ? `?magician=${item.product.id}` : "")
+            (item.cofrCoreFeature?.urlRelative ?? `/${store.languageCode}/product/-${item.productId}.html`) +
+            (magician ? `?magician=${item.productId}` : "")
         );
     }
 
     async checkItems(
-        items: Item[] | undefined,
+        items: CofrProductAggregate[] | undefined,
         cooldownManager: CooldownManager,
         database: DatabaseConnection | undefined,
         notifiers: Notifier[],
+        store: Store,
         checkOnlineStatus: boolean,
         checkInAssortment: boolean,
         cookieIds: string[],
@@ -121,6 +122,7 @@ export class ProductHelper {
                     cooldownManager,
                     database,
                     notifiers,
+                    store,
                     checkOnlineStatus,
                     checkInAssortment,
                     cookieIds,
@@ -131,11 +133,12 @@ export class ProductHelper {
     }
 
     async checkItem(
-        item: Item | undefined,
+        item: CofrProductAggregate | undefined,
         basketProducts: Map<string, Product>,
         cooldownManager: CooldownManager,
         database: DatabaseConnection | undefined,
         notifiers: Notifier[],
+        store: Store,
         checkOnlineStatus: boolean,
         checkInAssortment: boolean,
         cookieIds: string[],
@@ -144,20 +147,24 @@ export class ProductHelper {
             return basketProducts;
         }
 
-        if (item.product) {
-            const lastKnownPrice = database ? await database.getLastKnownPrice(item.product) : NaN;
-            const price = item.price?.price ?? NaN;
+        const itemId = item.productId;
+        if (itemId) {
+            const lastKnownPrice = database ? await database.getLastKnownPrice(itemId) : NaN;
+            const price = item.cofrPriceFeature?.price?.amount ?? NaN;
             if (price && price !== lastKnownPrice) {
                 for (const notifier of notifiers) {
                     await notifier.notifyPriceChange(item, lastKnownPrice);
                 }
             }
             if (price && price !== lastKnownPrice) {
-                await database?.storePrice(item.product, price);
+                await database?.storePrice(this.convertCofrProductAggregateToProduct(item, store), price);
+            }
+
+            if (this.isMarketplaceOffer(item)) {
+                return basketProducts;
             }
 
             if (this.isProductAvailable(item, checkOnlineStatus, checkInAssortment)) {
-                const itemId = item.product.id;
                 if (!itemId) {
                     return basketProducts;
                 }
@@ -169,7 +176,7 @@ export class ProductHelper {
                 }
 
                 if (!cooldownManager.hasCooldown(itemId)) {
-                    const cookiesAmount = database ? await database.getCookiesAmount(item.product) : this.fallbackAmount;
+                    const cookiesAmount = database ? await database.getCookiesAmount(itemId) : this.fallbackAmount;
                     for (const notifier of notifiers) {
                         await notifier.notifyStock(item, cookiesAmount);
                     }
@@ -181,10 +188,24 @@ export class ProductHelper {
                     !cooldownManager.hasBasketCooldown(itemId) &&
                     (!cookieIds.length || cookieIds.includes(itemId))
                 ) {
-                    basketProducts.set(itemId, item.product);
+                    basketProducts.set(itemId, this.convertCofrProductAggregateToProduct(item, store));
                 }
             }
         }
         return basketProducts;
+    }
+
+    convertCofrProductAggregateToProduct(item: CofrProductAggregate, store: Store): Product {
+        return {
+            id: item.productId,
+            title: item.cofrCoreFeature?.productName ?? "",
+            url: this.getProductURL(item, store, undefined, true),
+            onlineStatus: item.cofrOnlineStatusFeature?.onlineStatus === "AVAILABLE",
+            titleImageId: item.cofrMediaAssetsFeature?.productMainImage?.imageId ?? null,
+        };
+    }
+
+    isMarketplaceOffer(item: CofrProductAggregate): boolean {
+        return item.cofrOnlineStatusFeature?.onlineStatus === "MP_OFFER";
     }
 }

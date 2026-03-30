@@ -1,4 +1,4 @@
-import type { Item } from "./api/item";
+import type { Item } from "./api/product-aggregate";
 import type { Product } from "./api/product";
 
 export interface Notifier {
