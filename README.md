@@ -30,10 +30,12 @@ You need to put products on your wishlist in order to have this bot working or h
 - MediaMarkt Austria
 - MediaMarkt Belgium
 - MediaMarkt Germany
+- MediaMarkt Hungary
 - MediaMarkt Netherlands
 - MediaMarkt Poland
 - MediaMarkt Spain
 - MediaMarkt Switzerland
+- MediaMarkt Turkey
 - MediaWorld Italy
 - Saturn
 
@@ -100,7 +102,7 @@ Do **not** close the browser window. You can minimize it though.
 You can launch the bot directly with a store by supplying the store as an argument
 
 ```sh
-npm start -- --store <mmat|mmbe|mmch|mmde|mmes|mmit|mmnl|mmpl|saturn>
+npm start -- --store <mmat|mmbe|mmch|mmde|mmes|mmhu|mmit|mmnl|mmpl|mmtr|saturn>
 ```
 
 ### Docker

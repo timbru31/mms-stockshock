@@ -7,10 +7,12 @@ import type { ConfigModel, StoreConfiguration } from "../models/stores/config-mo
 import { MediaMarktAustria } from "../models/stores/media-markt-austria";
 import { MediaMarktBelgium } from "../models/stores/media-markt-belgium";
 import { MediaMarktGermany } from "../models/stores/media-markt-germany";
+import { MediaMarktHungary } from "../models/stores/media-markt-hungary";
 import { MediaMarktNetherlands } from "../models/stores/media-markt-netherlands";
 import { MediaMarktPoland } from "../models/stores/media-markt-poland";
 import { MediaMarktSpain } from "../models/stores/media-markt-spain";
 import { MediaMarktSwitzerland } from "../models/stores/media-markt-switzerland";
+import { MediaMarktTurkey } from "../models/stores/media-markt-turkey";
 import { MediaWorldItaly } from "../models/stores/media-world-italy";
 import { Saturn } from "../models/stores/saturn";
 import type { Store } from "../models/stores/store";
@@ -51,6 +53,10 @@ export async function getStoreAndStoreConfig(config: ConfigModel): Promise<{
                     value: "mediamarkt germany",
                 } as ListChoiceOptions,
                 {
+                    name: "MediaMarkt Hungary",
+                    value: "mediamarkt hungary",
+                } as ListChoiceOptions,
+                {
                     name: "MediaWorld Italy",
                     value: "mediaworld italy",
                 } as ListChoiceOptions,
@@ -65,6 +71,10 @@ export async function getStoreAndStoreConfig(config: ConfigModel): Promise<{
                 {
                     name: "MediaMarkt Spain",
                     value: "mediamarkt spain",
+                } as ListChoiceOptions,
+                {
+                    name: "MediaMarkt Turkey",
+                    value: "mediamarkt turkey",
                 } as ListChoiceOptions,
                 {
                     name: "Saturn",
@@ -106,6 +116,13 @@ export async function getStoreAndStoreConfig(config: ConfigModel): Promise<{
             storeConfig = config.mmde;
             store.setSleepTimes(storeConfig.min_sleep_time, storeConfig.max_sleep_time);
             break;
+        case "mmhu":
+        case "mediamarkthungary":
+        case "mediamarkt hungary":
+            store = new MediaMarktHungary();
+            storeConfig = config.mmhu;
+            store.setSleepTimes(storeConfig.min_sleep_time, storeConfig.max_sleep_time);
+            break;
         case "mmit":
         case "mwit":
         case "mediaworlditaly":
@@ -135,6 +152,13 @@ export async function getStoreAndStoreConfig(config: ConfigModel): Promise<{
         case "mediamarkt spain":
             store = new MediaMarktSpain();
             storeConfig = config.mmes;
+            store.setSleepTimes(storeConfig.min_sleep_time, storeConfig.max_sleep_time);
+            break;
+        case "mmtr":
+        case "mediamarktturkey":
+        case "mediamarkt turkey":
+            store = new MediaMarktTurkey();
+            storeConfig = config.mmtr;
             store.setSleepTimes(storeConfig.min_sleep_time, storeConfig.max_sleep_time);
             break;
         case "saturn":

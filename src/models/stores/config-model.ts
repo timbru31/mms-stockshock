@@ -4,9 +4,11 @@ export interface ConfigModel {
     mmch: StoreConfiguration;
     mmde: StoreConfiguration;
     mmes: StoreConfiguration;
+    mmhu: StoreConfiguration;
     mmit: StoreConfiguration;
     mmnl: StoreConfiguration;
     mmpl: StoreConfiguration;
+    mmtr: StoreConfiguration;
     saturn: StoreConfiguration;
 }
 
