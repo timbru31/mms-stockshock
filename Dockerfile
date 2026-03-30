@@ -1,4 +1,4 @@
-FROM timbru31/node-chrome:iron-slim
+FROM timbru31/node-chrome:krypton-slim
 
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
     PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium \
