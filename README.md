@@ -126,4 +126,4 @@ docker run --restart on-failure --memory 500m --memory-swap 500m --ulimit core=0
 
 ---
 
-Built by (c) Tim Brust and contributors. Released under the GPL v3 license.
+Built by (c) Tim Prüssing and contributors. Released under the GPL v3 license.
