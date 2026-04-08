@@ -23,7 +23,7 @@
     },
     "dependencies": {
         "@aws-sdk/client-dynamodb": "^3.1026.0",
-        "@inquirer/prompts": "^8.4.0",
+        "@inquirer/prompts": "^8.4.1",
         "date-fns": "^4.1.0",
         "discord.js": "^14.26.2",
         "proxy-chain": "^2.7.1",
