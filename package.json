@@ -34,7 +34,7 @@
         "toml": "^4.1.1",
         "user-agents": "^2.1.58",
         "winston": "^3.19.0",
-        "ws": "^8.20.0",
+        "ws": "^8.20.1",
         "yargs": "^17.7.2"
     },
     "devDependencies": {
