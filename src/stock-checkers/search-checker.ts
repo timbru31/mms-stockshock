@@ -51,11 +51,7 @@ export class SearchChecker {
 
         const outerSearchResponse = await this.performSearchQuery(search, priceRange);
 
-        if (
-            (outerSearchResponse.status as HTTPStatusCode) !== HTTPStatusCode.OK ||
-            !outerSearchResponse.body ||
-            outerSearchResponse.body.errors
-        ) {
+        if (outerSearchResponse.status !== HTTPStatusCode.OK || !outerSearchResponse.body || outerSearchResponse.body.errors) {
             await this.browserManager.handleResponseError("SearchV4", outerSearchResponse);
         } else {
             const totalPages = outerSearchResponse.body.data?.searchV4.paging.pageCount;
@@ -79,11 +75,7 @@ export class SearchChecker {
                 for (let additionalQueryCalls = 2; additionalQueryCalls <= totalPages; additionalQueryCalls += 1) {
                     await sleep(this.store.getSleepTime());
                     const innerSearchResponse = await this.performSearchQuery(search, priceRange, additionalQueryCalls);
-                    if (
-                        (innerSearchResponse.status as HTTPStatusCode) !== HTTPStatusCode.OK ||
-                        !innerSearchResponse.body ||
-                        innerSearchResponse.body.errors
-                    ) {
+                    if (innerSearchResponse.status !== HTTPStatusCode.OK || !innerSearchResponse.body || innerSearchResponse.body.errors) {
                         await this.browserManager.handleResponseError("SearchV4", innerSearchResponse);
                         if (this.browserManager.reLoginRequired || this.browserManager.reLaunchRequired) {
                             break;
@@ -116,13 +108,13 @@ export class SearchChecker {
         priceRange?: number[],
         page = this.defaultPage,
     ): Promise<{
-        status: number;
+        status: HTTPStatusCode;
         body: SearchResponse | null;
         retryAfterHeader?: string | null;
     }> {
         if (!this.browserManager.page) {
             this.logger.error("Unable to perform search query: page is undefined!");
-            return Promise.resolve({ status: 0, body: null });
+            return Promise.resolve({ status: HTTPStatusCode.Error, body: null });
         }
         try {
             return await Promise.race([

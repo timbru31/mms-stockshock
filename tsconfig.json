@@ -1,9 +1,9 @@
 {
     "compilerOptions": {
         "incremental": true,
-        "target": "ES2020",
-        "module": "CommonJS",
-        "lib": ["ES2020", "DOM", "DOM.Iterable"],
+        "target": "es2024",
+        "module": "nodenext",
+        "lib": ["ES2024", "DOM", "DOM.Iterable"],
         "declaration": false,
         "sourceMap": false,
         "outDir": "./dist",
@@ -12,12 +12,14 @@
         "noUnusedParameters": true,
         "noImplicitReturns": true,
         "noFallthroughCasesInSwitch": true,
-        "moduleResolution": "node",
         "emitDecoratorMetadata": true,
+        "moduleResolution": "nodenext",
         "resolveJsonModule": true,
         "experimentalDecorators": true,
         "esModuleInterop": true,
-        "typeRoots": ["node_modules/@types"]
+        "skipLibCheck": true,
+        "typeRoots": ["node_modules/@types"],
+        "types": ["ws", "node"]
     },
     "include": ["src/"],
     "compileOnSave": false

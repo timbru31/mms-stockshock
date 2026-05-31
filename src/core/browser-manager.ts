@@ -74,7 +74,7 @@ export class BrowserManager {
             throw new Error(`Puppeteer context not initialized! ${!this.page ? "Page" : "Browser"} is undefined.`);
         }
 
-        let res: { status: number; body: LoginResponse | null; retryAfterHeader?: string | null };
+        let res: { status: HTTPStatusCode; body: LoginResponse | null; retryAfterHeader?: string | null };
         try {
             res = await Promise.race([
                 this.page.evaluate(
@@ -155,7 +155,7 @@ export class BrowserManager {
             res = { status: HTTPStatusCode.Error, body: null };
             this.logger.error("Error, %O", e);
         }
-        if ((res.status as HTTPStatusCode) !== HTTPStatusCode.OK || !res.body || res.body.errors) {
+        if (res.status !== HTTPStatusCode.OK || !res.body || res.body.errors) {
             if (headless) {
                 await this.handleResponseError("Login", res);
                 for (const notifier of this.notifiers) {
@@ -180,7 +180,7 @@ export class BrowserManager {
             throw new Error(`Puppeteer context not initialized! ${!this.page ? "Page" : "Browser"} is undefined.`);
         }
 
-        let res: { status: number; body: LoginResponse | null; retryAfterHeader?: string | null };
+        let res: { status: HTTPStatusCode; body: LoginResponse | null; retryAfterHeader?: string | null };
         try {
             res = await Promise.race([
                 this.page.evaluate(
@@ -265,7 +265,7 @@ export class BrowserManager {
             res = { status: HTTPStatusCode.Error, body: null };
             this.logger.error("Error, %O", e);
         }
-        if ((res.status as HTTPStatusCode) !== HTTPStatusCode.OK || !res.body || res.body.errors) {
+        if (res.status !== HTTPStatusCode.OK || !res.body || res.body.errors) {
             if (headless) {
                 await this.handleResponseError("LoginV2", res);
                 for (const notifier of this.notifiers) {
@@ -289,16 +289,16 @@ export class BrowserManager {
 
     async handleResponseError(
         query: string,
-        res: { status: number; body: Response | null; retryAfterHeader?: string | null },
+        res: { status: HTTPStatusCode; body: Response | null; retryAfterHeader?: string | null },
     ): Promise<void> {
         this.logger.error(`${query} query did not succeed, status code: ${res.status}`);
         if (res.body?.errors) {
             this.logger.error("Error: %O", res.body.errors);
         }
         if (
-            (res.status as HTTPStatusCode) <= HTTPStatusCode.Timeout ||
-            (res.status as HTTPStatusCode) === HTTPStatusCode.Forbidden ||
-            (res.status as HTTPStatusCode) === HTTPStatusCode.TooManyRequests
+            res.status <= HTTPStatusCode.Timeout ||
+            res.status === HTTPStatusCode.Forbidden ||
+            res.status === HTTPStatusCode.TooManyRequests
         ) {
             if (this.proxies.length) {
                 this.rotateProxy();

@@ -22,34 +22,34 @@
         "node": ">=24"
     },
     "dependencies": {
-        "@aws-sdk/client-dynamodb": "^3.1056.0",
-        "@inquirer/prompts": "^8.5.0",
-        "date-fns": "^4.3.0",
+        "@aws-sdk/client-dynamodb": "^3.1057.0",
+        "@inquirer/prompts": "^8.5.2",
+        "date-fns": "^4.4.0",
         "discord.js": "^14.26.4",
         "proxy-chain": "^3.0.0",
-        "puppeteer": "^24.43.1",
+        "puppeteer": "^25.1.0",
         "puppeteer-extra": "^3.3.6",
         "puppeteer-extra-plugin-stealth": "^2.11.2",
         "telegraf": "^4.16.3",
         "toml": "^4.1.1",
-        "user-agents": "^2.1.74",
+        "user-agents": "^2.1.77",
         "winston": "^3.19.0",
         "ws": "^8.21.0",
-        "yargs": "^17.7.2"
+        "yargs": "^18.0.0"
     },
     "devDependencies": {
-        "@eslint/js": "^9.31.0",
+        "@eslint/js": "^10.0.1",
         "@types/user-agents": "^1.0.4",
         "@types/ws": "^8.18.1",
         "@types/yargs": "^17.0.33",
         "eslint-config-prettier": "^10.1.8",
         "eslint-plugin-prettier": "^5.5.6",
         "husky": "^9.1.7",
-        "lint-staged": "^17.0.5",
+        "lint-staged": "^17.0.7",
         "prettier": "^3.8.3",
         "ts-node": "^10.9.2",
-        "typescript": "~5.8.3",
-        "typescript-eslint": "^8.58.2"
+        "typescript": "^6.0.3",
+        "typescript-eslint": "^8.60.0"
     },
     "funding": "https://github.com/sponsors/timbru31"
 }

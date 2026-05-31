@@ -51,11 +51,7 @@ export class CategoryChecker {
 
         const outerCategoryResponse = await this.performCategoryQuery(category);
 
-        if (
-            (outerCategoryResponse.status as HTTPStatusCode) !== HTTPStatusCode.OK ||
-            !outerCategoryResponse.body ||
-            outerCategoryResponse.body.errors
-        ) {
+        if (outerCategoryResponse.status !== HTTPStatusCode.OK || !outerCategoryResponse.body || outerCategoryResponse.body.errors) {
             await this.browserManager.handleResponseError("CategoryV4", outerCategoryResponse);
         } else {
             const totalPages = outerCategoryResponse.body.data?.categoryV4.paging.pageCount;
@@ -80,7 +76,7 @@ export class CategoryChecker {
                     await sleep(this.store.getSleepTime());
                     const innerCategoryResponse = await this.performCategoryQuery(category, additionalQueryCalls);
                     if (
-                        (innerCategoryResponse.status as HTTPStatusCode) !== HTTPStatusCode.OK ||
+                        innerCategoryResponse.status !== HTTPStatusCode.OK ||
                         !innerCategoryResponse.body ||
                         innerCategoryResponse.body.errors
                     ) {
@@ -115,13 +111,13 @@ export class CategoryChecker {
         category: string,
         page = this.defaultPage,
     ): Promise<{
-        status: number;
+        status: HTTPStatusCode;
         body: CategoryResponse | null;
         retryAfterHeader?: string | null;
     }> {
         if (!this.browserManager.page) {
             this.logger.error("Unable to perform category query: page is undefined!");
-            return Promise.resolve({ status: 0, body: null });
+            return Promise.resolve({ status: HTTPStatusCode.Error, body: null });
         }
         try {
             return await Promise.race([
