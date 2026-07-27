@@ -35,7 +35,7 @@
         "user-agents": "^2.1.133",
         "winston": "^3.19.0",
         "ws": "^8.21.1",
-        "yargs": "^18.0.0"
+        "yargs": "^18.1.0"
     },
     "devDependencies": {
         "@eslint/js": "^10.0.1",
